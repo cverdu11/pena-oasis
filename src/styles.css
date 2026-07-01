@@ -6,7 +6,7 @@
   --oasis-line: #dde1e7;
   --oasis-soft-line: #eceff3;
   --oasis-white: #ffffff;
-  --nav-height: 100px;
+  --nav-height: 84px;
   font-family: "Montserrat", Arial, Helvetica, sans-serif;
   color: var(--oasis-ink);
   background: #071d42;
@@ -86,19 +86,21 @@ button {
   position: absolute;
   inset: 0;
   background-position: center top;
-  background-size: cover;
+  background-size: auto clamp(270px, 34dvh, 350px);
+  background-repeat: no-repeat;
+  background-color: var(--oasis-blue-dark);
 }
 
 .auth-sheet {
   position: absolute;
-  inset: 31.8dvh 12px 0;
+  inset: clamp(236px, 32dvh, 318px) 16px 0;
   z-index: 2;
   overflow-y: auto;
-  border-radius: 32px 32px 0 0;
+  border-radius: 28px 28px 0 0;
   background: var(--oasis-white);
   box-shadow: 0 -12px 36px rgba(0, 24, 76, 0.16);
-  padding: 30px clamp(28px, 8vw, 44px)
-    calc(var(--nav-height) + 18px + env(safe-area-inset-bottom));
+  padding: 26px clamp(24px, 7vw, 36px)
+    calc(var(--nav-height) + 14px + env(safe-area-inset-bottom));
   scrollbar-width: none;
 }
 
@@ -110,7 +112,7 @@ button {
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  margin-bottom: 22px;
+  margin-bottom: 18px;
   border-bottom: 1px solid var(--oasis-line);
 }
 
@@ -119,10 +121,10 @@ button {
   cursor: pointer;
   background: transparent;
   color: #7a838d;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 700;
   line-height: 1.25;
-  padding: 0 4px 16px;
+  padding: 0 4px 13px;
   transition:
     color 180ms ease,
     transform 180ms ease;
@@ -133,7 +135,7 @@ button {
   right: 0;
   bottom: -1px;
   left: 0;
-  height: 3px;
+  height: 2px;
   background: var(--oasis-blue);
   content: "";
   opacity: 0;
@@ -152,29 +154,35 @@ button {
   transform: scaleX(1);
 }
 
+.auth-tab:focus-visible {
+  outline: 2px solid rgba(0, 64, 164, 0.28);
+  outline-offset: -4px;
+  border-radius: 6px;
+}
+
 .auth-form {
   display: grid;
-  gap: 14px;
+  gap: 12px;
 }
 
 .form-field {
   display: grid;
-  gap: 7px;
+  gap: 6px;
   color: #5b6570;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
 }
 
 .input-shell {
   display: grid;
-  grid-template-columns: 26px 1fr auto;
+  grid-template-columns: 24px 1fr auto;
   align-items: center;
-  min-height: 46px;
+  min-height: 44px;
   border: 1px solid #d8dce2;
   border-radius: 8px;
   color: #99a0aa;
   background: rgba(255, 255, 255, 0.96);
-  padding: 0 13px;
+  padding: 0 12px;
   transition:
     border-color 180ms ease,
     box-shadow 180ms ease;
@@ -186,8 +194,8 @@ button {
 }
 
 .input-shell svg {
-  width: 19px;
-  height: 19px;
+  width: 17px;
+  height: 17px;
 }
 
 .input-shell input {
@@ -196,7 +204,7 @@ button {
   outline: 0;
   color: var(--oasis-ink);
   background: transparent;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
 }
 
@@ -206,8 +214,8 @@ button {
 
 .icon-button {
   display: grid;
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   cursor: pointer;
   place-items: center;
   border-radius: 999px;
@@ -230,19 +238,19 @@ button {
   cursor: pointer;
   background: transparent;
   color: var(--oasis-blue-dark);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
 }
 
 .primary-button {
-  min-height: 46px;
+  min-height: 44px;
   margin-top: 4px;
   cursor: pointer;
   border-radius: 999px;
   color: var(--oasis-white);
   background: linear-gradient(180deg, #064ec2 0%, #003aa5 100%);
   box-shadow: 0 12px 22px rgba(0, 64, 164, 0.22);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 800;
   transition:
     transform 180ms ease,
@@ -275,10 +283,10 @@ button {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 11px;
-  margin: 18px 0 12px;
+  gap: 10px;
+  margin: 14px 0 10px;
   color: #747d88;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
 }
 
@@ -293,20 +301,20 @@ button {
 
 .oauth-actions {
   display: grid;
-  gap: 9px;
+  gap: 8px;
 }
 
 .oauth-button {
   display: grid;
-  grid-template-columns: 48px 1fr 24px;
+  grid-template-columns: 42px 1fr 20px;
   align-items: center;
-  min-height: 46px;
+  min-height: 44px;
   cursor: pointer;
   border: 1px solid #e2e4e8;
   border-radius: 999px;
   color: #0d0f13;
   background: var(--oasis-white);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   transition:
     border-color 180ms ease,
@@ -323,32 +331,12 @@ button {
 
 .oauth-button svg {
   justify-self: end;
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
 }
 
 .oauth-button span {
   justify-self: center;
-}
-
-.switch-copy {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  margin: 16px 0 0;
-  color: #8d96a0;
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 1.35;
-  text-align: center;
-}
-
-.switch-copy button {
-  cursor: pointer;
-  background: transparent;
-  color: var(--oasis-blue-dark);
-  font-weight: 800;
 }
 
 .bottom-nav {
@@ -360,10 +348,10 @@ button {
   display: grid;
   grid-template-columns: 1fr 1fr;
   height: calc(var(--nav-height) + env(safe-area-inset-bottom));
-  border-radius: 34px 34px 0 0;
+  border-radius: 28px 28px 0 0;
   background: var(--oasis-white);
   box-shadow: 0 -14px 28px rgba(8, 24, 54, 0.1);
-  padding: 10px 8px calc(10px + env(safe-area-inset-bottom));
+  padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
 }
 
 .nav-button {
@@ -371,10 +359,10 @@ button {
   cursor: pointer;
   place-items: center;
   align-content: center;
-  gap: 8px;
+  gap: 5px;
   color: #8c96a1;
   background: transparent;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 500;
   line-height: 1.1;
   transition:
@@ -397,15 +385,15 @@ button {
 }
 
 .nav-icon {
-  width: 32px;
-  height: 32px;
+  width: 26px;
+  height: 26px;
   stroke-width: 1.8;
 }
 
 .nav-divider {
   position: absolute;
-  top: 28px;
-  bottom: 25px;
+  top: 20px;
+  bottom: 20px;
   left: 50%;
   width: 1px;
   background: #d6d9de;
@@ -413,7 +401,7 @@ button {
 
 @media (max-width: 360px), (max-height: 760px) {
   :root {
-    --nav-height: 94px;
+    --nav-height: 78px;
   }
 
   .phone-viewport {
@@ -421,41 +409,36 @@ button {
   }
 
   .auth-sheet {
-    inset: 30dvh 12px 0;
-    padding: 24px 24px calc(var(--nav-height) + 14px);
+    inset: clamp(218px, 30dvh, 286px) 12px 0;
+    padding: 22px 22px calc(var(--nav-height) + 12px);
   }
 
   .auth-tabs {
-    margin-bottom: 22px;
+    margin-bottom: 16px;
   }
 
   .auth-form {
-    gap: 14px;
+    gap: 11px;
   }
 
   .input-shell,
   .primary-button,
   .oauth-button {
-    min-height: 49px;
+    min-height: 42px;
   }
 
   .oauth-divider {
-    margin: 24px 0 14px;
-  }
-
-  .switch-copy {
-    margin-top: 25px;
-    font-size: 14px;
+    margin: 14px 0 10px;
   }
 
   .bottom-nav {
     border-radius: 28px 28px 0 0;
-    padding-top: 14px;
+    padding-top: 8px;
   }
 
   .nav-icon {
-    width: 29px;
-    height: 29px;
+    width: 24px;
+    height: 24px;
   }
 }
 

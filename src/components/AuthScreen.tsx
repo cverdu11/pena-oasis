@@ -1,8 +1,7 @@
-import { FormEvent, useMemo, useState } from "react";
-import { FaApple } from "react-icons/fa6";
+import { FormEvent, useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { FiEye, FiEyeOff, FiLock, FiMail, FiUser } from "react-icons/fi";
-import personalBackground from "../../public/images/area-personal-reference.png";
+import personalBackground from "../../public/images/area-personal-header.png";
 import { getSupabaseClient, isSupabaseConfigured } from "../lib/supabase";
 
 type AuthMode = "signin" | "signup";
@@ -16,21 +15,7 @@ export function AuthScreen() {
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const copy = useMemo(
-    () =>
-      mode === "signin"
-        ? {
-            action: "Iniciar sesión",
-            switchQuestion: "No tienes cuenta?",
-            switchAction: "Regístrate",
-          }
-        : {
-            action: "Crear cuenta",
-            switchQuestion: "Ya tienes cuenta?",
-            switchAction: "Inicia sesión",
-          },
-    [mode],
-  );
+  const submitLabel = mode === "signin" ? "Iniciar sesión" : "Crear cuenta";
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -67,7 +52,7 @@ export function AuthScreen() {
     );
   }
 
-  async function handleOAuth(provider: "google" | "apple") {
+  async function handleGoogleOAuth() {
     setMessage("");
 
     const client = await getSupabaseClient();
@@ -78,8 +63,8 @@ export function AuthScreen() {
     }
 
     const { error } = await client.auth.signInWithOAuth({
-      provider,
-      options: { redirectTo: window.location.origin },
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/#area-personal` },
     });
 
     if (error) {
@@ -192,7 +177,7 @@ export function AuthScreen() {
           )}
 
           <button className="primary-button" disabled={isLoading} type="submit">
-            {isLoading ? "Conectando..." : copy.action}
+            {isLoading ? "Conectando..." : submitLabel}
           </button>
 
           {message && (
@@ -212,30 +197,12 @@ export function AuthScreen() {
           <button
             className="oauth-button"
             type="button"
-            onClick={() => handleOAuth("google")}
+            onClick={handleGoogleOAuth}
           >
             <FcGoogle aria-hidden="true" />
             <span>Continuar con Google</span>
           </button>
-          <button
-            className="oauth-button"
-            type="button"
-            onClick={() => handleOAuth("apple")}
-          >
-            <FaApple aria-hidden="true" />
-            <span>Continuar con Apple</span>
-          </button>
         </div>
-
-        <p className="switch-copy">
-          <span>{copy.switchQuestion}</span>
-          <button
-            type="button"
-            onClick={() => switchMode(mode === "signin" ? "signup" : "signin")}
-          >
-            {copy.switchAction}
-          </button>
-        </p>
       </div>
     </section>
   );
