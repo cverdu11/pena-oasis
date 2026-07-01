@@ -28,6 +28,11 @@ type MemberForm = {
   memberNumber: string;
 };
 
+const DATA_PROTECTION_LAW_URL =
+  "https://www.boe.es/buscar/act.php?id=BOE-A-2018-16673";
+const GDPR_URL =
+  "https://eur-lex.europa.eu/eli/reg/2016/679/oj?locale=es";
+
 function getFirstName(value?: string | null) {
   const trimmed = value?.trim();
 
@@ -554,23 +559,35 @@ export function AuthScreen() {
               )}
 
               {mode === "signup" && (
-                <label className="privacy-consent">
+                <div className="privacy-consent">
                   <input
                     aria-required="true"
                     checked={privacyAccepted}
+                    id="privacy-consent"
                     type="checkbox"
                     onChange={(event) =>
                       setPrivacyAccepted(event.target.checked)
                     }
                   />
-                  <span>
-                    He leído y acepto las condiciones y la información básica de
-                    protección de datos. Responsable: Peña Oasis. Finalidad:
-                    gestionar mi alta, la condición de peñista y las
-                    comunicaciones internas. Podré ejercer mis derechos a través
-                    del correo de contacto de la Peña.
-                  </span>
-                </label>
+                  <label htmlFor="privacy-consent">
+                    He leído y acepto las{" "}
+                    <a
+                      href={DATA_PROTECTION_LAW_URL}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      condiciones
+                    </a>{" "}
+                    y la información básica de{" "}
+                    <a href={GDPR_URL} rel="noreferrer" target="_blank">
+                      protección de datos
+                    </a>
+                    . Responsable: Peña Oasis. Finalidad: gestionar mi alta, la
+                    condición de peñista y las comunicaciones internas. Podré
+                    ejercer mis derechos a través del correo de contacto de la
+                    Peña.
+                  </label>
+                </div>
               )}
 
               <button

@@ -205,6 +205,19 @@ button {
   accent-color: var(--oasis-blue-dark);
 }
 
+.privacy-consent a {
+  color: var(--oasis-blue-dark);
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.privacy-consent a:focus-visible {
+  border-radius: 4px;
+  outline: 2px solid rgba(0, 64, 164, 0.28);
+  outline-offset: 2px;
+}
+
 .privacy-note {
   margin: -2px 0 0;
   border-left: 3px solid var(--oasis-blue-dark);
