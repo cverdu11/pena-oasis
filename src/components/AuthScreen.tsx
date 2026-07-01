@@ -14,6 +14,7 @@ import {
   SIGNUP_ROUTE_HASH,
 } from "../constants";
 import { getSupabaseClient, isSupabaseConfigured } from "../lib/supabase";
+import { DataAgreementCard } from "./DataAgreementCard";
 
 type AuthMode = "signin" | "signup";
 type Profile = {
@@ -25,6 +26,11 @@ type Profile = {
   member_number?: string | null;
   privacy_accepted_at?: string | null;
   terms_accepted_at?: string | null;
+  data_agreement_signed_at?: string | null;
+  data_agreement_file_name?: string | null;
+  data_agreement_drive_file_id?: string | null;
+  data_agreement_drive_url?: string | null;
+  data_agreement_status?: string | null;
 };
 type MemberForm = {
   firstName: string;
@@ -32,6 +38,16 @@ type MemberForm = {
   dni: string;
   memberNumber: string;
 };
+type AgreementStoredRecord = {
+  signedAt: string;
+  fileName: string;
+  driveFileId: string;
+  driveUrl: string | null;
+};
+
+const EXTENDED_PROFILE_SELECT =
+  "email, full_name, first_name, last_name, dni, member_number, privacy_accepted_at, terms_accepted_at, data_agreement_signed_at, data_agreement_file_name, data_agreement_drive_file_id, data_agreement_drive_url, data_agreement_status";
+const BASIC_PROFILE_SELECT = "email, full_name";
 
 function getFirstName(value?: string | null) {
   const trimmed = value?.trim();
@@ -219,9 +235,7 @@ export function AuthScreen() {
 
       const extendedProfile = await client
         .from("profiles")
-        .select(
-          "email, full_name, first_name, last_name, dni, member_number, privacy_accepted_at, terms_accepted_at",
-        )
+        .select(EXTENDED_PROFILE_SELECT)
         .eq("id", user.id)
         .maybeSingle<Profile>();
 
@@ -231,7 +245,7 @@ export function AuthScreen() {
       if (extendedProfile.error) {
         const basicProfile = await client
           .from("profiles")
-          .select("email, full_name")
+          .select(BASIC_PROFILE_SELECT)
           .eq("id", user.id)
           .maybeSingle<Profile>();
 
@@ -424,7 +438,7 @@ export function AuthScreen() {
         { onConflict: "id" },
       )
       .select(
-        "email, full_name, first_name, last_name, dni, member_number, privacy_accepted_at, terms_accepted_at",
+        EXTENDED_PROFILE_SELECT,
       )
       .single<Profile>();
 
@@ -441,6 +455,56 @@ export function AuthScreen() {
     setMemberForm(buildMemberForm(data, user));
     setIsProfileSchemaReady(true);
     setProfileMessage("Datos guardados correctamente.");
+  }
+
+  async function handleAgreementStored(record: AgreementStoredRecord) {
+    if (!user) {
+      return;
+    }
+
+    const client = await getSupabaseClient();
+
+    if (!client) {
+      throw new Error("Conecta Supabase para guardar el estado del acuerdo.");
+    }
+
+    const firstName = memberForm.firstName.trim();
+    const lastName = memberForm.lastName.trim();
+    const fullNameForProfile = [firstName, lastName].filter(Boolean).join(" ");
+    const { data, error } = await client
+      .from("profiles")
+      .upsert(
+        {
+          id: user.id,
+          email: user.email ?? profile?.email ?? null,
+          first_name: firstName || profile?.first_name || null,
+          last_name: lastName || profile?.last_name || null,
+          full_name: fullNameForProfile || profile?.full_name || null,
+          dni: memberForm.dni.trim() || profile?.dni || null,
+          member_number:
+            memberForm.memberNumber.trim() || profile?.member_number || null,
+          data_agreement_signed_at: record.signedAt,
+          data_agreement_file_name: record.fileName,
+          data_agreement_drive_file_id: record.driveFileId,
+          data_agreement_drive_url: record.driveUrl,
+          data_agreement_status: "stored",
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "id" },
+      )
+      .select(EXTENDED_PROFILE_SELECT)
+      .single<Profile>();
+
+    if (error) {
+      setIsProfileSchemaReady(false);
+      throw new Error(
+        "El PDF está subido, pero falta ejecutar la migración de Supabase para marcarlo como firmado.",
+      );
+    }
+
+    setProfile(data);
+    setMemberForm(buildMemberForm(data, user));
+    setIsProfileSchemaReady(true);
   }
 
   function switchMode(nextMode: AuthMode) {
@@ -648,6 +712,22 @@ export function AuthScreen() {
                     </p>
                   )}
                 </form>
+
+                <DataAgreementCard
+                  member={{
+                    firstName: memberForm.firstName,
+                    lastName: memberForm.lastName,
+                    dni: memberForm.dni,
+                    memberNumber: memberForm.memberNumber,
+                    email: user.email ?? profile?.email ?? null,
+                  }}
+                  storedAgreement={{
+                    signedAt: profile?.data_agreement_signed_at,
+                    fileName: profile?.data_agreement_file_name,
+                    driveUrl: profile?.data_agreement_drive_url,
+                  }}
+                  onStored={handleAgreementStored}
+                />
 
                 <div className="construction-panel">
                   <FiTool aria-hidden="true" />

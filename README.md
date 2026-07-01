@@ -38,9 +38,25 @@ VITE_SUPABASE_ANON_KEY=tu_anon_key
 supabase/migrations/20260701_profiles_member_fields.sql
 ```
 
-Esta migración añade `first_name`, `last_name`, `dni`, `member_number`, `privacy_accepted_at`, `privacy_notice_version`, `terms_accepted_at` y `terms_version` a `public.profiles`.
+Esta migración añade `first_name`, `last_name`, `dni`, `member_number`, `privacy_accepted_at`, `privacy_notice_version`, `terms_accepted_at`, `terms_version` y los campos del acuerdo firmado a `public.profiles`.
 
-7. Reinicia `npm.cmd run dev`.
+7. Para activar la subida del acuerdo firmado a Google Drive, despliega la Edge Function:
+
+```bash
+supabase functions deploy upload-data-agreement
+```
+
+8. Crea una cuenta de servicio de Google Cloud con acceso a Drive, comparte la carpeta de destino con el email de esa cuenta de servicio y configura estos secretos en Supabase:
+
+```bash
+supabase secrets set GOOGLE_SERVICE_ACCOUNT_EMAIL=cuenta-servicio@proyecto.iam.gserviceaccount.com
+supabase secrets set GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+supabase secrets set GOOGLE_DRIVE_FOLDER_ID=ID_DE_LA_CARPETA
+```
+
+La app genera el PDF firmado en el navegador y llama a `upload-data-agreement` usando la sesión del socio. El archivo se guarda con el formato `NOMBRE_APELLIDO_Acuerdo de comunicación de datos personales.pdf`.
+
+9. Reinicia `npm.cmd run dev`.
 
 ## Protección de Datos
 

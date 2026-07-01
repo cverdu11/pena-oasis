@@ -346,6 +346,210 @@ button {
   line-height: 1.55;
 }
 
+.agreement-panel {
+  display: grid;
+  gap: 12px;
+  border: 1px solid rgba(0, 64, 164, 0.12);
+  border-radius: 8px;
+  background: #fbfcff;
+  padding: 14px;
+}
+
+.agreement-panel-header {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.agreement-panel-icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 999px;
+  color: var(--oasis-white);
+  background: var(--oasis-blue-dark);
+}
+
+.agreement-panel-icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.agreement-panel h2 {
+  margin: 0;
+  color: #173b77;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.agreement-panel-header p {
+  margin: 3px 0 0;
+  color: #68727f;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.agreement-panel-header p[data-status="signed"] {
+  color: #1f7a4d;
+}
+
+.icon-text-button {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.icon-text-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.agreement-flow {
+  display: grid;
+  gap: 10px;
+}
+
+.agreement-preview {
+  display: block;
+  width: 100%;
+  height: 318px;
+  border: 1px solid var(--oasis-line);
+  border-radius: 8px;
+  background: #f3f6fb;
+}
+
+.agreement-preview a {
+  display: grid;
+  min-height: 120px;
+  place-items: center;
+  color: var(--oasis-blue-dark);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.agreement-field-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.agreement-field-summary span {
+  min-width: 0;
+  min-height: 34px;
+  border: 1px solid var(--oasis-soft-line);
+  border-radius: 8px;
+  color: #5f6a76;
+  background: var(--oasis-white);
+  padding: 8px 9px;
+  overflow-wrap: anywhere;
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.signature-box {
+  overflow: hidden;
+  border: 1px solid #d8dce2;
+  border-radius: 8px;
+  background: var(--oasis-white);
+}
+
+.signature-box-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  min-height: 36px;
+  border-bottom: 1px solid var(--oasis-soft-line);
+  padding: 0 10px;
+}
+
+.signature-box-header > span {
+  color: #5b6570;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.signature-box-header button {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  color: var(--oasis-blue-dark);
+  background: transparent;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.signature-box-header svg {
+  width: 13px;
+  height: 13px;
+}
+
+.signature-canvas {
+  display: block;
+  width: 100%;
+  height: 132px;
+  cursor: crosshair;
+  touch-action: none;
+  background:
+    linear-gradient(transparent 74%, rgba(0, 64, 164, 0.12) 75%, transparent 76%),
+    #ffffff;
+}
+
+.agreement-download-link,
+.agreement-drive-link {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  border: 1px solid rgba(0, 64, 164, 0.16);
+  border-radius: 999px;
+  color: var(--oasis-blue-dark);
+  background: var(--oasis-white);
+  padding: 0 13px;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.agreement-download-link {
+  justify-self: center;
+}
+
+.agreement-download-link svg,
+.agreement-drive-link svg {
+  width: 15px;
+  height: 15px;
+}
+
+.agreement-message {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 7px;
+  margin: 0;
+  color: var(--oasis-blue-dark);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.agreement-message svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  color: #1f7a4d;
+  margin-top: 1px;
+}
+
 .member-form {
   display: grid;
   gap: 12px;
@@ -719,6 +923,10 @@ button {
 
   .legal-sheet h1 {
     font-size: 25px;
+  }
+
+  .agreement-preview {
+    height: 270px;
   }
 
   .auth-tabs {

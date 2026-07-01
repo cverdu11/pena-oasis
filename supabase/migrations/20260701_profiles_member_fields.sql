@@ -6,7 +6,12 @@ alter table public.profiles
   add column if not exists privacy_accepted_at timestamptz,
   add column if not exists privacy_notice_version text,
   add column if not exists terms_accepted_at timestamptz,
-  add column if not exists terms_version text;
+  add column if not exists terms_version text,
+  add column if not exists data_agreement_signed_at timestamptz,
+  add column if not exists data_agreement_file_name text,
+  add column if not exists data_agreement_drive_file_id text,
+  add column if not exists data_agreement_drive_url text,
+  add column if not exists data_agreement_status text;
 
 create or replace function public.handle_new_user()
 returns trigger
@@ -75,6 +80,24 @@ begin
     on public.profiles
     for insert
     to authenticated
+    with check ((select auth.uid()) = id);
+  end if;
+end
+$$;
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'public'
+      and tablename = 'profiles'
+      and policyname = 'Users can update own profile'
+  ) then
+    create policy "Users can update own profile"
+    on public.profiles
+    for update
+    to authenticated
+    using ((select auth.uid()) = id)
     with check ((select auth.uid()) = id);
   end if;
 end
