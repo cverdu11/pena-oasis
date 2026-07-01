@@ -40,23 +40,37 @@ supabase/migrations/20260701_profiles_member_fields.sql
 
 Esta migración añade `first_name`, `last_name`, `dni`, `member_number`, `privacy_accepted_at`, `privacy_notice_version`, `terms_accepted_at`, `terms_version` y los campos del acuerdo firmado a `public.profiles`.
 
-7. Para activar la subida del acuerdo firmado a Google Drive, despliega la Edge Function:
+7. Para activar la subida del acuerdo firmado a Google Drive sin Google Cloud Billing, crea un Web App de Google Apps Script con el contenido de:
 
-```bash
-supabase functions deploy upload-data-agreement
+```text
+scripts/google-apps-script/drive-uploader.gs
 ```
 
-8. Crea una cuenta de servicio de Google Cloud con acceso a Drive, comparte la carpeta de destino con el email de esa cuenta de servicio y configura estos secretos en Supabase:
+Configura estas Script properties en Apps Script:
 
-```bash
-supabase secrets set GOOGLE_SERVICE_ACCOUNT_EMAIL=cuenta-servicio@proyecto.iam.gserviceaccount.com
-supabase secrets set GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
-supabase secrets set GOOGLE_DRIVE_FOLDER_ID=ID_DE_LA_CARPETA
+```text
+DRIVE_FOLDER_ID=ID_DE_LA_CARPETA_DE_DRIVE
+UPLOAD_SECRET=clave-larga-inventada
 ```
 
-La app genera el PDF firmado en el navegador y llama a `upload-data-agreement` usando la sesión del socio. El archivo se guarda con el formato `NOMBRE_APELLIDO_Acuerdo de comunicación de datos personales.pdf`.
+8. Despliega o actualiza la Edge Function de Supabase con el contenido de:
 
-9. Reinicia `npm.cmd run dev`.
+```text
+supabase/functions/upload-data-agreement/index.ts
+```
+
+Si la creaste desde el dashboard con el nombre `swift-worker`, la app ya llama a ese slug por defecto. Si usas otro nombre, define `VITE_DATA_AGREEMENT_FUNCTION_NAME`.
+
+9. Configura estos secretos en Supabase Edge Functions:
+
+```text
+GOOGLE_APPS_SCRIPT_URL=URL_DEL_WEB_APP_DE_APPS_SCRIPT
+GOOGLE_APPS_SCRIPT_SECRET=la_misma_clave_que_UPLOAD_SECRET
+```
+
+La app genera el PDF firmado en el navegador y llama a la Edge Function usando la sesión del socio. El archivo se guarda con el formato `NOMBRE_APELLIDO_Acuerdo de comunicación de datos personales.pdf`.
+
+10. Reinicia `npm.cmd run dev`.
 
 ## Protección de Datos
 

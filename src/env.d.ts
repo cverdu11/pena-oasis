@@ -3,6 +3,7 @@ declare const process: {
     NODE_ENV?: string;
     VITE_SUPABASE_URL?: string;
     VITE_SUPABASE_ANON_KEY?: string;
+    VITE_DATA_AGREEMENT_FUNCTION_NAME?: string;
   };
 };
 

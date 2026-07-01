@@ -61,6 +61,9 @@ module.exports = {
       "process.env.VITE_SUPABASE_ANON_KEY": JSON.stringify(
         process.env.VITE_SUPABASE_ANON_KEY ?? "",
       ),
+      "process.env.VITE_DATA_AGREEMENT_FUNCTION_NAME": JSON.stringify(
+        process.env.VITE_DATA_AGREEMENT_FUNCTION_NAME ?? "",
+      ),
     }),
   ],
   devServer: {

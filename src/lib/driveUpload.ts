@@ -1,6 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { DataAgreementMember } from "./dataAgreementPdf";
 
+const dataAgreementFunctionName =
+  process.env.VITE_DATA_AGREEMENT_FUNCTION_NAME?.trim() || "swift-worker";
+
 export type DataAgreementUploadPayload = {
   fileName: string;
   pdfBase64: string;
@@ -20,7 +23,7 @@ export async function uploadDataAgreementToDrive(
 ) {
   const { data, error } =
     await client.functions.invoke<DataAgreementUploadResult>(
-      "upload-data-agreement",
+      dataAgreementFunctionName,
       {
         body: payload,
       },
