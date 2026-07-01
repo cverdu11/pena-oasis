@@ -85,15 +85,14 @@ button {
 .personal-backdrop {
   position: absolute;
   inset: 0;
-  background-position: center top;
-  background-size: auto clamp(270px, 34dvh, 350px);
-  background-repeat: no-repeat;
-  background-color: var(--oasis-blue-dark);
+  background:
+    radial-gradient(circle at 50% -18%, rgba(0, 92, 190, 0.38), transparent 38%),
+    linear-gradient(180deg, #06449e 0%, #003384 58%, #00245f 100%);
 }
 
 .auth-sheet {
   position: absolute;
-  inset: clamp(292px, 36.5dvh, 340px) 16px 0;
+  inset: clamp(96px, 14dvh, 136px) 16px 0;
   z-index: 2;
   overflow-y: auto;
   border-radius: 24px 24px 0 0;
@@ -105,6 +104,7 @@ button {
 }
 
 .auth-sheet[data-view="private"] {
+  inset: clamp(72px, 10dvh, 104px) 16px 0;
   padding-top: 26px;
 }
 
@@ -479,8 +479,12 @@ button {
   }
 
   .auth-sheet {
-    inset: clamp(284px, 38dvh, 304px) 12px 0;
+    inset: clamp(76px, 12dvh, 104px) 12px 0;
     padding: 16px 20px calc(var(--nav-height) + 7px);
+  }
+
+  .auth-sheet[data-view="private"] {
+    inset: clamp(58px, 9dvh, 82px) 12px 0;
   }
 
   .auth-tabs {

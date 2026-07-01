@@ -8,7 +8,6 @@ import {
   FiTool,
   FiUser,
 } from "react-icons/fi";
-import personalBackground from "../../public/images/area-personal-header.png";
 import { getSupabaseClient, isSupabaseConfigured } from "../lib/supabase";
 
 type AuthMode = "signin" | "signup";
@@ -317,11 +316,7 @@ export function AuthScreen() {
 
   return (
     <section className="screen personal-screen" aria-label="Área Personal">
-      <div
-        className="personal-backdrop"
-        style={{ backgroundImage: `url(${personalBackground})` }}
-        aria-hidden="true"
-      />
+      <div className="personal-backdrop" aria-hidden="true" />
 
       <div className="auth-sheet" data-view={user ? "private" : "auth"}>
         {isSessionLoading && (
