@@ -1,5 +1,9 @@
 export const CONTACT_EMAIL = "pmalaguistaoasis@gmail.com";
+export const PERSONAL_ROUTE_HASH = "#area-personal";
+export const SIGNUP_ROUTE_HASH = "#area-personal-registro";
 export const PRIVACY_ROUTE_HASH = "#privacidad";
+export const TERMS_ROUTE_HASH = "#privacidad-condiciones";
+export const DATA_PROTECTION_ROUTE_HASH = "#privacidad-proteccion-datos";
 export const DATA_PROTECTION_LAW_URL =
   "https://www.boe.es/buscar/act.php?id=BOE-A-2018-16673";
 export const GDPR_URL =

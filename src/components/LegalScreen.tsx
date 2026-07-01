@@ -1,17 +1,34 @@
+import { useEffect } from "react";
 import { FiArrowLeft, FiExternalLink, FiMail } from "react-icons/fi";
 import {
   CONTACT_EMAIL,
   DATA_PROTECTION_LAW_URL,
   GDPR_URL,
+  SIGNUP_ROUTE_HASH,
 } from "../constants";
 
 export function LegalScreen() {
+  useEffect(() => {
+    const target = document.getElementById(window.location.hash.slice(1));
+    const sheet = document.querySelector<HTMLElement>(".legal-sheet");
+
+    if (!target || !sheet) {
+      sheet?.scrollTo({ top: 0 });
+      return;
+    }
+
+    sheet.scrollTo({
+      top: target.offsetTop - 12,
+      behavior: "auto",
+    });
+  }, []);
+
   return (
     <section className="screen legal-screen" aria-label="Privacidad y condiciones">
       <div className="legal-backdrop" aria-hidden="true" />
 
       <article className="legal-sheet">
-        <a className="legal-back-link" href="#area-personal">
+        <a className="legal-back-link" href={SIGNUP_ROUTE_HASH}>
           <FiArrowLeft aria-hidden="true" />
           <span>Volver</span>
         </a>
@@ -32,8 +49,8 @@ export function LegalScreen() {
           </a>
         </section>
 
-        <section className="legal-section">
-          <h2>Datos que tratamos</h2>
+        <section className="legal-section" id="privacidad-proteccion-datos">
+          <h2>Protección de datos</h2>
           <p>
             Podemos tratar los datos que facilitas al registrarte o actualizar
             tu área personal: nombre, apellidos, correo electrónico, DNI, número
@@ -61,7 +78,7 @@ export function LegalScreen() {
           </p>
         </section>
 
-        <section className="legal-section">
+        <section className="legal-section" id="privacidad-condiciones">
           <h2>Condiciones de uso</h2>
           <p>
             Al crear una cuenta te comprometes a facilitar datos veraces, usar

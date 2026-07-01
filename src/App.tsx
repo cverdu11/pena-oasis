@@ -3,16 +3,24 @@ import { AuthScreen } from "./components/AuthScreen";
 import { BottomNav } from "./components/BottomNav";
 import { HomeScreen } from "./components/HomeScreen";
 import { LegalScreen } from "./components/LegalScreen";
+import {
+  PERSONAL_ROUTE_HASH,
+  PRIVACY_ROUTE_HASH,
+  SIGNUP_ROUTE_HASH,
+} from "./constants";
 import type { TabId } from "./types";
 
 type AppRoute = TabId | "privacy";
 
 function readInitialRoute(): AppRoute {
-  if (window.location.hash === "#area-personal") {
+  if (
+    window.location.hash === PERSONAL_ROUTE_HASH ||
+    window.location.hash === SIGNUP_ROUTE_HASH
+  ) {
     return "personal";
   }
 
-  if (window.location.hash === "#privacidad") {
+  if (window.location.hash.startsWith(PRIVACY_ROUTE_HASH)) {
     return "privacy";
   }
 
@@ -36,7 +44,7 @@ export default function App() {
     window.history.replaceState(
       null,
       "",
-      tab === "personal" ? "#area-personal" : window.location.pathname,
+      tab === "personal" ? PERSONAL_ROUTE_HASH : window.location.pathname,
     );
   }
 

@@ -16,10 +16,7 @@ export function HomeScreen() {
         </div>
         <div className="home-contact-copy">
           <p>¿Tienes dudas?</p>
-          <span>
-            Para altas, consultas o cualquier cosa que necesites, escríbenos y
-            te responderemos lo antes posible.
-          </span>
+          <span>Altas, consultas o dudas: escríbenos.</span>
         </div>
         <a className="home-email-link" href={`mailto:${CONTACT_EMAIL}`}>
           <FiMail aria-hidden="true" />

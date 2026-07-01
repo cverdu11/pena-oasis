@@ -8,7 +8,12 @@ import {
   FiTool,
   FiUser,
 } from "react-icons/fi";
-import { PRIVACY_ROUTE_HASH } from "../constants";
+import {
+  DATA_PROTECTION_ROUTE_HASH,
+  PERSONAL_ROUTE_HASH,
+  SIGNUP_ROUTE_HASH,
+  TERMS_ROUTE_HASH,
+} from "../constants";
 import { getSupabaseClient, isSupabaseConfigured } from "../lib/supabase";
 
 type AuthMode = "signin" | "signup";
@@ -77,8 +82,12 @@ function buildMemberForm(profile: Profile | null, user: User | null): MemberForm
   };
 }
 
+function readInitialAuthMode(): AuthMode {
+  return window.location.hash === SIGNUP_ROUTE_HASH ? "signup" : "signin";
+}
+
 export function AuthScreen() {
-  const [mode, setMode] = useState<AuthMode>("signin");
+  const [mode, setMode] = useState<AuthMode>(readInitialAuthMode);
   const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -313,6 +322,11 @@ export function AuthScreen() {
   function switchMode(nextMode: AuthMode) {
     setMode(nextMode);
     setMessage("");
+    window.history.replaceState(
+      null,
+      "",
+      nextMode === "signup" ? SIGNUP_ROUTE_HASH : PERSONAL_ROUTE_HASH,
+    );
   }
 
   return (
@@ -567,13 +581,11 @@ export function AuthScreen() {
                   />
                   <label htmlFor="privacy-consent">
                     He leído y acepto las{" "}
-                    <a
-                      href={PRIVACY_ROUTE_HASH}
-                    >
+                    <a href={TERMS_ROUTE_HASH}>
                       condiciones
                     </a>{" "}
                     y la información básica de{" "}
-                    <a href={PRIVACY_ROUTE_HASH}>
+                    <a href={DATA_PROTECTION_ROUTE_HASH}>
                       protección de datos
                     </a>
                     . Responsable: Peña Oasis. Finalidad: gestionar mi alta, la
