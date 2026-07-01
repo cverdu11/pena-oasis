@@ -85,15 +85,35 @@ function readInitialAuthMode(): AuthMode {
   return window.location.hash === SIGNUP_ROUTE_HASH ? "signup" : "signin";
 }
 
+function isPasswordRecoveryRoute() {
+  const searchParams = new URLSearchParams(window.location.search);
+  const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+
+  return (
+    searchParams.get("recovery") === "1" ||
+    hashParams.get("type") === "recovery"
+  );
+}
+
+function getPasswordRecoveryRedirectUrl() {
+  return `${window.location.origin}${window.location.pathname}?recovery=1`;
+}
+
 export function AuthScreen() {
   const [mode, setMode] = useState<AuthMode>(readInitialAuthMode);
   const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [message, setMessage] = useState("");
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(
+    isPasswordRecoveryRoute,
+  );
   const [isLoading, setIsLoading] = useState(false);
+  const [isResetLoading, setIsResetLoading] = useState(false);
   const [isSessionLoading, setIsSessionLoading] = useState(true);
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const [isProfileSaving, setIsProfileSaving] = useState(false);
@@ -125,17 +145,45 @@ export function AuthScreen() {
         return;
       }
 
+      const subscription = client.auth.onAuthStateChange((event, session) => {
+        setUser(session?.user ?? null);
+
+        if (event === "PASSWORD_RECOVERY") {
+          setMode("signin");
+          setIsPasswordRecovery(true);
+          setMessage("Introduce una nueva contraseña para terminar.");
+          window.history.replaceState(
+            null,
+            "",
+            `${window.location.pathname}${PERSONAL_ROUTE_HASH}`,
+          );
+          return;
+        }
+
+        if (event === "SIGNED_OUT") {
+          setIsPasswordRecovery(false);
+          return;
+        }
+
+        setMessage("");
+      });
+
       const { data } = await client.auth.getSession();
 
       if (isMounted) {
         setUser(data.session?.user ?? null);
+        if (data.session?.user && isPasswordRecoveryRoute()) {
+          setMode("signin");
+          setIsPasswordRecovery(true);
+          setMessage("Introduce una nueva contraseña para terminar.");
+          window.history.replaceState(
+            null,
+            "",
+            `${window.location.pathname}${PERSONAL_ROUTE_HASH}`,
+          );
+        }
         setIsSessionLoading(false);
       }
-
-      const subscription = client.auth.onAuthStateChange((_event, session) => {
-        setUser(session?.user ?? null);
-        setMessage("");
-      });
 
       unsubscribe = () => subscription.data.subscription.unsubscribe();
     }
@@ -257,6 +305,83 @@ export function AuthScreen() {
     );
   }
 
+  async function handleForgotPassword() {
+    setMessage("");
+    const emailAddress = email.trim();
+
+    if (!emailAddress) {
+      setMessage("Introduce tu correo electrónico para enviarte el enlace.");
+      return;
+    }
+
+    const client = await getSupabaseClient();
+
+    if (!isSupabaseConfigured || !client) {
+      setMessage("Conecta Supabase para activar la recuperación.");
+      return;
+    }
+
+    setIsResetLoading(true);
+    const { error } = await client.auth.resetPasswordForEmail(emailAddress, {
+      redirectTo: getPasswordRecoveryRedirectUrl(),
+    });
+    setIsResetLoading(false);
+
+    if (error) {
+      setMessage(error.message);
+      return;
+    }
+
+    setMessage(
+      "Te hemos enviado un correo para crear una nueva contraseña. Revisa tu bandeja de entrada.",
+    );
+  }
+
+  async function handlePasswordUpdate(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage("");
+
+    if (newPassword.length < 6) {
+      setMessage("La nueva contraseña debe tener al menos 6 caracteres.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setMessage("Las contraseñas no coinciden.");
+      return;
+    }
+
+    const client = await getSupabaseClient();
+
+    if (!client) {
+      setMessage("Conecta Supabase para guardar la nueva contraseña.");
+      return;
+    }
+
+    setIsResetLoading(true);
+    const { error } = await client.auth.updateUser({ password: newPassword });
+
+    if (error) {
+      setIsResetLoading(false);
+      setMessage(error.message);
+      return;
+    }
+
+    await client.auth.signOut();
+    setIsResetLoading(false);
+    setIsPasswordRecovery(false);
+    setUser(null);
+    setNewPassword("");
+    setConfirmPassword("");
+    setPassword("");
+    setMessage("Contraseña actualizada. Ya puedes iniciar sesión.");
+    window.history.replaceState(
+      null,
+      "",
+      `${window.location.pathname}${PERSONAL_ROUTE_HASH}`,
+    );
+  }
+
   async function handleSignOut() {
     const client = await getSupabaseClient();
     await client?.auth.signOut();
@@ -321,10 +446,13 @@ export function AuthScreen() {
   function switchMode(nextMode: AuthMode) {
     setMode(nextMode);
     setMessage("");
+    setIsPasswordRecovery(false);
     window.history.replaceState(
       null,
       "",
-      nextMode === "signup" ? SIGNUP_ROUTE_HASH : PERSONAL_ROUTE_HASH,
+      nextMode === "signup"
+        ? `${window.location.pathname}${SIGNUP_ROUTE_HASH}`
+        : `${window.location.pathname}${PERSONAL_ROUTE_HASH}`,
     );
   }
 
@@ -339,7 +467,75 @@ export function AuthScreen() {
           </div>
         )}
 
-        {!isSessionLoading && user && (
+        {!isSessionLoading && isPasswordRecovery && (
+          <form className="auth-form" onSubmit={handlePasswordUpdate}>
+            <div className="recovery-copy">
+              <h1>Crea una nueva contraseña</h1>
+              <p>
+                Escribe una contraseña nueva para recuperar el acceso a tu área
+                personal.
+              </p>
+            </div>
+
+            <label className="form-field">
+              <span>Nueva contraseña</span>
+              <span className="input-shell">
+                <FiLock aria-hidden="true" />
+                <input
+                  autoComplete="new-password"
+                  value={newPassword}
+                  onChange={(event) => setNewPassword(event.target.value)}
+                  placeholder="Nueva contraseña"
+                  required
+                  minLength={6}
+                  type={showPassword ? "text" : "password"}
+                />
+                <button
+                  className="icon-button"
+                  type="button"
+                  aria-label={
+                    showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+                  }
+                  onClick={() => setShowPassword((visible) => !visible)}
+                >
+                  {showPassword ? <FiEye /> : <FiEyeOff />}
+                </button>
+              </span>
+            </label>
+
+            <label className="form-field">
+              <span>Repetir contraseña</span>
+              <span className="input-shell">
+                <FiLock aria-hidden="true" />
+                <input
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                  placeholder="Repite la contraseña"
+                  required
+                  minLength={6}
+                  type={showPassword ? "text" : "password"}
+                />
+              </span>
+            </label>
+
+            <button
+              className="primary-button"
+              disabled={isResetLoading}
+              type="submit"
+            >
+              {isResetLoading ? "Guardando..." : "Actualizar contraseña"}
+            </button>
+
+            {message && (
+              <p className="auth-message" role="status">
+                {message}
+              </p>
+            )}
+          </form>
+        )}
+
+        {!isSessionLoading && user && !isPasswordRecovery && (
           <div className="member-panel">
             <p className="member-kicker">Área Personal</p>
             <h1>Bienvenido {welcomeName}</h1>
@@ -473,7 +669,7 @@ export function AuthScreen() {
           </div>
         )}
 
-        {!isSessionLoading && !user && (
+        {!isSessionLoading && !user && !isPasswordRecovery && (
           <>
             <div className="auth-tabs" role="tablist" aria-label="Acceso">
               <button
@@ -562,8 +758,13 @@ export function AuthScreen() {
               </label>
 
               {mode === "signin" && (
-                <button className="forgot-button" type="button">
-                  ¿Olvidaste tu contraseña?
+                <button
+                  className="forgot-button"
+                  disabled={isResetLoading}
+                  type="button"
+                  onClick={handleForgotPassword}
+                >
+                  {isResetLoading ? "Enviando..." : "¿Olvidaste tu contraseña?"}
                 </button>
               )}
 

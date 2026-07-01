@@ -12,10 +12,21 @@ import type { TabId } from "./types";
 
 type AppRoute = TabId | "privacy";
 
+function isPasswordRecoveryRoute() {
+  const searchParams = new URLSearchParams(window.location.search);
+  const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+
+  return (
+    searchParams.get("recovery") === "1" ||
+    hashParams.get("type") === "recovery"
+  );
+}
+
 function readInitialRoute(): AppRoute {
   if (
     window.location.hash === PERSONAL_ROUTE_HASH ||
-    window.location.hash === SIGNUP_ROUTE_HASH
+    window.location.hash === SIGNUP_ROUTE_HASH ||
+    isPasswordRecoveryRoute()
   ) {
     return "personal";
   }
@@ -44,7 +55,9 @@ export default function App() {
     window.history.replaceState(
       null,
       "",
-      tab === "personal" ? PERSONAL_ROUTE_HASH : window.location.pathname,
+      tab === "personal"
+        ? `${window.location.pathname}${PERSONAL_ROUTE_HASH}`
+        : window.location.pathname,
     );
   }
 
