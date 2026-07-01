@@ -104,8 +104,76 @@ button {
   scrollbar-width: none;
 }
 
+.auth-sheet[data-view="private"] {
+  padding-top: 26px;
+}
+
 .auth-sheet::-webkit-scrollbar {
   display: none;
+}
+
+.personal-loading {
+  display: grid;
+  min-height: 160px;
+  place-items: center;
+  color: var(--oasis-blue-dark);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.member-panel {
+  display: grid;
+  gap: 18px;
+  color: var(--oasis-ink);
+}
+
+.member-kicker {
+  margin: 0;
+  color: var(--oasis-blue-dark);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.member-panel h1 {
+  margin: 0;
+  color: var(--oasis-blue-dark);
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.12;
+}
+
+.construction-panel {
+  display: grid;
+  gap: 10px;
+  margin-top: 2px;
+  border: 1px solid rgba(0, 64, 164, 0.12);
+  border-radius: 8px;
+  background: #f7f9fd;
+  padding: 18px;
+}
+
+.construction-panel svg {
+  width: 26px;
+  height: 26px;
+  color: var(--oasis-blue-dark);
+}
+
+.construction-panel h2 {
+  margin: 0;
+  color: #173b77;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.construction-panel p {
+  margin: 0;
+  color: #66717f;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.55;
 }
 
 .auth-tabs {
@@ -268,6 +336,28 @@ button {
   cursor: wait;
   opacity: 0.72;
   transform: none;
+}
+
+.secondary-button {
+  min-height: 40px;
+  cursor: pointer;
+  border: 1px solid rgba(0, 64, 164, 0.22);
+  border-radius: 999px;
+  color: var(--oasis-blue-dark);
+  background: var(--oasis-white);
+  font-size: 14px;
+  font-weight: 800;
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    transform 180ms ease;
+}
+
+.secondary-button:hover,
+.secondary-button:focus-visible {
+  border-color: rgba(0, 64, 164, 0.42);
+  background: rgba(0, 64, 164, 0.05);
+  transform: translateY(-1px);
 }
 
 .auth-message {
