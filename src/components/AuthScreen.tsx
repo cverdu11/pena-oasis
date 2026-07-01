@@ -14,6 +14,7 @@ import {
   SIGNUP_ROUTE_HASH,
 } from "../constants";
 import { getSupabaseClient, isSupabaseConfigured } from "../lib/supabase";
+import type { DataAgreementMember } from "../lib/dataAgreementPdf";
 import { DataAgreementCard } from "./DataAgreementCard";
 
 type AuthMode = "signin" | "signup";
@@ -43,6 +44,7 @@ type AgreementStoredRecord = {
   fileName: string;
   driveFileId: string;
   driveUrl: string | null;
+  member: DataAgreementMember;
 };
 
 const EXTENDED_PROFILE_SELECT =
@@ -468,8 +470,8 @@ export function AuthScreen() {
       throw new Error("Conecta Supabase para guardar el estado del acuerdo.");
     }
 
-    const firstName = memberForm.firstName.trim();
-    const lastName = memberForm.lastName.trim();
+    const firstName = record.member.firstName.trim();
+    const lastName = record.member.lastName.trim();
     const fullNameForProfile = [firstName, lastName].filter(Boolean).join(" ");
     const { data, error } = await client
       .from("profiles")
@@ -480,9 +482,9 @@ export function AuthScreen() {
           first_name: firstName || profile?.first_name || null,
           last_name: lastName || profile?.last_name || null,
           full_name: fullNameForProfile || profile?.full_name || null,
-          dni: memberForm.dni.trim() || profile?.dni || null,
+          dni: record.member.dni.trim() || profile?.dni || null,
           member_number:
-            memberForm.memberNumber.trim() || profile?.member_number || null,
+            record.member.memberNumber.trim() || profile?.member_number || null,
           data_agreement_signed_at: record.signedAt,
           data_agreement_file_name: record.fileName,
           data_agreement_drive_file_id: record.driveFileId,

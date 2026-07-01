@@ -29,6 +29,7 @@ type StoredAgreementRecord = {
   fileName: string;
   driveFileId: string;
   driveUrl: string | null;
+  member: DataAgreementMember;
 };
 
 type GeneratedAgreement = {
@@ -57,6 +58,19 @@ function formatStoredDate(value?: string | null) {
     month: "2-digit",
     year: "numeric",
   }).format(new Date(value));
+}
+
+function getMemberFullName(member: DataAgreementMember) {
+  return [member.firstName, member.lastName].filter(Boolean).join(" ").trim();
+}
+
+function splitAgreementName(value: string) {
+  const parts = value.trim().split(/\s+/).filter(Boolean);
+
+  return {
+    firstName: parts[0] ?? "",
+    lastName: parts.slice(1).join(" "),
+  };
 }
 
 function configureSignatureCanvas(canvas: HTMLCanvasElement) {
@@ -111,14 +125,27 @@ export function DataAgreementCard({
   const [hasSignature, setHasSignature] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
+  const [agreementName, setAgreementName] = useState(() =>
+    getMemberFullName(member),
+  );
+  const [agreementDni, setAgreementDni] = useState(member.dni);
   const [generatedAgreement, setGeneratedAgreement] =
     useState<GeneratedAgreement | null>(null);
   const storedDate = formatStoredDate(storedAgreement.signedAt);
-  const fullName = [member.firstName, member.lastName]
-    .filter(Boolean)
-    .join(" ")
-    .trim();
-  const hasRequiredFields = Boolean(fullName && member.dni.trim());
+  const fullName = agreementName.trim();
+  const agreementMemberName = splitAgreementName(agreementName);
+  const agreementMember: DataAgreementMember = {
+    ...member,
+    firstName: agreementMemberName.firstName,
+    lastName: agreementMemberName.lastName,
+    dni: agreementDni.trim().toUpperCase(),
+  };
+  const hasRequiredFields = Boolean(fullName && agreementMember.dni);
+
+  useEffect(() => {
+    setAgreementName(getMemberFullName(member));
+    setAgreementDni(member.dni);
+  }, [member.dni, member.firstName, member.lastName]);
 
   useEffect(() => {
     if (!isOpen || !canvasRef.current) {
@@ -227,7 +254,7 @@ export function DataAgreementCard({
     try {
       const signedAt = new Date().toISOString();
       const signedAgreement = await createSignedDataAgreementPdf({
-        member,
+        member: agreementMember,
         signatureDataUrl: canvasRef.current.toDataURL("image/png"),
         signedAt,
       });
@@ -248,7 +275,7 @@ export function DataAgreementCard({
         fileName: signedAgreement.fileName,
         pdfBase64: bytesToBase64(signedAgreement.bytes),
         signedAt,
-        member,
+        member: agreementMember,
       });
 
       await onStored({
@@ -256,6 +283,7 @@ export function DataAgreementCard({
         fileName: uploadResult.fileName,
         driveFileId: uploadResult.fileId,
         driveUrl: uploadResult.webViewLink,
+        member: agreementMember,
       });
 
       setMessage("Acuerdo firmado y guardado en Google Drive.");
@@ -328,8 +356,31 @@ export function DataAgreementCard({
           </object>
 
           <div className="agreement-field-summary">
-            <span>{fullName || "Nombre pendiente"}</span>
-            <span>{member.dni.trim() || "DNI pendiente"}</span>
+            <label>
+              <span>Nombre y apellidos</span>
+              <input
+                autoComplete="name"
+                disabled={isSubmitting}
+                value={agreementName}
+                onChange={(event) => setAgreementName(event.target.value)}
+                placeholder="Nombre y apellidos"
+                type="text"
+              />
+            </label>
+            <label>
+              <span>DNI/NIE</span>
+              <input
+                autoComplete="off"
+                disabled={isSubmitting}
+                inputMode="text"
+                value={agreementDni}
+                onChange={(event) =>
+                  setAgreementDni(event.target.value.toUpperCase())
+                }
+                placeholder="00000000A"
+                type="text"
+              />
+            </label>
           </div>
 
           <div className="signature-box">
