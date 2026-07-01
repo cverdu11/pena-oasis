@@ -6,7 +6,7 @@
   --oasis-line: #dde1e7;
   --oasis-soft-line: #eceff3;
   --oasis-white: #ffffff;
-  --nav-height: 84px;
+  --nav-height: 64px;
   font-family: "Montserrat", Arial, Helvetica, sans-serif;
   color: var(--oasis-ink);
   background: #071d42;
@@ -93,14 +93,14 @@ button {
 
 .auth-sheet {
   position: absolute;
-  inset: clamp(236px, 32dvh, 318px) 16px 0;
+  inset: clamp(292px, 36.5dvh, 340px) 16px 0;
   z-index: 2;
   overflow-y: auto;
-  border-radius: 28px 28px 0 0;
+  border-radius: 24px 24px 0 0;
   background: var(--oasis-white);
   box-shadow: 0 -12px 36px rgba(0, 24, 76, 0.16);
-  padding: 26px clamp(24px, 7vw, 36px)
-    calc(var(--nav-height) + 14px + env(safe-area-inset-bottom));
+  padding: 18px clamp(22px, 6.2vw, 32px)
+    calc(var(--nav-height) + 8px + env(safe-area-inset-bottom));
   scrollbar-width: none;
 }
 
@@ -112,7 +112,7 @@ button {
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  margin-bottom: 18px;
+  margin-bottom: 12px;
   border-bottom: 1px solid var(--oasis-line);
 }
 
@@ -121,10 +121,10 @@ button {
   cursor: pointer;
   background: transparent;
   color: #7a838d;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   line-height: 1.25;
-  padding: 0 4px 13px;
+  padding: 0 4px 10px;
   transition:
     color 180ms ease,
     transform 180ms ease;
@@ -162,27 +162,27 @@ button {
 
 .auth-form {
   display: grid;
-  gap: 12px;
+  gap: 9px;
 }
 
 .form-field {
   display: grid;
-  gap: 6px;
+  gap: 4px;
   color: #5b6570;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
 }
 
 .input-shell {
   display: grid;
-  grid-template-columns: 24px 1fr auto;
+  grid-template-columns: 22px 1fr auto;
   align-items: center;
-  min-height: 44px;
+  min-height: 39px;
   border: 1px solid #d8dce2;
   border-radius: 8px;
   color: #99a0aa;
   background: rgba(255, 255, 255, 0.96);
-  padding: 0 12px;
+  padding: 0 10px;
   transition:
     border-color 180ms ease,
     box-shadow 180ms ease;
@@ -194,8 +194,8 @@ button {
 }
 
 .input-shell svg {
-  width: 17px;
-  height: 17px;
+  width: 16px;
+  height: 16px;
 }
 
 .input-shell input {
@@ -204,7 +204,7 @@ button {
   outline: 0;
   color: var(--oasis-ink);
   background: transparent;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
 }
 
@@ -214,8 +214,8 @@ button {
 
 .icon-button {
   display: grid;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   cursor: pointer;
   place-items: center;
   border-radius: 999px;
@@ -234,23 +234,23 @@ button {
 
 .forgot-button {
   justify-self: end;
-  margin-top: -5px;
+  margin-top: -4px;
   cursor: pointer;
   background: transparent;
   color: var(--oasis-blue-dark);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
 }
 
 .primary-button {
-  min-height: 44px;
-  margin-top: 4px;
+  min-height: 40px;
+  margin-top: 2px;
   cursor: pointer;
   border-radius: 999px;
   color: var(--oasis-white);
   background: linear-gradient(180deg, #064ec2 0%, #003aa5 100%);
   box-shadow: 0 12px 22px rgba(0, 64, 164, 0.22);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 800;
   transition:
     transform 180ms ease,
@@ -283,10 +283,10 @@ button {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 10px;
-  margin: 14px 0 10px;
+  gap: 8px;
+  margin: 10px 0 8px;
   color: #747d88;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
 }
 
@@ -301,20 +301,20 @@ button {
 
 .oauth-actions {
   display: grid;
-  gap: 8px;
+  gap: 7px;
 }
 
 .oauth-button {
   display: grid;
-  grid-template-columns: 42px 1fr 20px;
+  grid-template-columns: 36px 1fr 18px;
   align-items: center;
-  min-height: 44px;
+  min-height: 40px;
   cursor: pointer;
   border: 1px solid #e2e4e8;
   border-radius: 999px;
   color: #0d0f13;
   background: var(--oasis-white);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   transition:
     border-color 180ms ease,
@@ -331,8 +331,8 @@ button {
 
 .oauth-button svg {
   justify-self: end;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
 }
 
 .oauth-button span {
@@ -348,10 +348,10 @@ button {
   display: grid;
   grid-template-columns: 1fr 1fr;
   height: calc(var(--nav-height) + env(safe-area-inset-bottom));
-  border-radius: 28px 28px 0 0;
+  border-radius: 22px 22px 0 0;
   background: var(--oasis-white);
   box-shadow: 0 -14px 28px rgba(8, 24, 54, 0.1);
-  padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+  padding: 5px 8px calc(5px + env(safe-area-inset-bottom));
 }
 
 .nav-button {
@@ -359,10 +359,10 @@ button {
   cursor: pointer;
   place-items: center;
   align-content: center;
-  gap: 5px;
+  gap: 3px;
   color: #8c96a1;
   background: transparent;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   line-height: 1.1;
   transition:
@@ -385,15 +385,15 @@ button {
 }
 
 .nav-icon {
-  width: 26px;
-  height: 26px;
+  width: 21px;
+  height: 21px;
   stroke-width: 1.8;
 }
 
 .nav-divider {
   position: absolute;
-  top: 20px;
-  bottom: 20px;
+  top: 16px;
+  bottom: 16px;
   left: 50%;
   width: 1px;
   background: #d6d9de;
@@ -401,7 +401,7 @@ button {
 
 @media (max-width: 360px), (max-height: 760px) {
   :root {
-    --nav-height: 78px;
+    --nav-height: 58px;
   }
 
   .phone-viewport {
@@ -409,36 +409,36 @@ button {
   }
 
   .auth-sheet {
-    inset: clamp(218px, 30dvh, 286px) 12px 0;
-    padding: 22px 22px calc(var(--nav-height) + 12px);
+    inset: clamp(284px, 38dvh, 304px) 12px 0;
+    padding: 16px 20px calc(var(--nav-height) + 7px);
   }
 
   .auth-tabs {
-    margin-bottom: 16px;
+    margin-bottom: 10px;
   }
 
   .auth-form {
-    gap: 11px;
+    gap: 8px;
   }
 
   .input-shell,
   .primary-button,
   .oauth-button {
-    min-height: 42px;
+    min-height: 38px;
   }
 
   .oauth-divider {
-    margin: 14px 0 10px;
+    margin: 9px 0 7px;
   }
 
   .bottom-nav {
-    border-radius: 28px 28px 0 0;
-    padding-top: 8px;
+    border-radius: 20px 20px 0 0;
+    padding-top: 5px;
   }
 
   .nav-icon {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
   }
 }
 
