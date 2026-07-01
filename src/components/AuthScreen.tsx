@@ -9,10 +9,9 @@ import {
   FiUser,
 } from "react-icons/fi";
 import {
-  DATA_PROTECTION_ROUTE_HASH,
   PERSONAL_ROUTE_HASH,
+  PRIVACY_ROUTE_HASH,
   SIGNUP_ROUTE_HASH,
-  TERMS_ROUTE_HASH,
 } from "../constants";
 import { getSupabaseClient, isSupabaseConfigured } from "../lib/supabase";
 
@@ -581,11 +580,11 @@ export function AuthScreen() {
                   />
                   <label htmlFor="privacy-consent">
                     He leído y acepto las{" "}
-                    <a href={TERMS_ROUTE_HASH}>
+                    <a href={PRIVACY_ROUTE_HASH}>
                       condiciones
                     </a>{" "}
                     y la información básica de{" "}
-                    <a href={DATA_PROTECTION_ROUTE_HASH}>
+                    <a href={PRIVACY_ROUTE_HASH}>
                       protección de datos
                     </a>
                     . Responsable: Peña Oasis. Finalidad: gestionar mi alta, la

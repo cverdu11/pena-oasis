@@ -1,4 +1,4 @@
-import { FiHelpCircle, FiMail } from "react-icons/fi";
+import { FiMail } from "react-icons/fi";
 import homeImage from "../../public/images/inicio-construccion.png";
 import { CONTACT_EMAIL } from "../constants";
 
@@ -10,14 +10,8 @@ export function HomeScreen() {
         src={homeImage}
         alt="Peña Oasis en construcción"
       />
-      <div className="home-contact-panel">
-        <div className="home-contact-icon">
-          <FiHelpCircle aria-hidden="true" />
-        </div>
-        <div className="home-contact-copy">
-          <p>¿Tienes dudas?</p>
-          <span>Altas, consultas o dudas: escríbenos.</span>
-        </div>
+      <div className="home-contact-panel" aria-label="Contacto">
+        <p className="home-contact-copy">Dudas, altas o consultas</p>
         <a className="home-email-link" href={`mailto:${CONTACT_EMAIL}`}>
           <FiMail aria-hidden="true" />
           <span>{CONTACT_EMAIL}</span>

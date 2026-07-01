@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { FiArrowLeft, FiExternalLink, FiMail } from "react-icons/fi";
 import {
   CONTACT_EMAIL,
@@ -8,21 +7,6 @@ import {
 } from "../constants";
 
 export function LegalScreen() {
-  useEffect(() => {
-    const target = document.getElementById(window.location.hash.slice(1));
-    const sheet = document.querySelector<HTMLElement>(".legal-sheet");
-
-    if (!target || !sheet) {
-      sheet?.scrollTo({ top: 0 });
-      return;
-    }
-
-    sheet.scrollTo({
-      top: target.offsetTop - 12,
-      behavior: "auto",
-    });
-  }, []);
-
   return (
     <section className="screen legal-screen" aria-label="Privacidad y condiciones">
       <div className="legal-backdrop" aria-hidden="true" />
@@ -49,7 +33,7 @@ export function LegalScreen() {
           </a>
         </section>
 
-        <section className="legal-section" id="privacidad-proteccion-datos">
+        <section className="legal-section">
           <h2>Protección de datos</h2>
           <p>
             Podemos tratar los datos que facilitas al registrarte o actualizar
@@ -78,7 +62,7 @@ export function LegalScreen() {
           </p>
         </section>
 
-        <section className="legal-section" id="privacidad-condiciones">
+        <section className="legal-section">
           <h2>Condiciones de uso</h2>
           <p>
             Al crear una cuenta te comprometes a facilitar datos veraces, usar
