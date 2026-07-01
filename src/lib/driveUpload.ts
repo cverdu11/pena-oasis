@@ -2,7 +2,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { DataAgreementMember } from "./dataAgreementPdf";
 
 const dataAgreementFunctionName =
-  process.env.VITE_DATA_AGREEMENT_FUNCTION_NAME?.trim() || "swift-worker";
+  process.env.VITE_DATA_AGREEMENT_FUNCTION_NAME?.trim() ||
+  "upload-data-agreement";
 
 export type DataAgreementUploadPayload = {
   fileName: string;
