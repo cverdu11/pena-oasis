@@ -1,5 +1,4 @@
 import { FormEvent, useState } from "react";
-import { FcGoogle } from "react-icons/fc";
 import { FiEye, FiEyeOff, FiLock, FiMail, FiUser } from "react-icons/fi";
 import personalBackground from "../../public/images/area-personal-header.png";
 import { getSupabaseClient, isSupabaseConfigured } from "../lib/supabase";
@@ -50,26 +49,6 @@ export function AuthScreen() {
         ? "Sesión iniciada correctamente."
         : "Cuenta creada. Revisa tu correo si Supabase pide confirmación.",
     );
-  }
-
-  async function handleGoogleOAuth() {
-    setMessage("");
-
-    const client = await getSupabaseClient();
-
-    if (!isSupabaseConfigured || !client) {
-      setMessage("Conecta Supabase para activar el acceso real.");
-      return;
-    }
-
-    const { error } = await client.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/#area-personal` },
-    });
-
-    if (error) {
-      setMessage(error.message);
-    }
   }
 
   function switchMode(nextMode: AuthMode) {
@@ -187,22 +166,6 @@ export function AuthScreen() {
           )}
         </form>
 
-        <div className="oauth-divider" aria-hidden="true">
-          <span />
-          <p>o continúa con</p>
-          <span />
-        </div>
-
-        <div className="oauth-actions" aria-label="Acceso social">
-          <button
-            className="oauth-button"
-            type="button"
-            onClick={handleGoogleOAuth}
-          >
-            <FcGoogle aria-hidden="true" />
-            <span>Continuar con Google</span>
-          </button>
-        </div>
       </div>
     </section>
   );

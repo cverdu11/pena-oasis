@@ -31,7 +31,7 @@ VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
 VITE_SUPABASE_ANON_KEY=tu_anon_key
 ```
 
-5. En `Authentication > Providers`, activa `Email`. Para Google o Apple, anade sus credenciales OAuth en Supabase y en el proveedor correspondiente.
+5. En `Authentication > Providers`, activa solo `Email` para mantener el acceso por correo y contraseña.
 6. Reinicia `npm.cmd run dev`.
 
 ## GitHub
