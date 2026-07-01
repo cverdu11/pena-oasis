@@ -3,7 +3,7 @@
 Web app móvil-first para la Peña Oasis. Ahora incluye dos pestañas:
 
 - `Inicio`: pantalla visual "En construcción" con la imagen facilitada.
-- `Área Personal`: login/registro interactivo preparado para Supabase Auth.
+- `Área Personal`: login/registro por email con Supabase Auth y formulario privado de datos del peñista.
 
 ## Desarrollo local
 
@@ -32,7 +32,19 @@ VITE_SUPABASE_ANON_KEY=tu_anon_key
 ```
 
 5. En `Authentication > Providers`, activa solo `Email` para mantener el acceso por correo y contraseña.
-6. Reinicia `npm.cmd run dev`.
+6. Ejecuta en `SQL Editor` la migración:
+
+```text
+supabase/migrations/20260701_profiles_member_fields.sql
+```
+
+Esta migración añade `first_name`, `last_name`, `dni`, `member_number`, `privacy_accepted_at`, `privacy_notice_version`, `terms_accepted_at` y `terms_version` a `public.profiles`.
+
+7. Reinicia `npm.cmd run dev`.
+
+## Protección de Datos
+
+El registro incluye una primera capa básica de privacidad y una casilla obligatoria no premarcada para privacidad y condiciones. Antes de usarlo en producción, revisa el texto legal con la persona o asesoría responsable de la Peña Oasis: debe identificar responsable, finalidad, base jurídica, conservación, destinatarios y derechos.
 
 ## GitHub
 

@@ -123,7 +123,7 @@ button {
 
 .member-panel {
   display: grid;
-  gap: 18px;
+  gap: 14px;
   color: var(--oasis-ink);
 }
 
@@ -174,6 +174,46 @@ button {
   font-size: 14px;
   font-weight: 500;
   line-height: 1.55;
+}
+
+.member-form {
+  display: grid;
+  gap: 12px;
+}
+
+.member-form-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.privacy-consent {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 9px;
+  align-items: start;
+  margin-top: 2px;
+  color: #5f6a76;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.42;
+}
+
+.privacy-consent input {
+  width: 17px;
+  height: 17px;
+  margin: 1px 0 0;
+  accent-color: var(--oasis-blue-dark);
+}
+
+.privacy-note {
+  margin: -2px 0 0;
+  border-left: 3px solid var(--oasis-blue-dark);
+  color: #5f6a76;
+  background: #f3f6fb;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 .auth-tabs {
