@@ -8,6 +8,7 @@ import {
   FiTool,
   FiUser,
 } from "react-icons/fi";
+import { PRIVACY_ROUTE_HASH } from "../constants";
 import { getSupabaseClient, isSupabaseConfigured } from "../lib/supabase";
 
 type AuthMode = "signin" | "signup";
@@ -27,11 +28,6 @@ type MemberForm = {
   dni: string;
   memberNumber: string;
 };
-
-const DATA_PROTECTION_LAW_URL =
-  "https://www.boe.es/buscar/act.php?id=BOE-A-2018-16673";
-const GDPR_URL =
-  "https://eur-lex.europa.eu/eli/reg/2016/679/oj?locale=es";
 
 function getFirstName(value?: string | null) {
   const trimmed = value?.trim();
@@ -572,14 +568,12 @@ export function AuthScreen() {
                   <label htmlFor="privacy-consent">
                     He leído y acepto las{" "}
                     <a
-                      href={DATA_PROTECTION_LAW_URL}
-                      rel="noreferrer"
-                      target="_blank"
+                      href={PRIVACY_ROUTE_HASH}
                     >
                       condiciones
                     </a>{" "}
                     y la información básica de{" "}
-                    <a href={GDPR_URL} rel="noreferrer" target="_blank">
+                    <a href={PRIVACY_ROUTE_HASH}>
                       protección de datos
                     </a>
                     . Responsable: Peña Oasis. Finalidad: gestionar mi alta, la

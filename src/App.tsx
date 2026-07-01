@@ -2,18 +2,29 @@ import { useEffect, useState } from "react";
 import { AuthScreen } from "./components/AuthScreen";
 import { BottomNav } from "./components/BottomNav";
 import { HomeScreen } from "./components/HomeScreen";
+import { LegalScreen } from "./components/LegalScreen";
 import type { TabId } from "./types";
 
-function readInitialTab(): TabId {
-  return window.location.hash === "#area-personal" ? "personal" : "home";
+type AppRoute = TabId | "privacy";
+
+function readInitialRoute(): AppRoute {
+  if (window.location.hash === "#area-personal") {
+    return "personal";
+  }
+
+  if (window.location.hash === "#privacidad") {
+    return "privacy";
+  }
+
+  return "home";
 }
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<TabId>(readInitialTab);
+  const [activeRoute, setActiveRoute] = useState<AppRoute>(readInitialRoute);
 
   useEffect(() => {
     function syncFromHash() {
-      setActiveTab(readInitialTab());
+      setActiveRoute(readInitialRoute());
     }
 
     window.addEventListener("hashchange", syncFromHash);
@@ -21,7 +32,7 @@ export default function App() {
   }, []);
 
   function handleTabChange(tab: TabId) {
-    setActiveTab(tab);
+    setActiveRoute(tab);
     window.history.replaceState(
       null,
       "",
@@ -32,8 +43,13 @@ export default function App() {
   return (
     <main className="app-shell">
       <div className="phone-viewport">
-        {activeTab === "home" ? <HomeScreen /> : <AuthScreen />}
-        <BottomNav activeTab={activeTab} onChange={handleTabChange} />
+        {activeRoute === "home" && <HomeScreen />}
+        {activeRoute === "personal" && <AuthScreen />}
+        {activeRoute === "privacy" && <LegalScreen />}
+        <BottomNav
+          activeTab={activeRoute === "home" ? "home" : "personal"}
+          onChange={handleTabChange}
+        />
       </div>
     </main>
   );
