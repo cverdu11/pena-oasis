@@ -842,12 +842,18 @@ button {
 }
 
 .auth-message {
-  margin: -4px 0 0;
+  width: 100%;
+  margin: -2px 0 0;
+  padding: 9px 12px;
+  border: 1px solid rgba(0, 64, 164, 0.14);
+  border-radius: 8px;
+  background: rgba(0, 64, 164, 0.06);
   color: var(--oasis-blue-dark);
   font-size: 12px;
   font-weight: 600;
   line-height: 1.45;
   text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .bottom-nav {

@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
-import type { User } from "@supabase/supabase-js";
+import type { AuthError, User } from "@supabase/supabase-js";
 import {
   FiEye,
   FiEyeOff,
@@ -50,6 +50,66 @@ type AgreementStoredRecord = {
 const EXTENDED_PROFILE_SELECT =
   "email, full_name, first_name, last_name, dni, member_number, privacy_accepted_at, terms_accepted_at, data_agreement_signed_at, data_agreement_file_name, data_agreement_drive_file_id, data_agreement_drive_url, data_agreement_status";
 const BASIC_PROFILE_SELECT = "email, full_name";
+const EMAIL_RATE_LIMIT_MESSAGE =
+  "Ahora mismo no podemos enviar más correos automáticos. Inténtalo de nuevo en unos minutos.";
+
+type AuthAction = AuthMode | "password-reset" | "password-update";
+
+function getFriendlyAuthErrorMessage(error: AuthError, action: AuthAction) {
+  const code = error.code?.toLowerCase() ?? "";
+  const message = error.message.toLowerCase();
+  const isEmailRateLimit =
+    code === "over_email_send_rate_limit" ||
+    message.includes("email rate limit");
+  const isGenericRateLimit =
+    error.status === 429 ||
+    code === "over_request_rate_limit" ||
+    message.includes("rate limit") ||
+    message.includes("too many");
+
+  if (isEmailRateLimit) {
+    return action === "signup"
+      ? "Estamos recibiendo muchas altas a la vez. Inténtalo de nuevo en unos minutos."
+      : EMAIL_RATE_LIMIT_MESSAGE;
+  }
+
+  if (isGenericRateLimit) {
+    return action === "signup"
+      ? "Estamos recibiendo muchas altas a la vez. Inténtalo de nuevo en unos minutos."
+      : "Demasiados intentos seguidos. Inténtalo de nuevo en unos minutos.";
+  }
+
+  if (code === "invalid_credentials" || message.includes("invalid login")) {
+    return "Correo o contraseña incorrectos.";
+  }
+
+  if (code === "email_not_confirmed" || message.includes("email not confirmed")) {
+    return "Revisa tu correo y confirma la cuenta antes de iniciar sesión.";
+  }
+
+  if (
+    code === "email_exists" ||
+    code === "user_already_exists" ||
+    message.includes("already registered") ||
+    message.includes("already exists")
+  ) {
+    return "Este correo ya está registrado. Prueba a iniciar sesión o recupera la contraseña.";
+  }
+
+  if (code === "weak_password" || message.includes("password should")) {
+    return "La contraseña debe tener al menos 6 caracteres.";
+  }
+
+  if (code === "signup_disabled") {
+    return "El registro está cerrado temporalmente.";
+  }
+
+  if (code === "email_provider_disabled") {
+    return "El envío de correos no está activo en Supabase. Revisa la configuración de Auth.";
+  }
+
+  return error.message || "No hemos podido completar la operación. Inténtalo de nuevo.";
+}
 
 function getFirstName(value?: string | null) {
   const trimmed = value?.trim();
@@ -310,7 +370,7 @@ export function AuthScreen() {
     setIsLoading(false);
 
     if (result.error) {
-      setMessage(result.error.message);
+      setMessage(getFriendlyAuthErrorMessage(result.error, mode));
       return;
     }
 
@@ -344,7 +404,7 @@ export function AuthScreen() {
     setIsResetLoading(false);
 
     if (error) {
-      setMessage(error.message);
+      setMessage(getFriendlyAuthErrorMessage(error, "password-reset"));
       return;
     }
 
@@ -379,7 +439,7 @@ export function AuthScreen() {
 
     if (error) {
       setIsResetLoading(false);
-      setMessage(error.message);
+      setMessage(getFriendlyAuthErrorMessage(error, "password-update"));
       return;
     }
 

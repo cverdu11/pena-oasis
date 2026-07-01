@@ -31,6 +31,8 @@ VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
 VITE_SUPABASE_ANON_KEY=tu_anon_key
 ```
 
+Antes de compartir la app con usuarios reales, configura un SMTP propio en `Authentication > Email > SMTP Settings` con un proveedor como Resend, SendGrid, Postmark, Brevo o AWS SES. El proveedor de email incluido en Supabase es solo para pruebas y puede bloquear el registro con `email rate limit exceeded` cuando entran varias altas seguidas. Después revisa `Authentication > Rate Limits` para ajustar el límite de emails si hace falta.
+
 5. En `Authentication > Providers`, activa solo `Email` para mantener el acceso por correo y contraseña.
 6. Ejecuta en `SQL Editor` la migración:
 
