@@ -177,7 +177,7 @@ button {
   display: grid;
   grid-template-columns: 22px 1fr auto;
   align-items: center;
-  min-height: 39px;
+  min-height: 44px;
   border: 1px solid #d8dce2;
   border-radius: 8px;
   color: #99a0aa;
@@ -204,7 +204,7 @@ button {
   outline: 0;
   color: var(--oasis-ink);
   background: transparent;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 500;
 }
 
