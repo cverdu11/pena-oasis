@@ -131,6 +131,7 @@ export function DataAgreementCard({
   const [agreementDni, setAgreementDni] = useState(member.dni);
   const [generatedAgreement, setGeneratedAgreement] =
     useState<GeneratedAgreement | null>(null);
+  const hasStoredAgreement = Boolean(storedAgreement.signedAt);
   const storedDate = formatStoredDate(storedAgreement.signedAt);
   const fullName = agreementName.trim();
   const agreementMemberName = splitAgreementName(agreementName);
@@ -146,6 +147,14 @@ export function DataAgreementCard({
     setAgreementName(getMemberFullName(member));
     setAgreementDni(member.dni);
   }, [member.dni, member.firstName, member.lastName]);
+
+  useEffect(() => {
+    if (hasStoredAgreement) {
+      setIsOpen(false);
+      setHasSignature(false);
+      setMessage("");
+    }
+  }, [hasStoredAgreement]);
 
   useEffect(() => {
     if (!isOpen || !canvasRef.current) {
@@ -234,6 +243,11 @@ export function DataAgreementCard({
 
   async function handleSubmitAgreement() {
     if (!canvasRef.current) {
+      return;
+    }
+
+    if (hasStoredAgreement) {
+      setMessage("Este acuerdo ya consta como firmado.");
       return;
     }
 
@@ -326,20 +340,29 @@ export function DataAgreementCard({
           target="_blank"
         >
           <FiExternalLink aria-hidden="true" />
-          <span>Abrir en Drive</span>
+          <span>Abrir PDF firmado</span>
         </a>
       )}
 
-      <button
-        className="secondary-button icon-text-button"
-        type="button"
-        onClick={() => setIsOpen((current) => !current)}
-      >
-        <FiPenTool aria-hidden="true" />
-        <span>{isOpen ? "Cerrar acuerdo" : "Abrir y firmar"}</span>
-      </button>
+      {!hasStoredAgreement && (
+        <button
+          className="secondary-button icon-text-button"
+          type="button"
+          onClick={() => setIsOpen((current) => !current)}
+        >
+          <FiPenTool aria-hidden="true" />
+          <span>{isOpen ? "Cerrar acuerdo" : "Abrir y firmar"}</span>
+        </button>
+      )}
 
-      {isOpen && (
+      {hasStoredAgreement && !storedAgreement.driveUrl && (
+        <p className="agreement-message" role="status">
+          <FiCheckCircle aria-hidden="true" />
+          <span>Acuerdo firmado y guardado.</span>
+        </p>
+      )}
+
+      {isOpen && !hasStoredAgreement && (
         <div className="agreement-flow">
           <object
             className="agreement-preview"
