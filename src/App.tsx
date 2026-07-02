@@ -22,11 +22,17 @@ function isPasswordRecoveryRoute() {
   );
 }
 
+function isSignupConfirmationRoute() {
+  const searchParams = new URLSearchParams(window.location.search);
+  return searchParams.get("confirmed") === "1";
+}
+
 function readInitialRoute(): AppRoute {
   if (
     window.location.hash === PERSONAL_ROUTE_HASH ||
     window.location.hash === SIGNUP_ROUTE_HASH ||
-    isPasswordRecoveryRoute()
+    isPasswordRecoveryRoute() ||
+    isSignupConfirmationRoute()
   ) {
     return "personal";
   }

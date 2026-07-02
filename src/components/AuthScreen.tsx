@@ -52,6 +52,12 @@ const EXTENDED_PROFILE_SELECT =
 const BASIC_PROFILE_SELECT = "email, full_name";
 const EMAIL_RATE_LIMIT_MESSAGE =
   "Ahora mismo no podemos enviar más correos automáticos. Inténtalo de nuevo en unos minutos.";
+const SIGNUP_EMAIL_STORAGE_KEY = "pena-oasis-signup-email";
+const SIGNUP_CONFIRMED_MESSAGE = "Cuenta confirmada. Ya puedes iniciar sesión.";
+const SIGNUP_SUCCESS_MESSAGE =
+  "Cuenta creada. Revisa tu correo para confirmar el acceso. Si no ves el email, espera un minuto antes de intentarlo otra vez.";
+const SIGNUP_RATE_LIMIT_MESSAGE =
+  "Si ya has pulsado crear cuenta, tu alta puede estar registrada. Revisa tu correo o inténtalo de nuevo en un minuto.";
 
 type AuthAction = AuthMode | "password-reset" | "password-update";
 
@@ -69,13 +75,13 @@ function getFriendlyAuthErrorMessage(error: AuthError, action: AuthAction) {
 
   if (isEmailRateLimit) {
     return action === "signup"
-      ? "Estamos recibiendo muchas altas a la vez. Inténtalo de nuevo en unos minutos."
+      ? SIGNUP_RATE_LIMIT_MESSAGE
       : EMAIL_RATE_LIMIT_MESSAGE;
   }
 
   if (isGenericRateLimit) {
     return action === "signup"
-      ? "Estamos recibiendo muchas altas a la vez. Inténtalo de nuevo en unos minutos."
+      ? SIGNUP_RATE_LIMIT_MESSAGE
       : "Demasiados intentos seguidos. Inténtalo de nuevo en unos minutos.";
   }
 
@@ -160,7 +166,16 @@ function buildMemberForm(profile: Profile | null, user: User | null): MemberForm
 }
 
 function readInitialAuthMode(): AuthMode {
+  if (isSignupConfirmationRoute()) {
+    return "signin";
+  }
+
   return window.location.hash === SIGNUP_ROUTE_HASH ? "signup" : "signin";
+}
+
+function isSignupConfirmationRoute() {
+  const searchParams = new URLSearchParams(window.location.search);
+  return searchParams.get("confirmed") === "1";
 }
 
 function isPasswordRecoveryRoute() {
@@ -177,16 +192,59 @@ function getPasswordRecoveryRedirectUrl() {
   return `${window.location.origin}${window.location.pathname}?recovery=1`;
 }
 
+function getSignupConfirmationRedirectUrl(emailAddress: string) {
+  const redirectUrl = new URL(window.location.pathname, window.location.origin);
+  redirectUrl.searchParams.set("confirmed", "1");
+  redirectUrl.searchParams.set("email", emailAddress);
+  return redirectUrl.toString();
+}
+
+function readStoredSignupEmail() {
+  try {
+    return window.localStorage.getItem(SIGNUP_EMAIL_STORAGE_KEY)?.trim() ?? "";
+  } catch {
+    return "";
+  }
+}
+
+function rememberSignupEmail(emailAddress: string) {
+  try {
+    window.localStorage.setItem(SIGNUP_EMAIL_STORAGE_KEY, emailAddress);
+  } catch {
+    // The confirmation redirect still carries the email if localStorage is unavailable.
+  }
+}
+
+function readInitialEmail() {
+  const searchParams = new URLSearchParams(window.location.search);
+  const urlEmail = searchParams.get("email")?.trim();
+
+  if (urlEmail) {
+    return urlEmail;
+  }
+
+  if (isSignupConfirmationRoute()) {
+    return readStoredSignupEmail();
+  }
+
+  return "";
+}
+
+function readInitialMessage() {
+  return isSignupConfirmationRoute() ? SIGNUP_CONFIRMED_MESSAGE : "";
+}
+
 export function AuthScreen() {
   const [mode, setMode] = useState<AuthMode>(readInitialAuthMode);
   const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(readInitialEmail);
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(readInitialMessage);
+  const [isSignupComplete, setIsSignupComplete] = useState(false);
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(
     isPasswordRecoveryRoute,
   );
@@ -206,7 +264,12 @@ export function AuthScreen() {
   });
   const [profileMessage, setProfileMessage] = useState("");
 
-  const submitLabel = mode === "signin" ? "Iniciar sesión" : "Crear cuenta";
+  const submitLabel =
+    mode === "signin"
+      ? "Iniciar sesión"
+      : isSignupComplete
+        ? "Cuenta creada"
+        : "Crear cuenta";
   const welcomeName = getFirstName(profile?.full_name) ?? getFallbackName(user);
 
   useEffect(() => {
@@ -218,6 +281,16 @@ export function AuthScreen() {
 
       if (!client) {
         if (isMounted) {
+          if (isSignupConfirmationRoute()) {
+            setMode("signin");
+            setIsPasswordRecovery(false);
+            setMessage(SIGNUP_CONFIRMED_MESSAGE);
+            window.history.replaceState(
+              null,
+              "",
+              `${window.location.pathname}${PERSONAL_ROUTE_HASH}`,
+            );
+          }
           setIsSessionLoading(false);
         }
         return;
@@ -243,6 +316,13 @@ export function AuthScreen() {
           return;
         }
 
+        if (isSignupConfirmationRoute()) {
+          setMode("signin");
+          setIsPasswordRecovery(false);
+          setMessage(SIGNUP_CONFIRMED_MESSAGE);
+          return;
+        }
+
         setMessage("");
       });
 
@@ -254,6 +334,16 @@ export function AuthScreen() {
           setMode("signin");
           setIsPasswordRecovery(true);
           setMessage("Introduce una nueva contraseña para terminar.");
+          window.history.replaceState(
+            null,
+            "",
+            `${window.location.pathname}${PERSONAL_ROUTE_HASH}`,
+          );
+        }
+        if (isSignupConfirmationRoute()) {
+          setMode("signin");
+          setIsPasswordRecovery(false);
+          setMessage(SIGNUP_CONFIRMED_MESSAGE);
           window.history.replaceState(
             null,
             "",
@@ -334,6 +424,11 @@ export function AuthScreen() {
     event.preventDefault();
     setMessage("");
 
+    if (mode === "signup" && isSignupComplete) {
+      setMessage(SIGNUP_SUCCESS_MESSAGE);
+      return;
+    }
+
     if (mode === "signup" && !privacyAccepted) {
       setMessage(
         "Debes aceptar la información de protección de datos y condiciones.",
@@ -348,15 +443,18 @@ export function AuthScreen() {
       return;
     }
 
+    const emailAddress = email.trim();
+
     setIsLoading(true);
     const acceptedAt = new Date().toISOString();
     const result =
       mode === "signin"
-        ? await client.auth.signInWithPassword({ email, password })
+        ? await client.auth.signInWithPassword({ email: emailAddress, password })
         : await client.auth.signUp({
-            email,
+            email: emailAddress,
             password,
             options: {
+              emailRedirectTo: getSignupConfirmationRedirectUrl(emailAddress),
               data: {
                 full_name: fullName,
                 privacy_accepted_at: acceptedAt,
@@ -374,10 +472,15 @@ export function AuthScreen() {
       return;
     }
 
+    if (mode === "signup") {
+      rememberSignupEmail(emailAddress);
+      setIsSignupComplete(true);
+    }
+
     setMessage(
       mode === "signin"
         ? "Sesión iniciada correctamente."
-        : "Cuenta creada. Revisa tu correo si Supabase pide confirmación.",
+        : SIGNUP_SUCCESS_MESSAGE,
     );
   }
 
@@ -572,6 +675,7 @@ export function AuthScreen() {
   function switchMode(nextMode: AuthMode) {
     setMode(nextMode);
     setMessage("");
+    setIsSignupComplete(false);
     setIsPasswordRecovery(false);
     window.history.replaceState(
       null,
@@ -940,7 +1044,7 @@ export function AuthScreen() {
 
               <button
                 className="primary-button"
-                disabled={isLoading}
+                disabled={isLoading || isSignupComplete}
                 type="submit"
               >
                 {isLoading ? "Conectando..." : submitLabel}

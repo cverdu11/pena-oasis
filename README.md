@@ -34,7 +34,8 @@ VITE_SUPABASE_ANON_KEY=tu_anon_key
 Antes de compartir la app con usuarios reales, configura un SMTP propio en `Authentication > Email > SMTP Settings` con un proveedor como Resend, SendGrid, Postmark, Brevo o AWS SES. El proveedor de email incluido en Supabase es solo para pruebas y puede bloquear el registro con `email rate limit exceeded` cuando entran varias altas seguidas. Después revisa `Authentication > Rate Limits` para ajustar el límite de emails si hace falta.
 
 5. En `Authentication > Providers`, activa solo `Email` para mantener el acceso por correo y contraseña.
-6. Ejecuta en `SQL Editor` la migración:
+6. En `Authentication > URL Configuration`, mantén permitido `https://pena-oasis.vercel.app/**`. El email de confirmación vuelve a `https://pena-oasis.vercel.app/?confirmed=1&email=...` para abrir directamente `Área Personal` con el correo pre-rellenado.
+7. Ejecuta en `SQL Editor` la migración:
 
 ```text
 supabase/migrations/20260701_profiles_member_fields.sql
@@ -42,7 +43,7 @@ supabase/migrations/20260701_profiles_member_fields.sql
 
 Esta migración añade `first_name`, `last_name`, `dni`, `member_number`, `privacy_accepted_at`, `privacy_notice_version`, `terms_accepted_at`, `terms_version` y los campos del acuerdo firmado a `public.profiles`.
 
-7. Para activar la subida del acuerdo firmado a Google Drive sin Google Cloud Billing, crea un Web App de Google Apps Script con el contenido de:
+8. Para activar la subida del acuerdo firmado a Google Drive sin Google Cloud Billing, crea un Web App de Google Apps Script con el contenido de:
 
 ```text
 scripts/google-apps-script/drive-uploader.gs
@@ -55,7 +56,7 @@ DRIVE_FOLDER_ID=ID_DE_LA_CARPETA_DE_DRIVE
 UPLOAD_SECRET=clave-larga-inventada
 ```
 
-8. Despliega o actualiza la Edge Function de Supabase con el contenido de:
+9. Despliega o actualiza la Edge Function de Supabase con el contenido de:
 
 ```text
 supabase/functions/upload-data-agreement/index.ts
@@ -63,7 +64,7 @@ supabase/functions/upload-data-agreement/index.ts
 
 Si la creaste desde el dashboard con el nombre `swift-worker`, la app ya llama a ese slug por defecto. Si usas otro nombre, define `VITE_DATA_AGREEMENT_FUNCTION_NAME`.
 
-9. Configura estos secretos en Supabase Edge Functions:
+10. Configura estos secretos en Supabase Edge Functions:
 
 ```text
 GOOGLE_APPS_SCRIPT_URL=URL_DEL_WEB_APP_DE_APPS_SCRIPT
@@ -72,7 +73,7 @@ GOOGLE_APPS_SCRIPT_SECRET=la_misma_clave_que_UPLOAD_SECRET
 
 La app genera el PDF firmado en el navegador y llama a la Edge Function usando la sesión del socio. El archivo se guarda con el formato `NOMBRE_APELLIDO_Acuerdo de comunicación de datos personales.pdf`.
 
-10. Reinicia `npm.cmd run dev`.
+11. Reinicia `npm.cmd run dev`.
 
 ## Protección de Datos
 
