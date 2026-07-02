@@ -1,4 +1,7 @@
 function doPost(e) {
+  let scriptLock = null;
+  let lockAcquired = false;
+
   try {
     const props = PropertiesService.getScriptProperties();
     const folderId = props.getProperty("DRIVE_FOLDER_ID");
@@ -28,23 +31,42 @@ function doPost(e) {
     }
 
     const safeFileName = sanitizeFileName(payload.fileName);
+    scriptLock = LockService.getScriptLock();
+    scriptLock.waitLock(30000);
+    lockAcquired = true;
+
+    const folder = DriveApp.getFolderById(folderId);
+    const existingFiles = folder.getFilesByName(safeFileName);
+
+    if (existingFiles.hasNext()) {
+      return fileResponse(existingFiles.next(), true);
+    }
+
     const pdfBytes = Utilities.base64Decode(payload.pdfBase64);
     const blob = Utilities.newBlob(pdfBytes, "application/pdf", safeFileName);
-    const folder = DriveApp.getFolderById(folderId);
     const file = folder.createFile(blob);
 
-    return jsonResponse({
-      ok: true,
-      fileId: file.getId(),
-      fileName: file.getName(),
-      webViewLink: file.getUrl(),
-    });
+    return fileResponse(file, false);
   } catch (error) {
     return jsonResponse({
       ok: false,
       error: error && error.message ? error.message : String(error),
     });
+  } finally {
+    if (lockAcquired && scriptLock) {
+      scriptLock.releaseLock();
+    }
   }
+}
+
+function fileResponse(file, alreadyExisted) {
+  return jsonResponse({
+    ok: true,
+    fileId: file.getId(),
+    fileName: file.getName(),
+    webViewLink: file.getUrl(),
+    alreadyExisted: alreadyExisted,
+  });
 }
 
 function jsonResponse(data) {

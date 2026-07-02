@@ -56,6 +56,10 @@ DRIVE_FOLDER_ID=ID_DE_LA_CARPETA_DE_DRIVE
 UPLOAD_SECRET=clave-larga-inventada
 ```
 
+El Apps Script usa un bloqueo de concurrencia y revisa si ya existe un archivo
+con el mismo nombre en la carpeta antes de crear uno nuevo. Esto evita duplicados
+si un socio pulsa dos veces el botÇün de firma o si se repite la peticiÇün.
+
 9. Despliega o actualiza la Edge Function de Supabase con el contenido de:
 
 ```text

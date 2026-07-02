@@ -120,10 +120,14 @@ export function DataAgreementCard({
 }: DataAgreementCardProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const isDrawingRef = useRef(false);
+  const submitLockRef = useRef(false);
   const lastPointRef = useRef<SignaturePoint | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [hasSignature, setHasSignature] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasCompletedSubmission, setHasCompletedSubmission] = useState(() =>
+    Boolean(storedAgreement.signedAt),
+  );
   const [message, setMessage] = useState("");
   const [agreementName, setAgreementName] = useState(() =>
     getMemberFullName(member),
@@ -131,7 +135,8 @@ export function DataAgreementCard({
   const [agreementDni, setAgreementDni] = useState(member.dni);
   const [generatedAgreement, setGeneratedAgreement] =
     useState<GeneratedAgreement | null>(null);
-  const hasStoredAgreement = Boolean(storedAgreement.signedAt);
+  const hasStoredAgreement =
+    Boolean(storedAgreement.signedAt) || hasCompletedSubmission;
   const storedDate = formatStoredDate(storedAgreement.signedAt);
   const fullName = agreementName.trim();
   const agreementMemberName = splitAgreementName(agreementName);
@@ -147,6 +152,12 @@ export function DataAgreementCard({
     setAgreementName(getMemberFullName(member));
     setAgreementDni(member.dni);
   }, [member.dni, member.firstName, member.lastName]);
+
+  useEffect(() => {
+    const alreadyStored = Boolean(storedAgreement.signedAt);
+    submitLockRef.current = alreadyStored;
+    setHasCompletedSubmission(alreadyStored);
+  }, [member.email, member.memberNumber, storedAgreement.signedAt]);
 
   useEffect(() => {
     if (hasStoredAgreement) {
@@ -242,22 +253,33 @@ export function DataAgreementCard({
   }
 
   async function handleSubmitAgreement() {
+    if (submitLockRef.current || isSubmitting) {
+      return;
+    }
+
+    submitLockRef.current = true;
+    let submissionSucceeded = false;
+
     if (!canvasRef.current) {
+      submitLockRef.current = false;
       return;
     }
 
     if (hasStoredAgreement) {
       setMessage("Este acuerdo ya consta como firmado.");
+      submitLockRef.current = true;
       return;
     }
 
     if (!hasRequiredFields) {
       setMessage("Guarda al menos nombre y DNI antes de firmar el acuerdo.");
+      submitLockRef.current = false;
       return;
     }
 
     if (!hasSignature) {
       setMessage("Falta la firma del socio.");
+      submitLockRef.current = false;
       return;
     }
 
@@ -300,6 +322,9 @@ export function DataAgreementCard({
         member: agreementMember,
       });
 
+      submissionSucceeded = true;
+      setHasCompletedSubmission(true);
+      setIsOpen(false);
       setMessage("Acuerdo firmado y guardado en Google Drive.");
     } catch (error) {
       const reason =
@@ -312,6 +337,10 @@ export function DataAgreementCard({
           : reason,
       );
     } finally {
+      if (!submissionSucceeded) {
+        submitLockRef.current = false;
+      }
+
       setIsSubmitting(false);
     }
   }
@@ -324,9 +353,11 @@ export function DataAgreementCard({
         </span>
         <div>
           <h2>Acuerdo de datos personales</h2>
-          <p data-status={storedDate ? "signed" : "pending"}>
+          <p data-status={hasStoredAgreement ? "signed" : "pending"}>
             {storedDate
               ? `Firmado el ${storedDate}`
+              : hasStoredAgreement
+                ? "Firmado"
               : "Pendiente de firma"}
           </p>
         </div>
@@ -428,6 +459,7 @@ export function DataAgreementCard({
 
           <button
             className="primary-button icon-text-button"
+            aria-busy={isSubmitting}
             disabled={isSubmitting}
             type="button"
             onClick={handleSubmitAgreement}
