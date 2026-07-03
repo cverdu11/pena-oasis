@@ -59,6 +59,11 @@ const EMAIL_RATE_LIMIT_MESSAGE =
   "Ahora mismo no podemos enviar más correos automáticos. Inténtalo de nuevo en unos minutos.";
 const SIGNUP_EMAIL_STORAGE_KEY = "pena-oasis-signup-email";
 const SIGNUP_CONFIRMED_MESSAGE = "Cuenta confirmada. Ya puedes iniciar sesión.";
+const SIGNUP_CONFIRMING_MESSAGE = "Confirmando cuenta...";
+const SIGNUP_CONFIRMATION_FALLBACK_MESSAGE =
+  "Enlace de confirmación abierto. Si al iniciar sesión sigue fallando, vuelve a pulsar el enlace del correo o solicita uno nuevo.";
+const SIGNUP_CONFIRMATION_ERROR_MESSAGE =
+  "No se ha podido confirmar la cuenta. Vuelve a abrir el enlace del correo o solicita uno nuevo.";
 const SIGNUP_SUCCESS_MESSAGE =
   "Cuenta creada. Revisa tu correo para confirmar el acceso. Si no ves el email, espera un minuto antes de intentarlo otra vez.";
 const SIGNUP_RATE_LIMIT_MESSAGE =
@@ -95,7 +100,7 @@ function getFriendlyAuthErrorMessage(error: AuthError, action: AuthAction) {
   }
 
   if (code === "email_not_confirmed" || message.includes("email not confirmed")) {
-    return "Revisa tu correo y confirma la cuenta antes de iniciar sesión.";
+    return "La cuenta todavía no aparece confirmada. Vuelve a abrir el enlace del correo de confirmación o solicita uno nuevo.";
   }
 
   if (
@@ -226,6 +231,31 @@ function isSignupConfirmationRoute() {
   return searchParams.get("confirmed") === "1";
 }
 
+function getAuthCallbackCode() {
+  const searchParams = new URLSearchParams(window.location.search);
+  return searchParams.get("code")?.trim() ?? "";
+}
+
+function getAuthCallbackError() {
+  const searchParams = new URLSearchParams(window.location.search);
+  const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+  return (
+    searchParams.get("error_description") ??
+    searchParams.get("error") ??
+    hashParams.get("error_description") ??
+    hashParams.get("error") ??
+    ""
+  );
+}
+
+function clearSignupConfirmationRoute() {
+  window.history.replaceState(
+    null,
+    "",
+    `${window.location.pathname}${PERSONAL_ROUTE_HASH}`,
+  );
+}
+
 function isPasswordRecoveryRoute() {
   const searchParams = new URLSearchParams(window.location.search);
   const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
@@ -279,7 +309,7 @@ function readInitialEmail() {
 }
 
 function readInitialMessage() {
-  return isSignupConfirmationRoute() ? SIGNUP_CONFIRMED_MESSAGE : "";
+  return isSignupConfirmationRoute() ? SIGNUP_CONFIRMING_MESSAGE : "";
 }
 
 export function AuthScreen() {
@@ -349,17 +379,15 @@ export function AuthScreen() {
           if (isSignupConfirmationRoute()) {
             setMode("signin");
             setIsPasswordRecovery(false);
-            setMessage(SIGNUP_CONFIRMED_MESSAGE);
-            window.history.replaceState(
-              null,
-              "",
-              `${window.location.pathname}${PERSONAL_ROUTE_HASH}`,
-            );
+            setMessage(SIGNUP_CONFIRMATION_FALLBACK_MESSAGE);
+            clearSignupConfirmationRoute();
           }
           setIsSessionLoading(false);
         }
         return;
       }
+
+      let handledSignupConfirmation = false;
 
       const subscription = client.auth.onAuthStateChange((event, session) => {
         setUser(session?.user ?? null);
@@ -384,12 +412,34 @@ export function AuthScreen() {
         if (isSignupConfirmationRoute()) {
           setMode("signin");
           setIsPasswordRecovery(false);
-          setMessage(SIGNUP_CONFIRMED_MESSAGE);
+          setMessage(SIGNUP_CONFIRMING_MESSAGE);
           return;
         }
 
         setMessage("");
       });
+
+      if (isSignupConfirmationRoute()) {
+        handledSignupConfirmation = true;
+        setMode("signin");
+        setIsPasswordRecovery(false);
+
+        const callbackError = getAuthCallbackError();
+        const authCode = getAuthCallbackCode();
+
+        if (callbackError) {
+          setMessage(SIGNUP_CONFIRMATION_ERROR_MESSAGE);
+        } else if (authCode) {
+          const { error } = await client.auth.exchangeCodeForSession(authCode);
+          setMessage(
+            error ? SIGNUP_CONFIRMATION_ERROR_MESSAGE : SIGNUP_CONFIRMED_MESSAGE,
+          );
+        } else {
+          setMessage(SIGNUP_CONFIRMATION_FALLBACK_MESSAGE);
+        }
+
+        clearSignupConfirmationRoute();
+      }
 
       const { data } = await client.auth.getSession();
 
@@ -405,15 +455,9 @@ export function AuthScreen() {
             `${window.location.pathname}${PERSONAL_ROUTE_HASH}`,
           );
         }
-        if (isSignupConfirmationRoute()) {
+        if (handledSignupConfirmation) {
           setMode("signin");
           setIsPasswordRecovery(false);
-          setMessage(SIGNUP_CONFIRMED_MESSAGE);
-          window.history.replaceState(
-            null,
-            "",
-            `${window.location.pathname}${PERSONAL_ROUTE_HASH}`,
-          );
         }
         setIsSessionLoading(false);
       }
