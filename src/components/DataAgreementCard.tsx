@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from "react";
 import {
   FiCheckCircle,
   FiDownload,
-  FiExternalLink,
   FiFileText,
   FiPenTool,
   FiRefreshCw,
@@ -163,7 +162,6 @@ export function DataAgreementCard({
     if (hasStoredAgreement) {
       setIsOpen(false);
       setHasSignature(false);
-      setMessage("");
     }
   }, [hasStoredAgreement]);
 
@@ -304,7 +302,7 @@ export function DataAgreementCard({
       const client = await getSupabaseClient();
 
       if (!client) {
-        throw new Error("Conecta Supabase para enviar el acuerdo a Drive.");
+        throw new Error("Conecta Supabase para enviar el acuerdo.");
       }
 
       const uploadResult = await uploadDataAgreementToDrive(client, {
@@ -325,7 +323,7 @@ export function DataAgreementCard({
       submissionSucceeded = true;
       setHasCompletedSubmission(true);
       setIsOpen(false);
-      setMessage("Acuerdo firmado y guardado en Google Drive.");
+      setMessage("Acuerdo firmado enviado con exito.");
     } catch (error) {
       const reason =
         error instanceof Error
@@ -333,7 +331,7 @@ export function DataAgreementCard({
           : "No se ha podido enviar el acuerdo firmado.";
       setMessage(
         createdPdf
-          ? `PDF firmado generado. Falta completar la subida a Drive: ${reason}`
+          ? `PDF firmado generado. Falta completar el envio: ${reason}`
           : reason,
       );
     } finally {
@@ -363,16 +361,32 @@ export function DataAgreementCard({
         </div>
       </div>
 
-      {storedAgreement.driveUrl && (
+      {hasStoredAgreement && (
+        <div className="agreement-signed-state">
+          <FiCheckCircle aria-hidden="true" />
+          <div>
+            <strong>Acuerdo de datos firmado</strong>
+            <span>Se ha enviado correctamente a la Pena Oasis.</span>
+          </div>
+        </div>
+      )}
+
+      {hasStoredAgreement && generatedAgreement && (
         <a
-          className="agreement-drive-link"
-          href={storedAgreement.driveUrl}
-          rel="noreferrer"
-          target="_blank"
+          className="agreement-download-link"
+          download={generatedAgreement.fileName}
+          href={generatedAgreement.url}
         >
-          <FiExternalLink aria-hidden="true" />
-          <span>Abrir PDF firmado</span>
+          <FiDownload aria-hidden="true" />
+          <span>Descargar PDF firmado</span>
         </a>
+      )}
+
+      {hasStoredAgreement && message && (
+        <p className="agreement-message" role="status">
+          <FiCheckCircle aria-hidden="true" />
+          <span>{message}</span>
+        </p>
       )}
 
       {!hasStoredAgreement && (
@@ -386,10 +400,10 @@ export function DataAgreementCard({
         </button>
       )}
 
-      {hasStoredAgreement && !storedAgreement.driveUrl && (
+      {hasStoredAgreement && !message && !generatedAgreement && (
         <p className="agreement-message" role="status">
           <FiCheckCircle aria-hidden="true" />
-          <span>Acuerdo firmado y guardado.</span>
+          <span>Acuerdo firmado y enviado.</span>
         </p>
       )}
 

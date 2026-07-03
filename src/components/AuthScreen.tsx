@@ -1,10 +1,15 @@
 import { FormEvent, useEffect, useState } from "react";
 import type { AuthError, User } from "@supabase/supabase-js";
 import {
+  FiCheckCircle,
+  FiEdit3,
   FiEye,
   FiEyeOff,
+  FiKey,
   FiLock,
+  FiLogOut,
   FiMail,
+  FiMenu,
   FiTool,
   FiUser,
 } from "react-icons/fi";
@@ -165,6 +170,15 @@ function buildMemberForm(profile: Profile | null, user: User | null): MemberForm
   };
 }
 
+function isMemberProfileComplete(profile: Profile | null) {
+  return Boolean(
+    profile?.first_name?.trim() &&
+      profile.last_name?.trim() &&
+      profile.dni?.trim() &&
+      profile.member_number?.trim(),
+  );
+}
+
 function readInitialAuthMode(): AuthMode {
   if (isSignupConfirmationRoute()) {
     return "signin";
@@ -263,6 +277,14 @@ export function AuthScreen() {
     memberNumber: "",
   });
   const [profileMessage, setProfileMessage] = useState("");
+  const [isMemberMenuOpen, setIsMemberMenuOpen] = useState(false);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [isChangingAccountPassword, setIsChangingAccountPassword] =
+    useState(false);
+  const [accountPassword, setAccountPassword] = useState("");
+  const [confirmAccountPassword, setConfirmAccountPassword] = useState("");
+  const [accountPasswordMessage, setAccountPasswordMessage] = useState("");
+  const [isAccountPasswordSaving, setIsAccountPasswordSaving] = useState(false);
 
   const submitLabel =
     mode === "signin"
@@ -271,6 +293,12 @@ export function AuthScreen() {
         ? "Cuenta creada"
         : "Crear cuenta";
   const welcomeName = getFirstName(profile?.full_name) ?? getFallbackName(user);
+  const hasCompleteMemberProfile = isMemberProfileComplete(profile);
+  const shouldShowMemberForm = !hasCompleteMemberProfile || isEditingProfile;
+  const shouldShowPrivateContent =
+    hasCompleteMemberProfile &&
+    !isEditingProfile &&
+    !isChangingAccountPassword;
 
   useEffect(() => {
     let isMounted = true;
@@ -372,6 +400,12 @@ export function AuthScreen() {
         setProfile(null);
         setMemberForm(buildMemberForm(null, null));
         setProfileMessage("");
+        setIsMemberMenuOpen(false);
+        setIsEditingProfile(false);
+        setIsChangingAccountPassword(false);
+        setAccountPassword("");
+        setConfirmAccountPassword("");
+        setAccountPasswordMessage("");
         setIsProfileSchemaReady(true);
         return;
       }
@@ -562,6 +596,12 @@ export function AuthScreen() {
   }
 
   async function handleSignOut() {
+    setIsMemberMenuOpen(false);
+    setIsEditingProfile(false);
+    setIsChangingAccountPassword(false);
+    setAccountPassword("");
+    setConfirmAccountPassword("");
+    setAccountPasswordMessage("");
     const client = await getSupabaseClient();
     await client?.auth.signOut();
   }
@@ -583,7 +623,16 @@ export function AuthScreen() {
 
     const firstName = memberForm.firstName.trim();
     const lastName = memberForm.lastName.trim();
+    const dni = memberForm.dni.trim().toUpperCase();
+    const memberNumber = memberForm.memberNumber.trim();
     const fullNameForProfile = [firstName, lastName].filter(Boolean).join(" ");
+
+    if (!firstName || !lastName || !dni || !memberNumber) {
+      setProfileMessage(
+        "Completa nombre, apellidos, DNI y nÇ§ de socio para continuar.",
+      );
+      return;
+    }
 
     setIsProfileSaving(true);
 
@@ -596,8 +645,8 @@ export function AuthScreen() {
           first_name: firstName || null,
           last_name: lastName || null,
           full_name: fullNameForProfile || profile?.full_name || null,
-          dni: memberForm.dni.trim() || null,
-          member_number: memberForm.memberNumber.trim() || null,
+          dni,
+          member_number: memberNumber,
           updated_at: new Date().toISOString(),
         },
         { onConflict: "id" },
@@ -619,7 +668,68 @@ export function AuthScreen() {
     setProfile(data);
     setMemberForm(buildMemberForm(data, user));
     setIsProfileSchemaReady(true);
+    setIsEditingProfile(false);
+    setIsChangingAccountPassword(false);
     setProfileMessage("Datos guardados correctamente.");
+  }
+
+  async function handleAccountPasswordSubmit(
+    event: FormEvent<HTMLFormElement>,
+  ) {
+    event.preventDefault();
+    setAccountPasswordMessage("");
+
+    if (accountPassword.length < 6) {
+      setAccountPasswordMessage(
+        "La nueva contraseÇña debe tener al menos 6 caracteres.",
+      );
+      return;
+    }
+
+    if (accountPassword !== confirmAccountPassword) {
+      setAccountPasswordMessage("Las contraseÇñas no coinciden.");
+      return;
+    }
+
+    const client = await getSupabaseClient();
+
+    if (!client) {
+      setAccountPasswordMessage(
+        "Conecta Supabase para guardar la nueva contraseÇña.",
+      );
+      return;
+    }
+
+    setIsAccountPasswordSaving(true);
+    const { error } = await client.auth.updateUser({ password: accountPassword });
+    setIsAccountPasswordSaving(false);
+
+    if (error) {
+      setAccountPasswordMessage(
+        getFriendlyAuthErrorMessage(error, "password-update"),
+      );
+      return;
+    }
+
+    setAccountPassword("");
+    setConfirmAccountPassword("");
+    setIsChangingAccountPassword(false);
+    setAccountPasswordMessage("ContraseÇña actualizada correctamente.");
+  }
+
+  function openProfileEditor() {
+    setIsMemberMenuOpen(false);
+    setIsChangingAccountPassword(false);
+    setAccountPasswordMessage("");
+    setProfileMessage("");
+    setIsEditingProfile(true);
+  }
+
+  function openPasswordEditor() {
+    setIsMemberMenuOpen(false);
+    setIsEditingProfile(false);
+    setProfileMessage("");
+    setIsChangingAccountPassword(true);
   }
 
   async function handleAgreementStored(record: AgreementStoredRecord) {
@@ -689,6 +799,40 @@ export function AuthScreen() {
   return (
     <section className="screen personal-screen" aria-label="Área Personal">
       <div className="personal-backdrop" aria-hidden="true" />
+
+      {!isSessionLoading && user && !isPasswordRecovery && (
+        <div className="personal-topbar">
+          <span>Area Personal</span>
+          <div className="member-menu-wrap">
+            <button
+              className="member-menu-button"
+              type="button"
+              aria-label="Abrir menu personal"
+              aria-expanded={isMemberMenuOpen}
+              onClick={() => setIsMemberMenuOpen((current) => !current)}
+            >
+              <FiMenu aria-hidden="true" />
+            </button>
+
+            {isMemberMenuOpen && (
+              <div className="member-menu" role="menu">
+                <button type="button" role="menuitem" onClick={openProfileEditor}>
+                  <FiEdit3 aria-hidden="true" />
+                  <span>Editar datos personales</span>
+                </button>
+                <button type="button" role="menuitem" onClick={openPasswordEditor}>
+                  <FiKey aria-hidden="true" />
+                  <span>Cambiar contrasena</span>
+                </button>
+                <button type="button" role="menuitem" onClick={handleSignOut}>
+                  <FiLogOut aria-hidden="true" />
+                  <span>Cerrar sesion</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="auth-sheet" data-view={user ? "private" : "auth"}>
         {isSessionLoading && (
@@ -767,15 +911,35 @@ export function AuthScreen() {
 
         {!isSessionLoading && user && !isPasswordRecovery && (
           <div className="member-panel">
-            <p className="member-kicker">Área Personal</p>
-            <h1>Bienvenido {welcomeName}</h1>
+            <div className="member-heading">
+              <p className="member-kicker">Area Personal</p>
+              <h1>Bienvenido {welcomeName}</h1>
+              {!hasCompleteMemberProfile && (
+                <p>
+                  Completa tus datos personales para activar tu area privada.
+                </p>
+              )}
+            </div>
             {isProfileLoading ? (
               <div className="personal-loading" role="status">
                 Cargando datos del peñista...
               </div>
             ) : (
               <>
+                {shouldShowMemberForm && (
                 <form className="member-form" onSubmit={handleProfileSubmit}>
+                  <div className="member-form-intro">
+                    <h2>
+                      {hasCompleteMemberProfile
+                        ? "Editar datos personales"
+                        : "Tus datos personales"}
+                    </h2>
+                    <p>
+                      Estos datos son necesarios para gestionar tu perfil de
+                      socio.
+                    </p>
+                  </div>
+
                   <div className="member-form-grid">
                     <label className="form-field">
                       <span>Nombre</span>
@@ -810,7 +974,8 @@ export function AuthScreen() {
                               lastName: event.target.value,
                             }))
                           }
-                          placeholder="Verdú"
+                          placeholder="Apellidos"
+                          required
                           type="text"
                         />
                       </span>
@@ -831,6 +996,7 @@ export function AuthScreen() {
                           }
                           placeholder="00000000A"
                           inputMode="text"
+                          required
                           type="text"
                         />
                       </span>
@@ -849,8 +1015,9 @@ export function AuthScreen() {
                               memberNumber: event.target.value,
                             }))
                           }
-                          placeholder="Pendiente"
+                          placeholder="Numero de socio"
                           inputMode="numeric"
+                          required
                           type="text"
                         />
                       </span>
@@ -872,13 +1039,133 @@ export function AuthScreen() {
                     {isProfileSaving ? "Guardando..." : "Guardar datos"}
                   </button>
 
+                  {hasCompleteMemberProfile && isEditingProfile && (
+                    <button
+                      className="secondary-button"
+                      type="button"
+                      onClick={() => {
+                        setMemberForm(buildMemberForm(profile, user));
+                        setIsEditingProfile(false);
+                        setProfileMessage("");
+                      }}
+                    >
+                      Cancelar
+                    </button>
+                  )}
+
                   {profileMessage && (
                     <p className="auth-message" role="status">
                       {profileMessage}
                     </p>
                   )}
                 </form>
+                )}
 
+                {!shouldShowMemberForm && profileMessage && (
+                  <p className="auth-message success-message" role="status">
+                    <FiCheckCircle aria-hidden="true" />
+                    <span>{profileMessage}</span>
+                  </p>
+                )}
+
+                {isChangingAccountPassword && (
+                  <form
+                    className="member-form"
+                    onSubmit={handleAccountPasswordSubmit}
+                  >
+                    <div className="member-form-intro">
+                      <h2>Cambiar contrasena</h2>
+                      <p>Elige una nueva contrasena para tu area personal.</p>
+                    </div>
+
+                    <label className="form-field">
+                      <span>Nueva contrasena</span>
+                      <span className="input-shell">
+                        <FiLock aria-hidden="true" />
+                        <input
+                          autoComplete="new-password"
+                          value={accountPassword}
+                          onChange={(event) =>
+                            setAccountPassword(event.target.value)
+                          }
+                          placeholder="Nueva contrasena"
+                          required
+                          minLength={6}
+                          type={showPassword ? "text" : "password"}
+                        />
+                        <button
+                          className="icon-button"
+                          type="button"
+                          aria-label={
+                            showPassword
+                              ? "Ocultar contrasena"
+                              : "Mostrar contrasena"
+                          }
+                          onClick={() => setShowPassword((visible) => !visible)}
+                        >
+                          {showPassword ? <FiEye /> : <FiEyeOff />}
+                        </button>
+                      </span>
+                    </label>
+
+                    <label className="form-field">
+                      <span>Repetir contrasena</span>
+                      <span className="input-shell">
+                        <FiLock aria-hidden="true" />
+                        <input
+                          autoComplete="new-password"
+                          value={confirmAccountPassword}
+                          onChange={(event) =>
+                            setConfirmAccountPassword(event.target.value)
+                          }
+                          placeholder="Repite la contrasena"
+                          required
+                          minLength={6}
+                          type={showPassword ? "text" : "password"}
+                        />
+                      </span>
+                    </label>
+
+                    <button
+                      className="primary-button"
+                      disabled={isAccountPasswordSaving}
+                      type="submit"
+                    >
+                      {isAccountPasswordSaving
+                        ? "Guardando..."
+                        : "Actualizar contrasena"}
+                    </button>
+
+                    {accountPasswordMessage && (
+                      <p className="auth-message" role="status">
+                        {accountPasswordMessage}
+                      </p>
+                    )}
+
+                    <button
+                      className="secondary-button"
+                      type="button"
+                      onClick={() => {
+                        setIsChangingAccountPassword(false);
+                        setAccountPassword("");
+                        setConfirmAccountPassword("");
+                        setAccountPasswordMessage("");
+                      }}
+                    >
+                      Cancelar
+                    </button>
+                  </form>
+                )}
+
+                {!isChangingAccountPassword && accountPasswordMessage && (
+                  <p className="auth-message success-message" role="status">
+                    <FiCheckCircle aria-hidden="true" />
+                    <span>{accountPasswordMessage}</span>
+                  </p>
+                )}
+
+                {shouldShowPrivateContent && (
+                  <>
                 <DataAgreementCard
                   member={{
                     firstName: memberForm.firstName,
@@ -903,15 +1190,10 @@ export function AuthScreen() {
                     pronto tendrás aquí tus datos y novedades.
                   </p>
                 </div>
+                  </>
+                )}
               </>
             )}
-            <button
-              className="secondary-button"
-              type="button"
-              onClick={handleSignOut}
-            >
-              Cerrar sesión
-            </button>
           </div>
         )}
 

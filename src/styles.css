@@ -274,8 +274,8 @@ button {
 }
 
 .auth-sheet[data-view="private"] {
-  inset: clamp(72px, 10dvh, 104px) 16px 0;
-  padding-top: 26px;
+  inset: clamp(56px, 8dvh, 78px) 16px 0;
+  padding-top: 22px;
 }
 
 .auth-sheet::-webkit-scrollbar {
@@ -295,6 +295,105 @@ button {
   display: grid;
   gap: 14px;
   color: var(--oasis-ink);
+}
+
+.personal-topbar {
+  position: absolute;
+  top: calc(12px + env(safe-area-inset-top));
+  right: 18px;
+  left: 18px;
+  z-index: 6;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  min-height: 38px;
+  color: var(--oasis-white);
+}
+
+.personal-topbar > span {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.member-menu-wrap {
+  position: relative;
+}
+
+.member-menu-button {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  cursor: pointer;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 999px;
+  color: var(--oasis-white);
+  background: rgba(0, 37, 94, 0.24);
+  backdrop-filter: blur(8px);
+}
+
+.member-menu-button svg {
+  width: 21px;
+  height: 21px;
+}
+
+.member-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 7;
+  display: grid;
+  min-width: 240px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 64, 164, 0.12);
+  border-radius: 8px;
+  background: var(--oasis-white);
+  box-shadow: 0 18px 42px rgba(0, 24, 76, 0.22);
+}
+
+.member-menu button {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  cursor: pointer;
+  color: #173b77;
+  background: var(--oasis-white);
+  padding: 0 14px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.member-menu button + button {
+  border-top: 1px solid var(--oasis-soft-line);
+}
+
+.member-menu button:hover,
+.member-menu button:focus-visible {
+  background: #f3f6fb;
+}
+
+.member-menu svg {
+  width: 17px;
+  height: 17px;
+  color: var(--oasis-blue-dark);
+}
+
+.member-heading {
+  display: grid;
+  gap: 6px;
+}
+
+.member-heading p:last-child {
+  margin: 0;
+  color: #66717f;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.45;
 }
 
 .member-kicker {
@@ -394,6 +493,43 @@ button {
 
 .agreement-panel-header p[data-status="signed"] {
   color: #1f7a4d;
+}
+
+.agreement-signed-state {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid rgba(31, 122, 77, 0.16);
+  border-radius: 8px;
+  background: #f4fbf7;
+  padding: 10px 12px;
+}
+
+.agreement-signed-state > svg {
+  width: 21px;
+  height: 21px;
+  color: #1f7a4d;
+}
+
+.agreement-signed-state div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.agreement-signed-state strong {
+  color: #175f3c;
+  font-size: 13px;
+  font-weight: 850;
+  line-height: 1.2;
+}
+
+.agreement-signed-state span {
+  color: #4f6b5d;
+  font-size: 11.5px;
+  font-weight: 650;
+  line-height: 1.35;
 }
 
 .icon-text-button {
@@ -529,8 +665,7 @@ button {
     #ffffff;
 }
 
-.agreement-download-link,
-.agreement-drive-link {
+.agreement-download-link {
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: center;
@@ -550,8 +685,7 @@ button {
   justify-self: center;
 }
 
-.agreement-download-link svg,
-.agreement-drive-link svg {
+.agreement-download-link svg {
   width: 15px;
   height: 15px;
 }
@@ -580,6 +714,27 @@ button {
 .member-form {
   display: grid;
   gap: 12px;
+}
+
+.member-form-intro {
+  display: grid;
+  gap: 5px;
+}
+
+.member-form-intro h2 {
+  margin: 0;
+  color: #173b77;
+  font-size: 18px;
+  font-weight: 850;
+  line-height: 1.2;
+}
+
+.member-form-intro p {
+  margin: 0;
+  color: #66717f;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.45;
 }
 
 .member-form-grid {
@@ -856,6 +1011,20 @@ button {
   overflow-wrap: anywhere;
 }
 
+.success-message {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+}
+
+.success-message svg {
+  width: 16px;
+  height: 16px;
+  color: #1f7a4d;
+}
+
 .bottom-nav {
   position: absolute;
   right: 0;
@@ -931,7 +1100,7 @@ button {
   }
 
   .auth-sheet[data-view="private"] {
-    inset: clamp(58px, 9dvh, 82px) 12px 0;
+    inset: clamp(48px, 7dvh, 66px) 12px 0;
   }
 
   .home-contact-panel {
