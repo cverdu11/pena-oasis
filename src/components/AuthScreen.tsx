@@ -179,6 +179,29 @@ function isMemberProfileComplete(profile: Profile | null) {
   );
 }
 
+function isValidIdentityDocument(value: string) {
+  const normalized = value.trim().toUpperCase().replace(/[\s-]/g, "");
+  const controlLetters = "TRWAGMYFPDXBNJZSQVHLCKE";
+  const dniMatch = normalized.match(/^(\d{8})([A-Z])$/);
+
+  if (dniMatch) {
+    return controlLetters[Number(dniMatch[1]) % 23] === dniMatch[2];
+  }
+
+  const nieMatch = normalized.match(/^([XYZ])(\d{7})([A-Z])$/);
+
+  if (!nieMatch) {
+    return false;
+  }
+
+  const niePrefix =
+    nieMatch[1] === "X" ? "0" : nieMatch[1] === "Y" ? "1" : "2";
+
+  return (
+    controlLetters[Number(`${niePrefix}${nieMatch[2]}`) % 23] === nieMatch[3]
+  );
+}
+
 function readInitialAuthMode(): AuthMode {
   if (isSignupConfirmationRoute()) {
     return "signin";
@@ -614,6 +637,26 @@ export function AuthScreen() {
       return;
     }
 
+    const firstName = memberForm.firstName.trim();
+    const lastName = memberForm.lastName.trim();
+    const dni = memberForm.dni.trim().toUpperCase().replace(/[\s-]/g, "");
+    const memberNumber = memberForm.memberNumber.trim();
+    const fullNameForProfile = [firstName, lastName].filter(Boolean).join(" ");
+
+    if (!firstName || !lastName || !dni || !memberNumber) {
+      setProfileMessage(
+        "Completa nombre, apellidos, DNI y numero de socio para continuar.",
+      );
+      return;
+    }
+
+    if (!isValidIdentityDocument(dni)) {
+      setProfileMessage(
+        "DNI/NIE incorrecto. Revisa el formato y la letra antes de guardar.",
+      );
+      return;
+    }
+
     const client = await getSupabaseClient();
 
     if (!client) {
@@ -621,56 +664,47 @@ export function AuthScreen() {
       return;
     }
 
-    const firstName = memberForm.firstName.trim();
-    const lastName = memberForm.lastName.trim();
-    const dni = memberForm.dni.trim().toUpperCase();
-    const memberNumber = memberForm.memberNumber.trim();
-    const fullNameForProfile = [firstName, lastName].filter(Boolean).join(" ");
-
-    if (!firstName || !lastName || !dni || !memberNumber) {
-      setProfileMessage(
-        "Completa nombre, apellidos, DNI y nÇ§ de socio para continuar.",
-      );
-      return;
-    }
-
     setIsProfileSaving(true);
 
-    const { data, error } = await client
-      .from("profiles")
-      .upsert(
-        {
-          id: user.id,
-          email: user.email ?? profile?.email ?? null,
-          first_name: firstName || null,
-          last_name: lastName || null,
-          full_name: fullNameForProfile || profile?.full_name || null,
-          dni,
-          member_number: memberNumber,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "id" },
-      )
-      .select(
-        EXTENDED_PROFILE_SELECT,
-      )
-      .single<Profile>();
+    try {
+      const { data, error } = await client
+        .from("profiles")
+        .upsert(
+          {
+            id: user.id,
+            email: user.email ?? profile?.email ?? null,
+            first_name: firstName || null,
+            last_name: lastName || null,
+            full_name: fullNameForProfile || profile?.full_name || null,
+            dni,
+            member_number: memberNumber,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "id" },
+        )
+        .select(EXTENDED_PROFILE_SELECT)
+        .single<Profile>();
 
-    setIsProfileSaving(false);
+      if (error) {
+        setProfileMessage(
+          "No se han podido guardar los datos. Intentalo de nuevo en unos segundos.",
+        );
+        return;
+      }
 
-    if (error) {
+      setProfile(data);
+      setMemberForm(buildMemberForm(data, user));
+      setIsProfileSchemaReady(true);
+      setIsEditingProfile(false);
+      setIsChangingAccountPassword(false);
+      setProfileMessage("Datos guardados correctamente.");
+    } catch {
       setProfileMessage(
-        "No se han podido guardar los datos. Revisa que la tabla profiles tenga los nuevos campos.",
+        "No se han podido guardar los datos. Revisa tu conexion e intentalo de nuevo.",
       );
-      return;
+    } finally {
+      setIsProfileSaving(false);
     }
-
-    setProfile(data);
-    setMemberForm(buildMemberForm(data, user));
-    setIsProfileSchemaReady(true);
-    setIsEditingProfile(false);
-    setIsChangingAccountPassword(false);
-    setProfileMessage("Datos guardados correctamente.");
   }
 
   async function handleAccountPasswordSubmit(
@@ -912,7 +946,6 @@ export function AuthScreen() {
         {!isSessionLoading && user && !isPasswordRecovery && (
           <div className="member-panel">
             <div className="member-heading">
-              <p className="member-kicker">Area Personal</p>
               <h1>Bienvenido {welcomeName}</h1>
               {!hasCompleteMemberProfile && (
                 <p>
@@ -942,7 +975,9 @@ export function AuthScreen() {
 
                   <div className="member-form-grid">
                     <label className="form-field">
-                      <span>Nombre</span>
+                      <span>
+                        Nombre <span className="required-mark">*</span>
+                      </span>
                       <span className="input-shell">
                         <FiUser aria-hidden="true" />
                         <input
@@ -962,7 +997,9 @@ export function AuthScreen() {
                     </label>
 
                     <label className="form-field">
-                      <span>Apellidos</span>
+                      <span>
+                        Apellidos <span className="required-mark">*</span>
+                      </span>
                       <span className="input-shell">
                         <FiUser aria-hidden="true" />
                         <input
@@ -982,7 +1019,9 @@ export function AuthScreen() {
                     </label>
 
                     <label className="form-field">
-                      <span>DNI</span>
+                      <span>
+                        DNI <span className="required-mark">*</span>
+                      </span>
                       <span className="input-shell">
                         <FiUser aria-hidden="true" />
                         <input
@@ -991,11 +1030,15 @@ export function AuthScreen() {
                           onChange={(event) =>
                             setMemberForm((current) => ({
                               ...current,
-                              dni: event.target.value.toUpperCase(),
+                              dni: event.target.value
+                                .toUpperCase()
+                                .replace(/[^0-9A-Z]/g, "")
+                                .slice(0, 9),
                             }))
                           }
                           placeholder="00000000A"
                           inputMode="text"
+                          maxLength={9}
                           required
                           type="text"
                         />
@@ -1003,7 +1046,9 @@ export function AuthScreen() {
                     </label>
 
                     <label className="form-field">
-                      <span>Nº de socio</span>
+                      <span>
+                        Nº de socio <span className="required-mark">*</span>
+                      </span>
                       <span className="input-shell">
                         <FiUser aria-hidden="true" />
                         <input

@@ -34,6 +34,7 @@ type StoredAgreementRecord = {
 type GeneratedAgreement = {
   url: string;
   fileName: string;
+  blob: Blob;
 };
 
 type SignaturePoint = {
@@ -250,6 +251,41 @@ export function DataAgreementCard({
     setMessage("");
   }
 
+  async function handleSaveGeneratedAgreement() {
+    if (!generatedAgreement) {
+      return;
+    }
+
+    const file = new File([generatedAgreement.blob], generatedAgreement.fileName, {
+      type: "application/pdf",
+    });
+
+    if (navigator.canShare?.({ files: [file] }) && navigator.share) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: "PDF firmado",
+        });
+        return;
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+      }
+    }
+
+    const downloadUrl = URL.createObjectURL(generatedAgreement.blob);
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = generatedAgreement.fileName;
+    link.rel = "noopener";
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+  }
+
   async function handleSubmitAgreement() {
     if (submitLockRef.current || isSubmitting) {
       return;
@@ -296,6 +332,7 @@ export function DataAgreementCard({
       createdPdf = {
         url: signedPdfUrl,
         fileName: signedAgreement.fileName,
+        blob: signedAgreement.blob,
       };
       replaceGeneratedAgreement(createdPdf);
 
@@ -372,14 +409,14 @@ export function DataAgreementCard({
       )}
 
       {hasStoredAgreement && generatedAgreement && (
-        <a
+        <button
           className="agreement-download-link"
-          download={generatedAgreement.fileName}
-          href={generatedAgreement.url}
+          type="button"
+          onClick={handleSaveGeneratedAgreement}
         >
           <FiDownload aria-hidden="true" />
-          <span>Descargar PDF firmado</span>
-        </a>
+          <span>Guardar PDF firmado</span>
+        </button>
       )}
 
       {hasStoredAgreement && message && (
@@ -492,14 +529,14 @@ export function DataAgreementCard({
           </button>
 
           {generatedAgreement && (
-            <a
+            <button
               className="agreement-download-link"
-              download={generatedAgreement.fileName}
-              href={generatedAgreement.url}
+              type="button"
+              onClick={handleSaveGeneratedAgreement}
             >
               <FiDownload aria-hidden="true" />
-              <span>Descargar PDF firmado</span>
-            </a>
+              <span>Guardar PDF firmado</span>
+            </button>
           )}
 
           {message && (

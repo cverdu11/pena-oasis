@@ -274,7 +274,7 @@ button {
 }
 
 .auth-sheet[data-view="private"] {
-  inset: clamp(56px, 8dvh, 78px) 16px 0;
+  inset: clamp(68px, 9dvh, 88px) 16px 0;
   padding-top: 22px;
 }
 
@@ -299,14 +299,14 @@ button {
 
 .personal-topbar {
   position: absolute;
-  top: calc(12px + env(safe-area-inset-top));
-  right: 18px;
-  left: 18px;
+  top: calc(8px + env(safe-area-inset-top));
+  right: 22px;
+  left: 22px;
   z-index: 6;
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
-  min-height: 38px;
+  min-height: 34px;
   color: var(--oasis-white);
 }
 
@@ -323,8 +323,8 @@ button {
 
 .member-menu-button {
   display: grid;
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   cursor: pointer;
   place-items: center;
   border: 1px solid rgba(255, 255, 255, 0.24);
@@ -335,8 +335,8 @@ button {
 }
 
 .member-menu-button svg {
-  width: 21px;
-  height: 21px;
+  width: 19px;
+  height: 19px;
 }
 
 .member-menu {
@@ -394,6 +394,11 @@ button {
   font-size: 12px;
   font-weight: 650;
   line-height: 1.45;
+}
+
+.required-mark {
+  color: #d92d20;
+  font-weight: 900;
 }
 
 .member-kicker {
@@ -667,10 +672,13 @@ button {
 
 .agreement-download-link {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto auto;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  justify-self: center;
   min-height: 38px;
+  cursor: pointer;
   border: 1px solid rgba(0, 64, 164, 0.16);
   border-radius: 999px;
   color: var(--oasis-blue-dark);
@@ -679,10 +687,6 @@ button {
   font-size: 12px;
   font-weight: 800;
   text-decoration: none;
-}
-
-.agreement-download-link {
-  justify-self: center;
 }
 
 .agreement-download-link svg {
@@ -1100,7 +1104,7 @@ button {
   }
 
   .auth-sheet[data-view="private"] {
-    inset: clamp(48px, 7dvh, 66px) 12px 0;
+    inset: clamp(60px, 8dvh, 74px) 12px 0;
   }
 
   .home-contact-panel {
