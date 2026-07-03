@@ -366,9 +366,10 @@ export function DataAgreementCard({
         error instanceof Error
           ? error.message
           : "No se ha podido enviar el acuerdo firmado.";
+      console.warn("Data agreement upload failed", reason);
       setMessage(
         createdPdf
-          ? `PDF firmado generado. Falta completar el envio: ${reason}`
+          ? 'PDF firmado listo. No hemos podido confirmar el envío. Pulsa "Reintentar envío" para intentarlo otra vez.'
           : reason,
       );
     } finally {
@@ -509,7 +510,9 @@ export function DataAgreementCard({
             ) : (
               <>
                 <FiSend aria-hidden="true" />
-                <span>Firmar y enviar</span>
+                <span>
+                  {generatedAgreement ? "Reintentar envío" : "Firmar y enviar"}
+                </span>
               </>
             )}
           </button>
