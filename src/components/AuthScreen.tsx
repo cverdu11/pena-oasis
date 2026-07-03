@@ -179,27 +179,38 @@ function isMemberProfileComplete(profile: Profile | null) {
   );
 }
 
-function isValidIdentityDocument(value: string) {
+function getIdentityDocumentError(value: string) {
   const normalized = value.trim().toUpperCase().replace(/[\s-]/g, "");
   const controlLetters = "TRWAGMYFPDXBNJZSQVHLCKE";
   const dniMatch = normalized.match(/^(\d{8})([A-Z])$/);
 
   if (dniMatch) {
-    return controlLetters[Number(dniMatch[1]) % 23] === dniMatch[2];
+    return controlLetters[Number(dniMatch[1]) % 23] === dniMatch[2]
+      ? null
+      : "La letra del DNI no coincide. Revisa número y letra.";
+  }
+
+  if (/^\d/.test(normalized)) {
+    return "El DNI debe tener 8 números y una letra.";
   }
 
   const nieMatch = normalized.match(/^([XYZ])(\d{7})([A-Z])$/);
 
-  if (!nieMatch) {
-    return false;
+  if (nieMatch) {
+    const niePrefix =
+      nieMatch[1] === "X" ? "0" : nieMatch[1] === "Y" ? "1" : "2";
+
+    return controlLetters[Number(`${niePrefix}${nieMatch[2]}`) % 23] ===
+      nieMatch[3]
+      ? null
+      : "La letra del NIE no coincide. Revisa número y letra.";
   }
 
-  const niePrefix =
-    nieMatch[1] === "X" ? "0" : nieMatch[1] === "Y" ? "1" : "2";
+  if (/^[XYZ]/.test(normalized)) {
+    return "El NIE debe empezar por X, Y o Z, tener 7 números y terminar con una letra.";
+  }
 
-  return (
-    controlLetters[Number(`${niePrefix}${nieMatch[2]}`) % 23] === nieMatch[3]
-  );
+  return "El DNI debe tener 8 números y una letra. Si es NIE, debe empezar por X, Y o Z.";
 }
 
 function readInitialAuthMode(): AuthMode {
@@ -653,10 +664,10 @@ export function AuthScreen() {
       return;
     }
 
-    if (!isValidIdentityDocument(dni)) {
-      setProfileMessage(
-        "DNI/NIE incorrecto. Revisa el formato y la letra antes de guardar.",
-      );
+    const dniError = getIdentityDocumentError(dni);
+
+    if (dniError) {
+      setProfileMessage(dniError);
       return;
     }
 
