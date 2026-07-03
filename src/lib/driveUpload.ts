@@ -26,6 +26,43 @@ export type DataAgreementUploadResult = {
   webViewLink: string | null;
 };
 
+async function readFunctionErrorMessage(
+  error: unknown,
+  response?: Response,
+): Promise<string> {
+  const candidateResponse =
+    response ??
+    (typeof error === "object" && error !== null && "context" in error
+      ? (error as { context?: unknown }).context
+      : null);
+
+  if (candidateResponse instanceof Response) {
+    const clonedResponse = candidateResponse.clone();
+
+    try {
+      const body = (await clonedResponse.json()) as { error?: unknown };
+
+      if (typeof body.error === "string" && body.error.trim()) {
+        return body.error.trim();
+      }
+    } catch {
+      try {
+        const bodyText = await candidateResponse.clone().text();
+
+        if (bodyText.trim()) {
+          return bodyText.trim();
+        }
+      } catch {
+        // Fall through to the generic error message.
+      }
+    }
+  }
+
+  return error instanceof Error
+    ? error.message
+    : "No se ha podido subir el acuerdo firmado a Google Drive.";
+}
+
 export async function uploadDataAgreementToDrive(
   client: SupabaseClient,
   payload: DataAgreementUploadPayload,
@@ -33,13 +70,14 @@ export async function uploadDataAgreementToDrive(
   let lastError: unknown = null;
 
   for (const functionName of dataAgreementFunctionNames) {
-    const { data, error } =
+    const { data, error, response } =
       await client.functions.invoke<DataAgreementUploadResult>(functionName, {
         body: payload,
       });
 
     if (error) {
       lastError = error;
+      const errorMessage = await readFunctionErrorMessage(error, response);
 
       if (
         dataAgreementFunctionNames.length > 1 &&
@@ -49,7 +87,7 @@ export async function uploadDataAgreementToDrive(
       }
 
       throw new Error(
-        error.message ||
+        errorMessage ||
           "No se ha podido subir el acuerdo firmado a Google Drive.",
       );
     }
