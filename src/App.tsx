@@ -4,6 +4,7 @@ import { BottomNav } from "./components/BottomNav";
 import { HomeScreen } from "./components/HomeScreen";
 import { LegalScreen } from "./components/LegalScreen";
 import {
+  HOME_ROUTE_HASH,
   PERSONAL_ROUTE_HASH,
   PRIVACY_ROUTE_HASH,
   SIGNUP_ROUTE_HASH,
@@ -28,6 +29,10 @@ function isSignupConfirmationRoute() {
 }
 
 function readInitialRoute(): AppRoute {
+  if (window.location.hash === HOME_ROUTE_HASH) {
+    return "home";
+  }
+
   if (
     window.location.hash === PERSONAL_ROUTE_HASH ||
     window.location.hash === SIGNUP_ROUTE_HASH ||
@@ -41,7 +46,7 @@ function readInitialRoute(): AppRoute {
     return "privacy";
   }
 
-  return "home";
+  return "personal";
 }
 
 export default function App() {
@@ -63,7 +68,7 @@ export default function App() {
       "",
       tab === "personal"
         ? `${window.location.pathname}${PERSONAL_ROUTE_HASH}`
-        : window.location.pathname,
+        : `${window.location.pathname}${HOME_ROUTE_HASH}`,
     );
   }
 

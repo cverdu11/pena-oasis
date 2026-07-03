@@ -1,4 +1,5 @@
 export const CONTACT_EMAIL = "pmalaguistaoasis@gmail.com";
+export const HOME_ROUTE_HASH = "#inicio";
 export const PERSONAL_ROUTE_HASH = "#area-personal";
 export const SIGNUP_ROUTE_HASH = "#area-personal-registro";
 export const PRIVACY_ROUTE_HASH = "#privacidad";
