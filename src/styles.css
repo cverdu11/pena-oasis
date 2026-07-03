@@ -274,8 +274,8 @@ button {
 }
 
 .auth-sheet[data-view="private"] {
-  inset: clamp(68px, 9dvh, 88px) 16px 0;
-  padding-top: 22px;
+  inset: clamp(60px, 8dvh, 78px) 16px 0;
+  padding-top: 18px;
 }
 
 .auth-sheet::-webkit-scrollbar {
@@ -311,10 +311,9 @@ button {
 }
 
 .personal-topbar > span {
-  font-size: 12px;
-  font-weight: 800;
+  font-size: clamp(13px, 3.4vw, 15px);
+  font-weight: 850;
   letter-spacing: 0;
-  text-transform: uppercase;
 }
 
 .member-menu-wrap {
@@ -381,19 +380,6 @@ button {
   width: 17px;
   height: 17px;
   color: var(--oasis-blue-dark);
-}
-
-.member-heading {
-  display: grid;
-  gap: 6px;
-}
-
-.member-heading p:last-child {
-  margin: 0;
-  color: #66717f;
-  font-size: 12px;
-  font-weight: 650;
-  line-height: 1.45;
 }
 
 .required-mark {
@@ -1104,7 +1090,7 @@ button {
   }
 
   .auth-sheet[data-view="private"] {
-    inset: clamp(60px, 8dvh, 74px) 12px 0;
+    inset: clamp(52px, 7dvh, 64px) 12px 0;
   }
 
   .home-contact-panel {

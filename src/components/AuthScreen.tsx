@@ -322,6 +322,9 @@ export function AuthScreen() {
     hasCompleteMemberProfile &&
     !isEditingProfile &&
     !isChangingAccountPassword;
+  const personalTopbarTitle = shouldShowPrivateContent
+    ? `Bienvenido ${welcomeName}`
+    : "Área Personal";
 
   useEffect(() => {
     let isMounted = true;
@@ -645,7 +648,7 @@ export function AuthScreen() {
 
     if (!firstName || !lastName || !dni || !memberNumber) {
       setProfileMessage(
-        "Completa nombre, apellidos, DNI y numero de socio para continuar.",
+        "Completa nombre, apellidos, DNI y número de socio para continuar.",
       );
       return;
     }
@@ -687,7 +690,7 @@ export function AuthScreen() {
 
       if (error) {
         setProfileMessage(
-          "No se han podido guardar los datos. Intentalo de nuevo en unos segundos.",
+          "No se han podido guardar los datos. Inténtalo de nuevo en unos segundos.",
         );
         return;
       }
@@ -700,7 +703,7 @@ export function AuthScreen() {
       setProfileMessage("Datos guardados correctamente.");
     } catch {
       setProfileMessage(
-        "No se han podido guardar los datos. Revisa tu conexion e intentalo de nuevo.",
+        "No se han podido guardar los datos. Revisa tu conexión e inténtalo de nuevo.",
       );
     } finally {
       setIsProfileSaving(false);
@@ -715,13 +718,13 @@ export function AuthScreen() {
 
     if (accountPassword.length < 6) {
       setAccountPasswordMessage(
-        "La nueva contraseÇña debe tener al menos 6 caracteres.",
+        "La nueva contraseña debe tener al menos 6 caracteres.",
       );
       return;
     }
 
     if (accountPassword !== confirmAccountPassword) {
-      setAccountPasswordMessage("Las contraseÇñas no coinciden.");
+      setAccountPasswordMessage("Las contraseñas no coinciden.");
       return;
     }
 
@@ -729,7 +732,7 @@ export function AuthScreen() {
 
     if (!client) {
       setAccountPasswordMessage(
-        "Conecta Supabase para guardar la nueva contraseÇña.",
+        "Conecta Supabase para guardar la nueva contraseña.",
       );
       return;
     }
@@ -748,7 +751,7 @@ export function AuthScreen() {
     setAccountPassword("");
     setConfirmAccountPassword("");
     setIsChangingAccountPassword(false);
-    setAccountPasswordMessage("ContraseÇña actualizada correctamente.");
+    setAccountPasswordMessage("Contraseña actualizada correctamente.");
   }
 
   function openProfileEditor() {
@@ -836,12 +839,12 @@ export function AuthScreen() {
 
       {!isSessionLoading && user && !isPasswordRecovery && (
         <div className="personal-topbar">
-          <span>Area Personal</span>
+          <span>{personalTopbarTitle}</span>
           <div className="member-menu-wrap">
             <button
               className="member-menu-button"
               type="button"
-              aria-label="Abrir menu personal"
+              aria-label="Abrir menú personal"
               aria-expanded={isMemberMenuOpen}
               onClick={() => setIsMemberMenuOpen((current) => !current)}
             >
@@ -856,11 +859,11 @@ export function AuthScreen() {
                 </button>
                 <button type="button" role="menuitem" onClick={openPasswordEditor}>
                   <FiKey aria-hidden="true" />
-                  <span>Cambiar contrasena</span>
+                  <span>Cambiar contraseña</span>
                 </button>
                 <button type="button" role="menuitem" onClick={handleSignOut}>
                   <FiLogOut aria-hidden="true" />
-                  <span>Cerrar sesion</span>
+                  <span>Cerrar sesión</span>
                 </button>
               </div>
             )}
@@ -945,14 +948,6 @@ export function AuthScreen() {
 
         {!isSessionLoading && user && !isPasswordRecovery && (
           <div className="member-panel">
-            <div className="member-heading">
-              <h1>Bienvenido {welcomeName}</h1>
-              {!hasCompleteMemberProfile && (
-                <p>
-                  Completa tus datos personales para activar tu area privada.
-                </p>
-              )}
-            </div>
             {isProfileLoading ? (
               <div className="personal-loading" role="status">
                 Cargando datos del peñista...
@@ -1060,7 +1055,7 @@ export function AuthScreen() {
                               memberNumber: event.target.value,
                             }))
                           }
-                          placeholder="Numero de socio"
+                          placeholder="Número de socio"
                           inputMode="numeric"
                           required
                           type="text"
@@ -1119,12 +1114,12 @@ export function AuthScreen() {
                     onSubmit={handleAccountPasswordSubmit}
                   >
                     <div className="member-form-intro">
-                      <h2>Cambiar contrasena</h2>
-                      <p>Elige una nueva contrasena para tu area personal.</p>
+                      <h2>Cambiar contraseña</h2>
+                      <p>Elige una nueva contraseña para tu área personal.</p>
                     </div>
 
                     <label className="form-field">
-                      <span>Nueva contrasena</span>
+                      <span>Nueva contraseña</span>
                       <span className="input-shell">
                         <FiLock aria-hidden="true" />
                         <input
@@ -1133,7 +1128,7 @@ export function AuthScreen() {
                           onChange={(event) =>
                             setAccountPassword(event.target.value)
                           }
-                          placeholder="Nueva contrasena"
+                          placeholder="Nueva contraseña"
                           required
                           minLength={6}
                           type={showPassword ? "text" : "password"}
@@ -1143,8 +1138,8 @@ export function AuthScreen() {
                           type="button"
                           aria-label={
                             showPassword
-                              ? "Ocultar contrasena"
-                              : "Mostrar contrasena"
+                              ? "Ocultar contraseña"
+                              : "Mostrar contraseña"
                           }
                           onClick={() => setShowPassword((visible) => !visible)}
                         >
@@ -1154,7 +1149,7 @@ export function AuthScreen() {
                     </label>
 
                     <label className="form-field">
-                      <span>Repetir contrasena</span>
+                      <span>Repetir contraseña</span>
                       <span className="input-shell">
                         <FiLock aria-hidden="true" />
                         <input
@@ -1163,7 +1158,7 @@ export function AuthScreen() {
                           onChange={(event) =>
                             setConfirmAccountPassword(event.target.value)
                           }
-                          placeholder="Repite la contrasena"
+                          placeholder="Repite la contraseña"
                           required
                           minLength={6}
                           type={showPassword ? "text" : "password"}
@@ -1178,7 +1173,7 @@ export function AuthScreen() {
                     >
                       {isAccountPasswordSaving
                         ? "Guardando..."
-                        : "Actualizar contrasena"}
+                        : "Actualizar contraseña"}
                     </button>
 
                     {accountPasswordMessage && (
