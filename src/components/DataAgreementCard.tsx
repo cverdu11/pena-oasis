@@ -360,7 +360,7 @@ export function DataAgreementCard({
       submissionSucceeded = true;
       setHasCompletedSubmission(true);
       setIsOpen(false);
-      setMessage("Acuerdo firmado enviado con exito.");
+      setMessage("");
     } catch (error) {
       const reason =
         error instanceof Error
@@ -399,7 +399,7 @@ export function DataAgreementCard({
       </div>
 
       {hasStoredAgreement && (
-        <div className="agreement-signed-state">
+        <div className="agreement-signed-state" role="status">
           <FiCheckCircle aria-hidden="true" />
           <div>
             <strong>Acuerdo de datos firmado</strong>
@@ -419,13 +419,6 @@ export function DataAgreementCard({
         </button>
       )}
 
-      {hasStoredAgreement && message && (
-        <p className="agreement-message" role="status">
-          <FiCheckCircle aria-hidden="true" />
-          <span>{message}</span>
-        </p>
-      )}
-
       {!hasStoredAgreement && (
         <button
           className="secondary-button icon-text-button"
@@ -435,13 +428,6 @@ export function DataAgreementCard({
           <FiPenTool aria-hidden="true" />
           <span>{isOpen ? "Cerrar acuerdo" : "Abrir y firmar"}</span>
         </button>
-      )}
-
-      {hasStoredAgreement && !message && !generatedAgreement && (
-        <p className="agreement-message" role="status">
-          <FiCheckCircle aria-hidden="true" />
-          <span>Acuerdo firmado y enviado.</span>
-        </p>
       )}
 
       {isOpen && !hasStoredAgreement && (
