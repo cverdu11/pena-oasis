@@ -629,7 +629,7 @@ export function DataAgreementCard({
             <div className="agreement-reader-header">
               <button type="button" onClick={closeAgreementReader}>
                 <FiArrowLeft aria-hidden="true" />
-                <span>Volver a firmar</span>
+                <span>Continuar con la firma</span>
               </button>
               <div>
                 <h3 id="agreement-reader-title">Acuerdo de datos personales</h3>
@@ -691,7 +691,7 @@ export function DataAgreementCard({
                 type="button"
                 onClick={closeAgreementReader}
               >
-                Volver a firmar
+                Continuar con la firma
               </button>
             </div>
           </section>
