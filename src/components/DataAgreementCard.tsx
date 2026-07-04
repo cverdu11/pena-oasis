@@ -481,7 +481,7 @@ export function DataAgreementCard({
           <FiCheckCircle aria-hidden="true" />
           <div>
             <strong>Acuerdo de datos firmado</strong>
-            <span>Se ha enviado correctamente a la Pena Oasis.</span>
+            <span>Se ha enviado correctamente a la Peña Oasis.</span>
           </div>
         </div>
       )}

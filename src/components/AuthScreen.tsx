@@ -363,6 +363,19 @@ export function AuthScreen() {
     hasCompleteMemberProfile &&
     !isEditingProfile &&
     !isChangingAccountPassword;
+  const agreementMember = {
+    firstName: memberForm.firstName,
+    lastName: memberForm.lastName,
+    dni: memberForm.dni,
+    memberNumber: memberForm.memberNumber,
+    email: user?.email ?? profile?.email ?? null,
+  };
+  const storedAgreement = {
+    signedAt: profile?.data_agreement_signed_at,
+    fileName: profile?.data_agreement_file_name,
+    driveUrl: profile?.data_agreement_drive_url,
+  };
+  const hasStoredDataAgreement = Boolean(storedAgreement.signedAt);
   const personalTopbarTitle = shouldShowPrivateContent
     ? `Bienvenido ${welcomeName}`
     : "Área Personal";
@@ -1119,6 +1132,16 @@ export function AuthScreen() {
                     </label>
                   </div>
 
+                  {hasCompleteMemberProfile &&
+                    isEditingProfile &&
+                    hasStoredDataAgreement && (
+                      <DataAgreementCard
+                        member={agreementMember}
+                        storedAgreement={storedAgreement}
+                        onStored={handleAgreementStored}
+                      />
+                    )}
+
                   {!isProfileSchemaReady && (
                     <p className="privacy-note" role="status">
                       Falta actualizar la tabla de Supabase para guardar DNI y
@@ -1261,30 +1284,22 @@ export function AuthScreen() {
 
                 {shouldShowPrivateContent && (
                   <>
-                <DataAgreementCard
-                  member={{
-                    firstName: memberForm.firstName,
-                    lastName: memberForm.lastName,
-                    dni: memberForm.dni,
-                    memberNumber: memberForm.memberNumber,
-                    email: user.email ?? profile?.email ?? null,
-                  }}
-                  storedAgreement={{
-                    signedAt: profile?.data_agreement_signed_at,
-                    fileName: profile?.data_agreement_file_name,
-                    driveUrl: profile?.data_agreement_drive_url,
-                  }}
-                  onStored={handleAgreementStored}
-                />
+                    {!hasStoredDataAgreement && (
+                      <DataAgreementCard
+                        member={agreementMember}
+                        storedAgreement={storedAgreement}
+                        onStored={handleAgreementStored}
+                      />
+                    )}
 
-                <div className="construction-panel">
-                  <FiTool aria-hidden="true" />
-                  <h2>Estamos en construcción</h2>
-                  <p>
-                    Estamos preparando tu espacio privado de la Peña Oasis. Muy
-                    pronto tendrás aquí tus datos y novedades.
-                  </p>
-                </div>
+                    <div className="construction-panel">
+                      <FiTool aria-hidden="true" />
+                      <h2>Estamos en construcción</h2>
+                      <p>
+                        Estamos preparando tu espacio privado de la Peña Oasis.
+                        Muy pronto tendrás aquí tus datos y novedades.
+                      </p>
+                    </div>
                   </>
                 )}
               </>
