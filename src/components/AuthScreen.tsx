@@ -354,7 +354,7 @@ export function AuthScreen() {
     mode === "signin"
       ? "Iniciar sesión"
       : isSignupComplete
-        ? "Cuenta creada"
+        ? "Revisa tu correo"
         : "Crear cuenta";
   const welcomeName = getFirstName(profile?.full_name) ?? getFallbackName(user);
   const hasCompleteMemberProfile = isMemberProfileComplete(profile);
