@@ -448,8 +448,7 @@ export function DataAgreementCard({
         <div className="agreement-flow">
           <div className="agreement-guidance">
             <p>
-              La plantilla se rellenará automáticamente con la fecha de hoy y
-              tus datos personales.
+              El acuerdo se generará con tu nombre, DNI y la fecha de hoy.
             </p>
             <a
               href={DATA_AGREEMENT_TEMPLATE_URL}
