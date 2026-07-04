@@ -4,7 +4,6 @@ import {
   FiArrowLeft,
   FiCheckCircle,
   FiDownload,
-  FiExternalLink,
   FiFileText,
   FiPenTool,
   FiRefreshCw,
@@ -13,7 +12,6 @@ import {
 import {
   bytesToBase64,
   createSignedDataAgreementPdf,
-  DATA_AGREEMENT_TEMPLATE_URL,
 } from "../lib/dataAgreementPdf";
 import type { DataAgreementMember } from "../lib/dataAgreementPdf";
 import { uploadDataAgreementToDrive } from "../lib/driveUpload";
@@ -688,15 +686,6 @@ export function DataAgreementCard({
             </div>
 
             <div className="agreement-reader-actions">
-              <a
-                className="agreement-reader-original-link"
-                href={DATA_AGREEMENT_TEMPLATE_URL}
-                rel="noreferrer"
-                target="_blank"
-              >
-                <FiExternalLink aria-hidden="true" />
-                <span>Abrir PDF original</span>
-              </a>
               <button
                 className="primary-button"
                 type="button"
