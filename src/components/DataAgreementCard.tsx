@@ -1,8 +1,10 @@
-import type { MouseEvent, PointerEvent } from "react";
+import type { PointerEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import {
+  FiArrowLeft,
   FiCheckCircle,
   FiDownload,
+  FiExternalLink,
   FiFileText,
   FiPenTool,
   FiRefreshCw,
@@ -42,6 +44,8 @@ type SignaturePoint = {
   y: number;
 };
 
+const AGREEMENT_READER_HISTORY_KEY = "penaDataAgreementReader";
+
 type DataAgreementCardProps = {
   member: DataAgreementMember;
   storedAgreement: StoredAgreement;
@@ -71,6 +75,14 @@ function splitAgreementName(value: string) {
     firstName: parts[0] ?? "",
     lastName: parts.slice(1).join(" "),
   };
+}
+
+function formatReaderDate() {
+  return new Intl.DateTimeFormat("es-ES", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(new Date());
 }
 
 function configureSignatureCanvas(canvas: HTMLCanvasElement) {
@@ -121,8 +133,10 @@ export function DataAgreementCard({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const isDrawingRef = useRef(false);
   const submitLockRef = useRef(false);
+  const readerHistoryRef = useRef(false);
   const lastPointRef = useRef<SignaturePoint | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [isAgreementReaderOpen, setIsAgreementReaderOpen] = useState(false);
   const [hasSignature, setHasSignature] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasCompletedSubmission, setHasCompletedSubmission] = useState(() =>
@@ -147,6 +161,7 @@ export function DataAgreementCard({
     dni: agreementDni.trim().toUpperCase(),
   };
   const hasRequiredFields = Boolean(fullName && agreementMember.dni);
+  const readerDisplayDate = formatReaderDate();
 
   useEffect(() => {
     setAgreementName(getMemberFullName(member));
@@ -162,9 +177,39 @@ export function DataAgreementCard({
   useEffect(() => {
     if (hasStoredAgreement) {
       setIsOpen(false);
+      setIsAgreementReaderOpen(false);
       setHasSignature(false);
     }
   }, [hasStoredAgreement]);
+
+  useEffect(() => {
+    if (!isAgreementReaderOpen) {
+      return;
+    }
+
+    function handlePopState() {
+      readerHistoryRef.current = false;
+      setIsAgreementReaderOpen(false);
+    }
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [isAgreementReaderOpen]);
+
+  useEffect(() => {
+    if (!isAgreementReaderOpen) {
+      return;
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        closeAgreementReader();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isAgreementReaderOpen]);
 
   useEffect(() => {
     if (!isOpen || !canvasRef.current) {
@@ -251,17 +296,36 @@ export function DataAgreementCard({
     setMessage("");
   }
 
-  function handleReadAgreement(event: MouseEvent<HTMLAnchorElement>) {
-    const agreementWindow = window.open(DATA_AGREEMENT_TEMPLATE_URL, "_blank");
-
-    if (!agreementWindow) {
+  function handleReadAgreement() {
+    if (isAgreementReaderOpen) {
       return;
     }
 
-    event.preventDefault();
-    agreementWindow.opener = null;
-    agreementWindow.blur();
-    window.focus();
+    window.history.pushState(
+      { ...(window.history.state ?? {}), [AGREEMENT_READER_HISTORY_KEY]: true },
+      "",
+      window.location.href,
+    );
+    readerHistoryRef.current = true;
+    setMessage("");
+    setIsAgreementReaderOpen(true);
+  }
+
+  function closeAgreementReader() {
+    if (
+      readerHistoryRef.current &&
+      window.history.state?.[AGREEMENT_READER_HISTORY_KEY]
+    ) {
+      window.history.back();
+      return;
+    }
+
+    readerHistoryRef.current = false;
+    setIsAgreementReaderOpen(false);
+  }
+
+  function handleAgreementReaderBackdropClick() {
+    closeAgreementReader();
   }
 
   async function handleSaveGeneratedAgreement() {
@@ -450,14 +514,13 @@ export function DataAgreementCard({
             <p>
               El acuerdo se generará con tu nombre, DNI y la fecha de hoy.
             </p>
-            <a
-              href={DATA_AGREEMENT_TEMPLATE_URL}
-              rel="noreferrer"
-              target="_blank"
+            <button
+              className="agreement-reader-link"
+              type="button"
               onClick={handleReadAgreement}
             >
               Leer acuerdo
-            </a>
+            </button>
           </div>
 
           <div className="agreement-field-summary">
@@ -549,6 +612,100 @@ export function DataAgreementCard({
               <span>{message}</span>
             </p>
           )}
+        </div>
+      )}
+
+      {isAgreementReaderOpen && !hasStoredAgreement && (
+        <div
+          className="agreement-reader-backdrop"
+          role="presentation"
+          onClick={handleAgreementReaderBackdropClick}
+        >
+          <section
+            aria-labelledby="agreement-reader-title"
+            aria-modal="true"
+            className="agreement-reader-sheet"
+            role="dialog"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="agreement-reader-header">
+              <button type="button" onClick={closeAgreementReader}>
+                <FiArrowLeft aria-hidden="true" />
+                <span>Volver a firmar</span>
+              </button>
+              <div>
+                <h3 id="agreement-reader-title">Acuerdo de datos personales</h3>
+                <p>Lee el acuerdo sin salir del área de firma.</p>
+              </div>
+            </div>
+
+            <div className="agreement-reader-content">
+              <h4>
+                ANEXO I. AUTORIZACIÓN DEL ABONADO PARA LA GESTIÓN DE LA
+                RENOVACIÓN A TRAVÉS DE LA PEÑA
+              </h4>
+              <p>
+                D./Dña. <strong>{fullName || "Nombre y apellidos"}</strong>,
+                con DNI/NIE{" "}
+                <strong>{agreementMember.dni || "DNI/NIE"}</strong>,
+                abonado/socio del Málaga Club de Fútbol, S.A.D., y miembro de
+                la Peña <strong>Peña Oasis</strong> (la "Peña"), manifiesta que
+                desea que la Peña realice en su nombre las gestiones
+                relacionadas con la verificación de su condición de abonado y la
+                tramitación de la renovación de su abono.
+              </p>
+              <p>
+                A tal efecto, <strong>AUTORIZA</strong> expresamente a la Peña
+                a comunicar al Málaga Club de Fútbol, S.A.D. los siguientes
+                datos personales, estrictamente necesarios para dichas
+                gestiones: nombre y apellidos, DNI/NIE, correo electrónico,
+                teléfono y dirección postal.
+              </p>
+              <p>
+                Asimismo, <strong>AUTORIZA</strong> expresamente a que el
+                Málaga Club de Fútbol, S.A.D., una vez verificados los datos,
+                comunique a la Peña la información necesaria para completar la
+                renovación en su nombre: número de abonado o socio, zona o
+                reserva, datos de asiento incluido número de asiento y precio de
+                la renovación.
+              </p>
+              <p>
+                La presente autorización podrá revocarse en cualquier momento,
+                sin efectos retroactivos, comunicándolo a la Peña. En caso de
+                revocación, el interesado podrá tramitar la renovación por los
+                canales habituales del Club.
+              </p>
+              <dl>
+                <div>
+                  <dt>Fecha</dt>
+                  <dd>{readerDisplayDate}</dd>
+                </div>
+                <div>
+                  <dt>Firma</dt>
+                  <dd>Se añadirá al firmar y enviar.</dd>
+                </div>
+              </dl>
+            </div>
+
+            <div className="agreement-reader-actions">
+              <a
+                className="agreement-reader-original-link"
+                href={DATA_AGREEMENT_TEMPLATE_URL}
+                rel="noreferrer"
+                target="_blank"
+              >
+                <FiExternalLink aria-hidden="true" />
+                <span>Abrir PDF original</span>
+              </a>
+              <button
+                className="primary-button"
+                type="button"
+                onClick={closeAgreementReader}
+              >
+                Volver a firmar
+              </button>
+            </div>
+          </section>
         </div>
       )}
     </section>
