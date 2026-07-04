@@ -1,4 +1,4 @@
-import type { PointerEvent } from "react";
+import type { MouseEvent, PointerEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import {
   FiCheckCircle,
@@ -251,6 +251,19 @@ export function DataAgreementCard({
     setMessage("");
   }
 
+  function handleReadAgreement(event: MouseEvent<HTMLAnchorElement>) {
+    const agreementWindow = window.open(DATA_AGREEMENT_TEMPLATE_URL, "_blank");
+
+    if (!agreementWindow) {
+      return;
+    }
+
+    event.preventDefault();
+    agreementWindow.opener = null;
+    agreementWindow.blur();
+    window.focus();
+  }
+
   async function handleSaveGeneratedAgreement() {
     if (!generatedAgreement) {
       return;
@@ -433,19 +446,20 @@ export function DataAgreementCard({
 
       {isOpen && !hasStoredAgreement && (
         <div className="agreement-flow">
-          <object
-            className="agreement-preview"
-            data={DATA_AGREEMENT_TEMPLATE_URL}
-            type="application/pdf"
-          >
+          <div className="agreement-guidance">
+            <p>
+              La plantilla se rellenará automáticamente con la fecha de hoy y
+              tus datos personales.
+            </p>
             <a
               href={DATA_AGREEMENT_TEMPLATE_URL}
               rel="noreferrer"
               target="_blank"
+              onClick={handleReadAgreement}
             >
-              Abrir plantilla PDF
+              Leer acuerdo
             </a>
-          </object>
+          </div>
 
           <div className="agreement-field-summary">
             <label>

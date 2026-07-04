@@ -541,22 +541,32 @@ button {
   gap: 10px;
 }
 
-.agreement-preview {
-  display: block;
-  width: 100%;
-  height: 318px;
-  border: 1px solid var(--oasis-line);
-  border-radius: 8px;
-  background: #f3f6fb;
+.agreement-guidance {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+  border-top: 1px solid rgba(0, 64, 164, 0.1);
+  border-bottom: 1px solid rgba(0, 64, 164, 0.1);
+  padding: 10px 0;
 }
 
-.agreement-preview a {
-  display: grid;
-  min-height: 120px;
-  place-items: center;
+.agreement-guidance p {
+  margin: 0;
+  color: #4f5d6d;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.agreement-guidance a {
   color: var(--oasis-blue-dark);
-  font-size: 13px;
-  font-weight: 800;
+  font-size: 12px;
+  font-weight: 850;
+  line-height: 1.2;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  white-space: nowrap;
 }
 
 .agreement-field-summary {
@@ -1115,10 +1125,6 @@ button {
 
   .legal-sheet h1 {
     font-size: 25px;
-  }
-
-  .agreement-preview {
-    height: 270px;
   }
 
   .auth-tabs {
