@@ -119,9 +119,10 @@ Invoke-RestMethod `
 
 ```text
 SUPABASE_FUNCTION_URL=https://PROJECT_REF.supabase.co/functions/v1/sync-profiles-sheet
-SUPABASE_ANON_KEY=tu_anon_key
 PROFILES_SYNC_SECRET=la_misma_clave_que_en_Supabase
 ```
+
+Si despliegas la Edge Function con verificacion JWT activa, anade tambien `SUPABASE_ANON_KEY` a GitHub Secrets. Si la despliegas con `--no-verify-jwt`, el workflow usa solo `PROFILES_SYNC_SECRET`.
 
 13. Reinicia `npm.cmd run dev`.
 
