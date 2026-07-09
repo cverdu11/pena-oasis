@@ -43,7 +43,7 @@ supabase/migrations/20260701_profiles_member_fields.sql
 
 Esta migración añade `first_name`, `last_name`, `dni`, `member_number`, `privacy_accepted_at`, `privacy_notice_version`, `terms_accepted_at`, `terms_version` y los campos del acuerdo firmado a `public.profiles`.
 
-8. Para activar la subida del acuerdo firmado a Google Drive sin Google Cloud Billing, crea un Web App de Google Apps Script con el contenido de:
+8. Para activar la subida del acuerdo firmado a Google Drive y la sincronizacion de socios a Google Sheets sin Google Cloud Billing, crea un Web App de Google Apps Script con el contenido de:
 
 ```text
 scripts/google-apps-script/drive-uploader.gs
@@ -54,6 +54,9 @@ Configura estas Script properties en Apps Script:
 ```text
 DRIVE_FOLDER_ID=ID_DE_LA_CARPETA_DE_DRIVE
 UPLOAD_SECRET=clave-larga-inventada
+PROFILES_SHEET_ID=14oLTRpoAJhhFYU6C6gMhCgt5n5Xa2FTlgrbLs2yDNPs
+PROFILES_SHEET_NAME=SOCIOS
+PROFILES_SHEET_START_COLUMN=P
 ```
 
 El Apps Script usa un bloqueo de concurrencia y revisa si ya existe un archivo
@@ -77,7 +80,50 @@ GOOGLE_APPS_SCRIPT_SECRET=la_misma_clave_que_UPLOAD_SECRET
 
 La app genera el PDF firmado en el navegador y llama a la Edge Function usando la sesión del socio. El archivo se guarda con el formato `NOMBRE_APELLIDO_Acuerdo de comunicación de datos personales.pdf`.
 
-11. Reinicia `npm.cmd run dev`.
+11. Despliega la Edge Function que vuelca `profiles` a Google Sheets:
+
+```text
+supabase/functions/sync-profiles-sheet/index.ts
+```
+
+Esta funcion exporta solo estas columnas al Sheet `14oLTRpoAJhhFYU6C6gMhCgt5n5Xa2FTlgrbLs2yDNPs`, pestana `SOCIOS`, columnas `P:Q:R`:
+
+```text
+full_name
+dni
+member_number
+```
+
+La sincronizacion es en una sola direccion: Supabase `profiles` -> Google Sheet. No escribe nada en Supabase. Tampoco borra ni limpia la pestana `SOCIOS`: actualiza filas existentes en `P:R` por `member_number` cuando ya existen y anade filas nuevas en esas columnas. Si `P1:R1` ya tiene encabezados distintos, falla con error para evitar tocar columnas que no sean la exportacion.
+
+Configura tambien estos secretos en Supabase Edge Functions:
+
+```text
+SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key
+PROFILES_SYNC_SECRET=otra_clave_larga_inventada
+```
+
+Para probarla una vez:
+
+```powershell
+Invoke-RestMethod `
+  -Method Post `
+  -Uri "https://PROJECT_REF.supabase.co/functions/v1/sync-profiles-sheet" `
+  -Headers @{
+    Authorization = "Bearer SUPABASE_ANON_KEY"
+    "x-sync-secret" = "PROFILES_SYNC_SECRET"
+  }
+```
+
+12. Para lanzar el volcado manualmente, el workflow `.github/workflows/sync-profiles-sheet.yml` llama a esa Edge Function desde el boton `Run workflow` de GitHub Actions. Configura estos secretos en GitHub:
+
+```text
+SUPABASE_FUNCTION_URL=https://PROJECT_REF.supabase.co/functions/v1/sync-profiles-sheet
+SUPABASE_ANON_KEY=tu_anon_key
+PROFILES_SYNC_SECRET=la_misma_clave_que_en_Supabase
+```
+
+13. Reinicia `npm.cmd run dev`.
 
 ## Protección de Datos
 

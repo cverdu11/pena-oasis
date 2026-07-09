@@ -1,0 +1,25 @@
+name: Sync profiles to Google Sheets
+
+on:
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_FUNCTION_URL: ${{ secrets.SUPABASE_FUNCTION_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      PROFILES_SYNC_SECRET: ${{ secrets.PROFILES_SYNC_SECRET }}
+    steps:
+      - name: Skip until secrets are configured
+        if: ${{ env.SUPABASE_FUNCTION_URL == '' || env.SUPABASE_ANON_KEY == '' || env.PROFILES_SYNC_SECRET == '' }}
+        run: |
+          echo "Configure SUPABASE_FUNCTION_URL, SUPABASE_ANON_KEY and PROFILES_SYNC_SECRET to enable the manual sync."
+
+      - name: Trigger profiles sync
+        if: ${{ env.SUPABASE_FUNCTION_URL != '' && env.SUPABASE_ANON_KEY != '' && env.PROFILES_SYNC_SECRET != '' }}
+        run: |
+          curl --fail-with-body --request POST "$SUPABASE_FUNCTION_URL" \
+            --header "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            --header "apikey: $SUPABASE_ANON_KEY" \
+            --header "x-sync-secret: $PROFILES_SYNC_SECRET"
