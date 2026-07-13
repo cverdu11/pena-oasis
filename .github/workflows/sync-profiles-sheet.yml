@@ -11,10 +11,11 @@ jobs:
       SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
       PROFILES_SYNC_SECRET: ${{ secrets.PROFILES_SYNC_SECRET }}
     steps:
-      - name: Skip until secrets are configured
+      - name: Validate required secrets
         if: ${{ env.SUPABASE_FUNCTION_URL == '' || env.PROFILES_SYNC_SECRET == '' }}
         run: |
-          echo "Configure SUPABASE_FUNCTION_URL and PROFILES_SYNC_SECRET to enable the manual sync."
+          echo "Missing required secrets. Configure SUPABASE_FUNCTION_URL and PROFILES_SYNC_SECRET to enable the manual sync."
+          exit 1
 
       - name: Trigger profiles sync
         if: ${{ env.SUPABASE_FUNCTION_URL != '' && env.PROFILES_SYNC_SECRET != '' }}
