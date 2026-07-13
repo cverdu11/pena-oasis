@@ -1,3 +1,4 @@
+// Syncs profiles to SOCIOS via the dedicated Google Sheets Apps Script web app.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.3";
 
 type ProfileRow = {
@@ -170,8 +171,8 @@ async function readAppsScriptResponse(response: Response) {
 }
 
 async function syncWithAppsScript(rows: ReturnType<typeof toSheetRows>) {
-  const scriptUrl = getRequiredEnv("GOOGLE_APPS_SCRIPT_URL");
-  const secret = getRequiredEnv("GOOGLE_APPS_SCRIPT_SECRET");
+  const scriptUrl = getRequiredEnv("GOOGLE_SHEETS_APPS_SCRIPT_URL");
+  const secret = getRequiredEnv("GOOGLE_SHEETS_APPS_SCRIPT_SECRET");
   const response = await fetch(scriptUrl, {
     method: "POST",
     headers: {
