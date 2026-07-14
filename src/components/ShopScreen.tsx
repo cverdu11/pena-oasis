@@ -1,5 +1,5 @@
 import { HiOutlineEnvelope } from "react-icons/hi2";
-import scarfImage from "../../public/images/shop/bufanda-oasis-concepto.webp";
+import scarfImage from "../../public/images/shop/bufanda-oasis-boceto.webp";
 import shirtImage from "../../public/images/shop/camiseta-oasis-boceto.webp";
 import { CONTACT_EMAIL } from "../constants";
 import type { MemberIdentity } from "../hooks/useMemberIdentity";
@@ -19,11 +19,11 @@ const products = [
   {
     title: "Bufanda Peña Oasis",
     detail:
-      "Bufanda de punto en azul y blanco para acompañar a la Peña en casa y fuera.",
-    status: "Diseño por confirmar",
+      "Boceto a doble cara en azul, blanco y dorado con el escudo y los lemas de la Peña.",
+    status: "Diseño en desarrollo",
     availability: "Precio por confirmar",
     image: scarfImage,
-    imageAlt: "Propuesta visual de una bufanda azul y blanca de la Peña",
+    imageAlt: "Boceto de las dos caras de la bufanda Peña Oasis",
   },
 ];
 
