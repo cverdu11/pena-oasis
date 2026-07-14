@@ -17,16 +17,29 @@ const products = [
 
 type ShopScreenProps = {
   identity: MemberIdentity;
+  isAccountMenuOpen: boolean;
+  onAvatarClick: () => void;
 };
 
-export function ShopScreen({ identity }: ShopScreenProps) {
+export function ShopScreen({
+  identity,
+  isAccountMenuOpen,
+  onAvatarClick,
+}: ShopScreenProps) {
   return (
     <section className="screen hub-screen" aria-label="Tienda">
       <div className="hub-backdrop" aria-hidden="true" />
       <div className="hub-sheet">
         <AppHeader
+          avatarLabel={
+            identity.isAuthenticated
+              ? "Abrir menú de cuenta"
+              : "Abrir acceso de socios"
+          }
           eyebrow="Peña Oasis"
           initials={identity.initials}
+          isAvatarMenuOpen={isAccountMenuOpen}
+          onAvatarClick={onAvatarClick}
           title="Tienda"
         />
 

@@ -34,6 +34,10 @@ export async function fetchEventAttendanceCounts(
   client: SupabaseClient,
   eventIds: string[],
 ) {
+  if (eventIds.length === 0) {
+    return {};
+  }
+
   const counts = Object.fromEntries(eventIds.map((eventId) => [eventId, 0]));
   const { data, error } = await client.rpc("get_event_attendance_counts", {
     requested_event_ids: eventIds,
@@ -57,6 +61,10 @@ export async function fetchUserEventResponses(
   userId: string,
   eventIds: string[],
 ) {
+  if (eventIds.length === 0) {
+    return {};
+  }
+
   const responses: Record<string, EventAttendanceResponse> = {};
   const { data, error } = await client
     .from(EVENT_ATTENDANCE_TABLE)

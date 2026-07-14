@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { AccountMenu } from "./components/AccountMenu";
+import type { AccountMenuAction } from "./components/AccountMenu";
 import { AuthScreen } from "./components/AuthScreen";
 import { BottomNav } from "./components/BottomNav";
 import { EventsScreen } from "./components/EventsScreen";
@@ -6,6 +8,7 @@ import { HomeScreen } from "./components/HomeScreen";
 import { LegalScreen } from "./components/LegalScreen";
 import { ShopScreen } from "./components/ShopScreen";
 import { useMemberIdentity } from "./hooks/useMemberIdentity";
+import { getSupabaseClient } from "./lib/supabase";
 import {
   EVENTS_ROUTE_HASH,
   HOME_ROUTE_HASH,
@@ -14,7 +17,7 @@ import {
   SHOP_ROUTE_HASH,
   SIGNUP_ROUTE_HASH,
 } from "./constants";
-import type { TabId } from "./types";
+import type { PersonalAreaAction, TabId } from "./types";
 
 type AppRoute = TabId | "privacy";
 
@@ -64,11 +67,15 @@ function readInitialRoute(): AppRoute {
 
 export default function App() {
   const [activeRoute, setActiveRoute] = useState<AppRoute>(readInitialRoute);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const [personalAreaAction, setPersonalAreaAction] =
+    useState<PersonalAreaAction | null>(null);
   const memberIdentity = useMemberIdentity(activeRoute);
 
   useEffect(() => {
     function syncFromHash() {
       setActiveRoute(readInitialRoute());
+      setIsAccountMenuOpen(false);
     }
 
     window.addEventListener("hashchange", syncFromHash);
@@ -76,6 +83,8 @@ export default function App() {
   }, []);
 
   function handleTabChange(tab: TabId) {
+    setIsAccountMenuOpen(false);
+    setPersonalAreaAction(null);
     setActiveRoute(tab);
     const nextHash =
       tab === "home"
@@ -95,16 +104,72 @@ export default function App() {
     );
   }
 
+  function openPersonalArea(action: PersonalAreaAction) {
+    const nextHash =
+      action === "signup" ? SIGNUP_ROUTE_HASH : PERSONAL_ROUTE_HASH;
+    setPersonalAreaAction(action);
+    setActiveRoute("membership");
+    window.history.replaceState(
+      null,
+      "",
+      `${window.location.pathname}${nextHash}`,
+    );
+  }
+
+  async function handleAccountMenuAction(action: AccountMenuAction) {
+    setIsAccountMenuOpen(false);
+
+    if (action === "signout") {
+      setPersonalAreaAction(null);
+      const client = await getSupabaseClient();
+      await client?.auth.signOut();
+      return;
+    }
+
+    openPersonalArea(action);
+  }
+
   return (
     <main className="app-shell">
       <div className="phone-viewport">
-        {activeRoute === "home" && <HomeScreen />}
-        {activeRoute === "membership" && <AuthScreen />}
-        {activeRoute === "events" && (
-          <EventsScreen identity={memberIdentity} />
+        {activeRoute === "home" && (
+          <HomeScreen
+            identity={memberIdentity}
+            isAccountMenuOpen={isAccountMenuOpen}
+            onAvatarClick={() => setIsAccountMenuOpen((current) => !current)}
+            onNavigate={handleTabChange}
+          />
         )}
-        {activeRoute === "shop" && <ShopScreen identity={memberIdentity} />}
+        {activeRoute === "membership" && (
+          <AuthScreen
+            isAccountMenuOpen={isAccountMenuOpen}
+            onAvatarClick={() => setIsAccountMenuOpen((current) => !current)}
+            onRequestedActionHandled={() => setPersonalAreaAction(null)}
+            requestedAction={personalAreaAction}
+          />
+        )}
+        {activeRoute === "events" && (
+          <EventsScreen
+            identity={memberIdentity}
+            isAccountMenuOpen={isAccountMenuOpen}
+            onAvatarClick={() => setIsAccountMenuOpen((current) => !current)}
+          />
+        )}
+        {activeRoute === "shop" && (
+          <ShopScreen
+            identity={memberIdentity}
+            isAccountMenuOpen={isAccountMenuOpen}
+            onAvatarClick={() => setIsAccountMenuOpen((current) => !current)}
+          />
+        )}
         {activeRoute === "privacy" && <LegalScreen />}
+        {isAccountMenuOpen && (
+          <AccountMenu
+            isAuthenticated={memberIdentity.isAuthenticated}
+            onAction={(action) => void handleAccountMenuAction(action)}
+            onClose={() => setIsAccountMenuOpen(false)}
+          />
+        )}
         <BottomNav
           activeTab={
             activeRoute === "events" || activeRoute === "shop"

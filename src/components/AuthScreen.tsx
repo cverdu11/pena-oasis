@@ -8,12 +8,8 @@ import {
   FiEye,
   FiEyeOff,
   FiFileText,
-  FiKey,
   FiLock,
-  FiLogOut,
   FiMail,
-  FiSettings,
-  FiTool,
   FiUser,
 } from "react-icons/fi";
 import {
@@ -23,8 +19,10 @@ import {
 } from "../constants";
 import { getSupabaseClient, isSupabaseConfigured } from "../lib/supabase";
 import type { DataAgreementMember } from "../lib/dataAgreementPdf";
+import type { PersonalAreaAction } from "../types";
 import { DataAgreementCard } from "./DataAgreementCard";
 import { AppHeader } from "./AppHeader";
+import { formatPenaMemberNumber, MemberCard } from "./MemberCard";
 
 type AuthMode = "signin" | "signup";
 type Profile = {
@@ -34,6 +32,7 @@ type Profile = {
   last_name?: string | null;
   dni?: string | null;
   member_number?: string | null;
+  pena_member_number?: number | null;
   privacy_accepted_at?: string | null;
   terms_accepted_at?: string | null;
   data_agreement_signed_at?: string | null;
@@ -57,7 +56,7 @@ type AgreementStoredRecord = {
 };
 
 const EXTENDED_PROFILE_SELECT =
-  "email, full_name, first_name, last_name, dni, member_number, privacy_accepted_at, terms_accepted_at, data_agreement_signed_at, data_agreement_file_name, data_agreement_drive_file_id, data_agreement_drive_url, data_agreement_status";
+  "email, full_name, first_name, last_name, dni, member_number, pena_member_number, privacy_accepted_at, terms_accepted_at, data_agreement_signed_at, data_agreement_file_name, data_agreement_drive_file_id, data_agreement_drive_url, data_agreement_status";
 const BASIC_PROFILE_SELECT = "email, full_name";
 const EMAIL_RATE_LIMIT_MESSAGE =
   "Ahora mismo no podemos enviar más correos automáticos. Inténtalo de nuevo en unos minutos.";
@@ -329,7 +328,19 @@ function readInitialMessage() {
   return isSignupConfirmationRoute() ? SIGNUP_CONFIRMING_MESSAGE : "";
 }
 
-export function AuthScreen() {
+type AuthScreenProps = {
+  isAccountMenuOpen: boolean;
+  onAvatarClick: () => void;
+  onRequestedActionHandled: () => void;
+  requestedAction: PersonalAreaAction | null;
+};
+
+export function AuthScreen({
+  isAccountMenuOpen,
+  onAvatarClick,
+  onRequestedActionHandled,
+  requestedAction,
+}: AuthScreenProps) {
   const [mode, setMode] = useState<AuthMode>(readInitialAuthMode);
   const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState("");
@@ -358,7 +369,6 @@ export function AuthScreen() {
     memberNumber: "",
   });
   const [profileMessage, setProfileMessage] = useState("");
-  const [isMemberMenuOpen, setIsMemberMenuOpen] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isChangingAccountPassword, setIsChangingAccountPassword] =
     useState(false);
@@ -394,6 +404,9 @@ export function AuthScreen() {
   };
   const hasStoredDataAgreement = Boolean(storedAgreement.signedAt);
   const personalInitials = getInitials(profile?.full_name ?? welcomeName);
+  const penaMemberNumber = formatPenaMemberNumber(
+    profile?.pena_member_number,
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -509,7 +522,6 @@ export function AuthScreen() {
         setProfile(null);
         setMemberForm(buildMemberForm(null, null));
         setProfileMessage("");
-        setIsMemberMenuOpen(false);
         setIsEditingProfile(false);
         setIsChangingAccountPassword(false);
         setAccountPassword("");
@@ -562,6 +574,36 @@ export function AuthScreen() {
       isMounted = false;
     };
   }, [user]);
+
+  useEffect(() => {
+    if (!requestedAction || isSessionLoading) {
+      return;
+    }
+
+    if (requestedAction === "signin" || requestedAction === "signup") {
+      switchMode(requestedAction);
+      onRequestedActionHandled();
+      return;
+    }
+
+    if (!user || isProfileLoading) {
+      return;
+    }
+
+    if (requestedAction === "edit-profile") {
+      openProfileEditor();
+    } else {
+      openPasswordEditor();
+    }
+
+    onRequestedActionHandled();
+  }, [
+    isProfileLoading,
+    isSessionLoading,
+    onRequestedActionHandled,
+    requestedAction,
+    user,
+  ]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -704,17 +746,6 @@ export function AuthScreen() {
     );
   }
 
-  async function handleSignOut() {
-    setIsMemberMenuOpen(false);
-    setIsEditingProfile(false);
-    setIsChangingAccountPassword(false);
-    setAccountPassword("");
-    setConfirmAccountPassword("");
-    setAccountPasswordMessage("");
-    const client = await getSupabaseClient();
-    await client?.auth.signOut();
-  }
-
   async function handleProfileSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setProfileMessage("");
@@ -838,7 +869,6 @@ export function AuthScreen() {
   }
 
   function openProfileEditor() {
-    setIsMemberMenuOpen(false);
     setIsChangingAccountPassword(false);
     setAccountPasswordMessage("");
     setProfileMessage("");
@@ -846,7 +876,6 @@ export function AuthScreen() {
   }
 
   function openPasswordEditor() {
-    setIsMemberMenuOpen(false);
     setIsEditingProfile(false);
     setProfileMessage("");
     setIsChangingAccountPassword(true);
@@ -926,6 +955,7 @@ export function AuthScreen() {
 
       {!isSessionLoading && user && !isPasswordRecovery && (
         <AppHeader
+          avatarLabel="Abrir menú de cuenta"
           actions={
             <div className="personal-actions" aria-label="Acciones personales">
               <button
@@ -936,50 +966,12 @@ export function AuthScreen() {
               >
                 <FiEdit3 aria-hidden="true" />
               </button>
-              <div className="member-menu-wrap">
-                <button
-                  className="member-menu-button"
-                  type="button"
-                  aria-label="Abrir ajustes personales"
-                  aria-expanded={isMemberMenuOpen}
-                  onClick={() => setIsMemberMenuOpen((current) => !current)}
-                >
-                  <FiSettings aria-hidden="true" />
-                </button>
-
-                {isMemberMenuOpen && (
-                  <div className="member-menu" role="menu">
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={openProfileEditor}
-                    >
-                      <FiEdit3 aria-hidden="true" />
-                      <span>Editar datos personales</span>
-                    </button>
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={openPasswordEditor}
-                    >
-                      <FiKey aria-hidden="true" />
-                      <span>Cambiar contraseña</span>
-                    </button>
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={handleSignOut}
-                    >
-                      <FiLogOut aria-hidden="true" />
-                      <span>Cerrar sesión</span>
-                    </button>
-                  </div>
-                )}
-              </div>
             </div>
           }
           eyebrow="Área personal"
           initials={personalInitials}
+          isAvatarMenuOpen={isAccountMenuOpen}
+          onAvatarClick={onAvatarClick}
           position="fixed"
           title={welcomeName}
         />
@@ -1339,7 +1331,9 @@ export function AuthScreen() {
                           <FiAward aria-hidden="true" />
                         </span>
                         <strong>Estado de socio</strong>
-                        <span>Activo · Nº {memberForm.memberNumber}</span>
+                        <span>
+                          Activo · Nº {penaMemberNumber ?? "Pendiente"}
+                        </span>
                       </article>
 
                       <article className="private-mini-card" data-tone="agreement">
@@ -1351,13 +1345,6 @@ export function AuthScreen() {
                           {hasStoredDataAgreement ? "Firmado" : "Pendiente de firma"}
                         </span>
                       </article>
-                    </div>
-
-                    <div className="private-section-heading">
-                      <h2>Mi Peña</h2>
-                      <button type="button" onClick={openProfileEditor}>
-                        Editar
-                      </button>
                     </div>
 
                     <button
@@ -1386,14 +1373,11 @@ export function AuthScreen() {
                       />
                     )}
 
-                    <div className="construction-panel">
-                      <FiTool aria-hidden="true" />
-                      <h2>Estamos en construcción</h2>
-                      <p>
-                        Estamos preparando tu espacio privado de la Peña Oasis.
-                        Muy pronto tendrás aquí tus datos y novedades.
-                      </p>
-                    </div>
+                    <MemberCard
+                      firstName={memberForm.firstName}
+                      lastName={memberForm.lastName}
+                      memberNumber={profile?.pena_member_number ?? null}
+                    />
                   </>
                 )}
               </>
@@ -1404,8 +1388,11 @@ export function AuthScreen() {
         {!isSessionLoading && !user && !isPasswordRecovery && (
           <>
             <AppHeader
+              avatarLabel="Abrir acceso de socios"
               eyebrow="Peña Oasis"
               initials="PO"
+              isAvatarMenuOpen={isAccountMenuOpen}
+              onAvatarClick={onAvatarClick}
               title="Hazte socio"
             />
 

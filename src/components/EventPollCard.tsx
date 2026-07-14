@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  HiOutlineArchiveBox,
   HiOutlineCheckCircle,
   HiOutlineClock,
   HiOutlineEyeSlash,
@@ -20,6 +21,8 @@ export type EventPoll = {
   time: string;
   location: string;
   detail: string;
+  startsAt: string;
+  endsAt: string;
 };
 
 type EventPollCardProps = {
@@ -30,6 +33,7 @@ type EventPollCardProps = {
   isLoading: boolean;
   isSaving: boolean;
   systemMessage: string;
+  isPast: boolean;
   onSave: (response: EventAttendanceResponse) => Promise<boolean>;
 };
 
@@ -41,6 +45,7 @@ export function EventPollCard({
   isLoading,
   isSaving,
   systemMessage,
+  isPast,
   onSave,
 }: EventPollCardProps) {
   const [privacyDraft, setPrivacyDraft] = useState(response.isPrivate);
@@ -148,64 +153,79 @@ export function EventPollCard({
             <>
               <strong>{attendeeCount}</strong>{" "}
               {attendeeCount === 1
-                ? "persona asistirá a este evento"
-                : "personas asistirán a este evento"}
+                ? isPast
+                  ? "persona asistió a este evento"
+                  : "persona asistirá a este evento"
+                : isPast
+                  ? "personas asistieron a este evento"
+                  : "personas asistirán a este evento"}
             </>
           )}
         </p>
       </div>
 
-      <fieldset className="event-vote-fieldset">
-        <legend>¿Vas a asistir?</legend>
-        <div className="event-vote-options">
-          <button
-            aria-pressed={response.answer === "attending"}
-            data-selected={response.answer === "attending"}
-            disabled={isLoading || isSaving}
-            type="button"
-            onClick={() => void handleAnswer("attending")}
-          >
-            <HiOutlineCheckCircle aria-hidden="true" />
-            <span>Asistiré</span>
-          </button>
-          <button
-            aria-pressed={response.answer === "not-attending"}
-            data-selected={response.answer === "not-attending"}
-            disabled={isLoading || isSaving}
-            type="button"
-            onClick={() => void handleAnswer("not-attending")}
-          >
-            <HiOutlineXCircle aria-hidden="true" />
-            <span>No asistiré</span>
-          </button>
+      {isPast ? (
+        <div className="event-closed-note">
+          <HiOutlineArchiveBox aria-hidden="true" />
+          <span>Evento finalizado</span>
         </div>
-      </fieldset>
+      ) : (
+        <>
+          <fieldset className="event-vote-fieldset">
+            <legend>¿Vas a asistir?</legend>
+            <div className="event-vote-options">
+              <button
+                aria-pressed={response.answer === "attending"}
+                data-selected={response.answer === "attending"}
+                disabled={isLoading || isSaving}
+                type="button"
+                onClick={() => void handleAnswer("attending")}
+              >
+                <HiOutlineCheckCircle aria-hidden="true" />
+                <span>Asistiré</span>
+              </button>
+              <button
+                aria-pressed={response.answer === "not-attending"}
+                data-selected={response.answer === "not-attending"}
+                disabled={isLoading || isSaving}
+                type="button"
+                onClick={() => void handleAnswer("not-attending")}
+              >
+                <HiOutlineXCircle aria-hidden="true" />
+                <span>No asistiré</span>
+              </button>
+            </div>
+          </fieldset>
 
-      <label className="event-private-option">
-        <span className="event-private-icon">
-          <HiOutlineEyeSlash aria-hidden="true" />
-        </span>
-        <span className="event-private-copy">
-          <strong>Participación privada</strong>
-          <small>Tu nombre no aparecerá en la lista de asistentes.</small>
-        </span>
-        <span className="event-switch">
-          <input
-            checked={privacyDraft}
-            disabled={isLoading || isSaving}
-            role="switch"
-            type="checkbox"
-            onChange={(event) =>
-              void handlePrivacyChange(event.target.checked)
-            }
-          />
-          <span aria-hidden="true" />
-        </span>
-      </label>
+          <label className="event-private-option">
+            <span className="event-private-icon">
+              <HiOutlineEyeSlash aria-hidden="true" />
+            </span>
+            <span className="event-private-copy">
+              <strong>Participación privada</strong>
+              <small>Tu nombre no aparecerá en la lista de asistentes.</small>
+            </span>
+            <span className="event-switch">
+              <input
+                checked={privacyDraft}
+                disabled={isLoading || isSaving}
+                role="switch"
+                type="checkbox"
+                onChange={(event) =>
+                  void handlePrivacyChange(event.target.checked)
+                }
+              />
+              <span aria-hidden="true" />
+            </span>
+          </label>
 
-      <p className="event-response-status" aria-live="polite">
-        {isSaving ? "Guardando respuesta..." : statusMessage || systemMessage}
-      </p>
+          <p className="event-response-status" aria-live="polite">
+            {isSaving
+              ? "Guardando respuesta..."
+              : statusMessage || systemMessage}
+          </p>
+        </>
+      )}
     </article>
   );
 }
