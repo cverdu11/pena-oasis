@@ -866,6 +866,143 @@ button.app-header-avatar:focus-visible {
   text-align: center;
 }
 
+.shop-sheet {
+  padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 28px);
+}
+
+.shop-sheet .app-header {
+  margin-bottom: 22px;
+}
+
+.shop-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 2px 12px;
+}
+
+.shop-heading h2 {
+  margin: 0;
+  color: var(--oasis-ink);
+  font-size: 19px;
+  font-weight: 740;
+  line-height: 1.2;
+}
+
+.shop-heading span {
+  flex: 0 0 auto;
+  color: #7c899b;
+  font-size: 11px;
+  font-weight: 620;
+}
+
+.product-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.product-card {
+  overflow: hidden;
+  border: 1px solid var(--oasis-line);
+  border-radius: 20px;
+  background: var(--oasis-surface);
+}
+
+.product-media {
+  display: grid;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  place-items: center;
+  border-bottom: 1px solid var(--oasis-soft-line);
+  background: #eef2f7;
+}
+
+.product-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.product-copy {
+  display: grid;
+  gap: 8px;
+  padding: 15px 16px 16px;
+}
+
+.product-status {
+  color: var(--oasis-blue);
+  font-size: 9px;
+  font-weight: 740;
+  letter-spacing: 0.07em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.product-copy h3,
+.product-copy p {
+  margin: 0;
+}
+
+.product-copy h3 {
+  color: var(--oasis-ink);
+  font-size: 18px;
+  font-weight: 740;
+  line-height: 1.2;
+}
+
+.product-copy p {
+  color: var(--oasis-muted);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.product-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 3px;
+  border-top: 1px solid var(--oasis-soft-line);
+  padding-top: 13px;
+}
+
+.product-action-row > strong {
+  color: #4e5e73;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.product-action-row a {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  flex: 0 0 auto;
+  border: 1px solid #cbd9eb;
+  border-radius: 12px;
+  color: var(--oasis-blue-dark);
+  background: #f2f6fc;
+  padding: 0 13px;
+  font-size: 11px;
+  font-weight: 680;
+  text-decoration: none;
+}
+
+.product-action-row a svg {
+  width: 16px;
+  height: 16px;
+}
+
+.product-action-row a:focus-visible {
+  outline: 2px solid rgba(7, 85, 183, 0.28);
+  outline-offset: 2px;
+}
+
 .event-empty-state {
   display: grid;
   gap: 4px;

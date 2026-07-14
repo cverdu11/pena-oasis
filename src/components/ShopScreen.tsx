@@ -1,17 +1,27 @@
-import { HiOutlineShoppingBag, HiOutlineSparkles } from "react-icons/hi2";
+import { HiOutlineEnvelope } from "react-icons/hi2";
+import { CONTACT_EMAIL } from "../constants";
 import type { MemberIdentity } from "../hooks/useMemberIdentity";
 import { AppHeader } from "./AppHeader";
 
 const products = [
   {
-    title: "Camiseta Peña Oasis",
-    detail: "Reserva para socios y simpatizantes",
-    price: "Próximamente",
+    title: "Camiseta Casa del Malaguismo",
+    detail:
+      "Camiseta cruda con escudo de la Peña en el frontal y mapa de La Rosaleda en la espalda.",
+    status: "Diseño en desarrollo",
+    availability: "Precio por confirmar",
+    image: "/images/shop/camiseta-oasis-boceto.webp",
+    imageAlt:
+      "Boceto frontal y trasero de la camiseta Casa del Malaguismo",
   },
   {
     title: "Bufanda Peña Oasis",
-    detail: "Merchandising oficial de la Peña",
-    price: "Próximamente",
+    detail:
+      "Bufanda de punto en azul y blanco para acompañar a la Peña en casa y fuera.",
+    status: "Diseño por confirmar",
+    availability: "Precio por confirmar",
+    image: "/images/shop/bufanda-oasis-concepto.webp",
+    imageAlt: "Propuesta visual de una bufanda azul y blanca de la Peña",
   },
 ];
 
@@ -29,7 +39,7 @@ export function ShopScreen({
   return (
     <section className="screen hub-screen" aria-label="Tienda">
       <div className="hub-backdrop" aria-hidden="true" />
-      <div className="hub-sheet">
+      <div className="hub-sheet shop-sheet">
         <AppHeader
           avatarLabel={
             identity.isAuthenticated
@@ -43,30 +53,34 @@ export function ShopScreen({
           title="Tienda"
         />
 
-        <section className="hub-hero-card">
-          <HiOutlineShoppingBag aria-hidden="true" />
-          <h2>Camisetas y bufandas</h2>
-          <p>
-            Un espacio para comprar productos de la Peña, abierto a socios y no
-            socios.
-          </p>
-        </section>
-
-        <div className="hub-section-heading">
-          <h2>Productos de la Peña</h2>
-          <span>Muy pronto</span>
+        <div className="shop-heading">
+          <h2>Colección Oasis</h2>
+          <span>2 productos</span>
         </div>
 
-        <div className="hub-list">
+        <div className="product-grid">
           {products.map((product) => (
-            <article className="hub-row" key={product.title}>
-              <span className="hub-row-icon">
-                <HiOutlineSparkles aria-hidden="true" />
-              </span>
-              <div>
-                <strong>{product.title}</strong>
-                <span>{product.detail}</span>
-                <small>{product.price}</small>
+            <article className="product-card" key={product.title}>
+              <div className="product-media">
+                <img src={product.image} alt={product.imageAlt} />
+              </div>
+
+              <div className="product-copy">
+                <span className="product-status">{product.status}</span>
+                <h3>{product.title}</h3>
+                <p>{product.detail}</p>
+
+                <div className="product-action-row">
+                  <strong>{product.availability}</strong>
+                  <a
+                    href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
+                      `Consulta sobre ${product.title}`,
+                    )}`}
+                  >
+                    <HiOutlineEnvelope aria-hidden="true" />
+                    Consultar
+                  </a>
+                </div>
               </div>
             </article>
           ))}
