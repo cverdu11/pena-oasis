@@ -204,10 +204,6 @@ body {
   padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 28px);
 }
 
-.events-intro {
-  margin-bottom: 20px;
-}
-
 .event-poll-list {
   display: grid;
   gap: 14px;
@@ -381,6 +377,8 @@ body {
 }
 
 .event-vote-fieldset legend {
+  display: block;
+  margin-bottom: 7px;
   color: var(--oasis-ink);
   font-size: 13px;
   font-weight: 700;
@@ -424,6 +422,16 @@ body {
   border-color: #c8d0dc;
   color: #435169;
   background: #eef1f5;
+}
+
+.event-vote-options button:disabled {
+  cursor: wait;
+  opacity: 0.58;
+}
+
+.event-private-option:has(input:disabled) {
+  cursor: wait;
+  opacity: 0.58;
 }
 
 .event-vote-options button:focus-visible,

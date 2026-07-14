@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   HiOutlineCheckCircle,
   HiOutlineClock,
@@ -7,6 +7,7 @@ import {
   HiOutlineUserGroup,
   HiOutlineXCircle,
 } from "react-icons/hi2";
+import type { EventAttendanceResponse } from "../lib/eventAttendance";
 
 export type EventPoll = {
   id: string;
@@ -19,77 +20,96 @@ export type EventPoll = {
   time: string;
   location: string;
   detail: string;
-  attendeeCount: number;
-};
-
-type AttendanceAnswer = "attending" | "not-attending" | null;
-
-type SavedEventResponse = {
-  answer: AttendanceAnswer;
-  isPrivate: boolean;
 };
 
 type EventPollCardProps = {
   event: EventPoll;
+  attendeeCount: number | null;
+  response: EventAttendanceResponse;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  isSaving: boolean;
+  systemMessage: string;
+  onSave: (response: EventAttendanceResponse) => Promise<boolean>;
 };
 
-const EVENT_RESPONSE_STORAGE_PREFIX = "pena-oasis-event-response-v1";
+export function EventPollCard({
+  event,
+  attendeeCount,
+  response,
+  isAuthenticated,
+  isLoading,
+  isSaving,
+  systemMessage,
+  onSave,
+}: EventPollCardProps) {
+  const [privacyDraft, setPrivacyDraft] = useState(response.isPrivate);
+  const [statusMessage, setStatusMessage] = useState("");
 
-function getStorageKey(eventId: string) {
-  return `${EVENT_RESPONSE_STORAGE_PREFIX}:${eventId}`;
-}
+  useEffect(() => {
+    setPrivacyDraft(response.isPrivate);
+  }, [response.isPrivate]);
 
-function readSavedResponse(eventId: string): SavedEventResponse {
-  try {
-    const storedValue = window.localStorage.getItem(getStorageKey(eventId));
-
-    if (!storedValue) {
-      return { answer: null, isPrivate: false };
+  function requireAuthenticatedUser() {
+    if (isAuthenticated) {
+      return true;
     }
 
-    const parsed = JSON.parse(storedValue) as Partial<SavedEventResponse>;
-    const answer =
-      parsed.answer === "attending" || parsed.answer === "not-attending"
-        ? parsed.answer
-        : null;
-
-    return {
-      answer,
-      isPrivate: Boolean(parsed.isPrivate),
-    };
-  } catch {
-    return { answer: null, isPrivate: false };
-  }
-}
-
-function saveResponse(eventId: string, response: SavedEventResponse) {
-  try {
-    window.localStorage.setItem(getStorageKey(eventId), JSON.stringify(response));
-  } catch {
-    // The response still works for the current visit if storage is unavailable.
-  }
-}
-
-export function EventPollCard({ event }: EventPollCardProps) {
-  const [response, setResponse] = useState<SavedEventResponse>(() =>
-    readSavedResponse(event.id),
-  );
-  const [hasInteracted, setHasInteracted] = useState(false);
-  const attendeeCount =
-    event.attendeeCount + (response.answer === "attending" ? 1 : 0);
-
-  function updateResponse(nextResponse: SavedEventResponse) {
-    setResponse(nextResponse);
-    saveResponse(event.id, nextResponse);
-    setHasInteracted(true);
+    setStatusMessage("Inicia sesión en Hazte socio para responder.");
+    return false;
   }
 
-  function handleAnswer(answer: Exclude<AttendanceAnswer, null>) {
-    updateResponse({ ...response, answer });
+  async function handleAnswer(
+    answer: Exclude<EventAttendanceResponse["answer"], null>,
+  ) {
+    if (!requireAuthenticatedUser()) {
+      return;
+    }
+
+    setStatusMessage("");
+    const saved = await onSave({ answer, isPrivate: privacyDraft });
+
+    setStatusMessage(
+      saved
+        ? answer === "attending"
+          ? privacyDraft
+            ? "Asistencia confirmada de forma privada."
+            : "Asistencia confirmada."
+          : "Respuesta guardada."
+        : "No hemos podido guardar la respuesta. Inténtalo de nuevo.",
+    );
   }
 
-  function handlePrivacyChange(isPrivate: boolean) {
-    updateResponse({ ...response, isPrivate });
+  async function handlePrivacyChange(isPrivate: boolean) {
+    if (!requireAuthenticatedUser()) {
+      return;
+    }
+
+    setPrivacyDraft(isPrivate);
+
+    if (!response.answer) {
+      setStatusMessage(
+        isPrivate
+          ? "Tu respuesta será privada cuando elijas una opción."
+          : "Elige una opción para guardar tu respuesta.",
+      );
+      return;
+    }
+
+    setStatusMessage("");
+    const saved = await onSave({ ...response, isPrivate });
+
+    if (!saved) {
+      setPrivacyDraft(response.isPrivate);
+    }
+
+    setStatusMessage(
+      saved
+        ? isPrivate
+          ? "Participación privada activada."
+          : "Participación visible activada."
+        : "No hemos podido guardar la privacidad. Inténtalo de nuevo.",
+    );
   }
 
   return (
@@ -122,7 +142,16 @@ export function EventPollCard({ event }: EventPollCardProps) {
           <HiOutlineUserGroup aria-hidden="true" />
         </span>
         <p>
-          <strong>{attendeeCount}</strong> personas asistirán a este evento
+          {attendeeCount === null ? (
+            "Cargando asistentes..."
+          ) : (
+            <>
+              <strong>{attendeeCount}</strong>{" "}
+              {attendeeCount === 1
+                ? "persona asistirá a este evento"
+                : "personas asistirán a este evento"}
+            </>
+          )}
         </p>
       </div>
 
@@ -132,8 +161,9 @@ export function EventPollCard({ event }: EventPollCardProps) {
           <button
             aria-pressed={response.answer === "attending"}
             data-selected={response.answer === "attending"}
+            disabled={isLoading || isSaving}
             type="button"
-            onClick={() => handleAnswer("attending")}
+            onClick={() => void handleAnswer("attending")}
           >
             <HiOutlineCheckCircle aria-hidden="true" />
             <span>Asistiré</span>
@@ -141,8 +171,9 @@ export function EventPollCard({ event }: EventPollCardProps) {
           <button
             aria-pressed={response.answer === "not-attending"}
             data-selected={response.answer === "not-attending"}
+            disabled={isLoading || isSaving}
             type="button"
-            onClick={() => handleAnswer("not-attending")}
+            onClick={() => void handleAnswer("not-attending")}
           >
             <HiOutlineXCircle aria-hidden="true" />
             <span>No asistiré</span>
@@ -160,25 +191,20 @@ export function EventPollCard({ event }: EventPollCardProps) {
         </span>
         <span className="event-switch">
           <input
-            checked={response.isPrivate}
+            checked={privacyDraft}
+            disabled={isLoading || isSaving}
             role="switch"
             type="checkbox"
-            onChange={(event) => handlePrivacyChange(event.target.checked)}
+            onChange={(event) =>
+              void handlePrivacyChange(event.target.checked)
+            }
           />
           <span aria-hidden="true" />
         </span>
       </label>
 
       <p className="event-response-status" aria-live="polite">
-        {hasInteracted
-          ? response.answer === "attending"
-            ? response.isPrivate
-              ? "Asistencia confirmada de forma privada."
-              : "Asistencia confirmada."
-            : response.answer === "not-attending"
-              ? "Respuesta guardada."
-              : "Preferencia de privacidad guardada."
-          : ""}
+        {isSaving ? "Guardando respuesta..." : statusMessage || systemMessage}
       </p>
     </article>
   );

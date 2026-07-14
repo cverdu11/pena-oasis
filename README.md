@@ -43,6 +43,16 @@ supabase/migrations/20260701_profiles_member_fields.sql
 
 Esta migración añade `first_name`, `last_name`, `dni`, `member_number`, `privacy_accepted_at`, `privacy_notice_version`, `terms_accepted_at`, `terms_version` y los campos del acuerdo firmado a `public.profiles`.
 
+Para activar las encuestas compartidas de Eventos, ejecuta también:
+
+```text
+supabase/migrations/20260714_event_attendance_responses.sql
+```
+
+Esta migración crea un único voto por usuario y evento, protege las respuestas
+con RLS y expone solo el recuento agregado. La opción privada oculta la identidad
+del socio sin excluir su asistencia del total.
+
 8. Para activar la subida del acuerdo firmado a Google Drive y la sincronizacion de socios a Google Sheets sin Google Cloud Billing, crea un Web App de Google Apps Script con el contenido de:
 
 ```text
