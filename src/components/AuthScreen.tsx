@@ -1,15 +1,18 @@
 import { FormEvent, useEffect, useState } from "react";
 import type { AuthError, User } from "@supabase/supabase-js";
 import {
+  FiAward,
+  FiChevronRight,
   FiCheckCircle,
   FiEdit3,
   FiEye,
   FiEyeOff,
+  FiFileText,
   FiKey,
   FiLock,
   FiLogOut,
   FiMail,
-  FiMenu,
+  FiSettings,
   FiTool,
   FiUser,
 } from "react-icons/fi";
@@ -135,6 +138,19 @@ function getFirstName(value?: string | null) {
   }
 
   return trimmed.split(/\s+/)[0];
+}
+
+function getInitials(value?: string | null) {
+  const parts = value?.trim().split(/\s+/).filter(Boolean) ?? [];
+
+  if (parts.length === 0) {
+    return "PO";
+  }
+
+  const firstInitial = parts[0]?.[0] ?? "";
+  const lastInitial = parts.length > 1 ? parts[parts.length - 1]?.[0] ?? "" : "";
+
+  return `${firstInitial}${lastInitial}`.toUpperCase();
 }
 
 function splitFullName(value?: string | null) {
@@ -376,9 +392,7 @@ export function AuthScreen() {
     driveUrl: profile?.data_agreement_drive_url,
   };
   const hasStoredDataAgreement = Boolean(storedAgreement.signedAt);
-  const personalTopbarTitle = shouldShowPrivateContent
-    ? `Bienvenido ${welcomeName}`
-    : "Área Personal";
+  const personalInitials = getInitials(profile?.full_name ?? welcomeName);
 
   useEffect(() => {
     let isMounted = true;
@@ -902,44 +916,73 @@ export function AuthScreen() {
   }
 
   return (
-    <section className="screen personal-screen" aria-label="Área Personal">
+    <section
+      className="screen personal-screen"
+      data-member-session={user && !isPasswordRecovery ? "true" : "false"}
+      aria-label="Área Personal"
+    >
       <div className="personal-backdrop" aria-hidden="true" />
 
       {!isSessionLoading && user && !isPasswordRecovery && (
         <div className="personal-topbar">
-          <span>{personalTopbarTitle}</span>
-          <div className="member-menu-wrap">
+          <span className="personal-avatar">{personalInitials}</span>
+          <div className="personal-topbar-copy">
+            <span>Área personal</span>
+            <strong>{welcomeName}</strong>
+          </div>
+          <div className="personal-actions" aria-label="Acciones personales">
             <button
-              className="member-menu-button"
+              className="personal-action-button"
               type="button"
-              aria-label="Abrir menú personal"
-              aria-expanded={isMemberMenuOpen}
-              onClick={() => setIsMemberMenuOpen((current) => !current)}
+              aria-label="Editar datos personales"
+              onClick={openProfileEditor}
             >
-              <FiMenu aria-hidden="true" />
+              <FiEdit3 aria-hidden="true" />
             </button>
+            <div className="member-menu-wrap">
+              <button
+                className="member-menu-button"
+                type="button"
+                aria-label="Abrir ajustes personales"
+                aria-expanded={isMemberMenuOpen}
+                onClick={() => setIsMemberMenuOpen((current) => !current)}
+              >
+                <FiSettings aria-hidden="true" />
+              </button>
 
-            {isMemberMenuOpen && (
-              <div className="member-menu" role="menu">
-                <button type="button" role="menuitem" onClick={openProfileEditor}>
-                  <FiEdit3 aria-hidden="true" />
-                  <span>Editar datos personales</span>
-                </button>
-                <button type="button" role="menuitem" onClick={openPasswordEditor}>
-                  <FiKey aria-hidden="true" />
-                  <span>Cambiar contraseña</span>
-                </button>
-                <button type="button" role="menuitem" onClick={handleSignOut}>
-                  <FiLogOut aria-hidden="true" />
-                  <span>Cerrar sesión</span>
-                </button>
-              </div>
-            )}
+              {isMemberMenuOpen && (
+                <div className="member-menu" role="menu">
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={openProfileEditor}
+                  >
+                    <FiEdit3 aria-hidden="true" />
+                    <span>Editar datos personales</span>
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={openPasswordEditor}
+                  >
+                    <FiKey aria-hidden="true" />
+                    <span>Cambiar contraseña</span>
+                  </button>
+                  <button type="button" role="menuitem" onClick={handleSignOut}>
+                    <FiLogOut aria-hidden="true" />
+                    <span>Cerrar sesión</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
 
-      <div className="auth-sheet" data-view={user ? "private" : "auth"}>
+      <div
+        className="auth-sheet"
+        data-view={user && !isPasswordRecovery ? "private" : "auth"}
+      >
         {isSessionLoading && (
           <div className="personal-loading" role="status">
             Cargando área personal...
@@ -1284,6 +1327,51 @@ export function AuthScreen() {
 
                 {shouldShowPrivateContent && (
                   <>
+                    <div className="private-summary-grid" aria-label="Resumen personal">
+                      <article className="private-mini-card" data-tone="member">
+                        <span className="private-card-icon">
+                          <FiAward aria-hidden="true" />
+                        </span>
+                        <strong>Estado de socio</strong>
+                        <span>Activo · Nº {memberForm.memberNumber}</span>
+                      </article>
+
+                      <article className="private-mini-card" data-tone="agreement">
+                        <span className="private-card-icon">
+                          <FiFileText aria-hidden="true" />
+                        </span>
+                        <strong>Acuerdo</strong>
+                        <span>
+                          {hasStoredDataAgreement ? "Firmado" : "Pendiente de firma"}
+                        </span>
+                      </article>
+                    </div>
+
+                    <div className="private-section-heading">
+                      <h2>Mi Peña</h2>
+                      <button type="button" onClick={openProfileEditor}>
+                        Editar
+                      </button>
+                    </div>
+
+                    <button
+                      className="private-focus-card"
+                      type="button"
+                      onClick={openProfileEditor}
+                    >
+                      <span className="private-card-icon private-focus-icon">
+                        <FiUser aria-hidden="true" />
+                      </span>
+                      <span className="private-focus-main">
+                        <strong>Datos personales</strong>
+                        <span className="private-focus-status">
+                          <FiCheckCircle aria-hidden="true" />
+                          Perfil completo
+                        </span>
+                      </span>
+                      <FiChevronRight aria-hidden="true" />
+                    </button>
+
                     {!hasStoredDataAgreement && (
                       <DataAgreementCard
                         member={agreementMember}
@@ -1309,145 +1397,155 @@ export function AuthScreen() {
 
         {!isSessionLoading && !user && !isPasswordRecovery && (
           <>
-            <div className="auth-tabs" role="tablist" aria-label="Acceso">
-              <button
-                className="auth-tab"
-                data-active={mode === "signin"}
-                type="button"
-                role="tab"
-                aria-selected={mode === "signin"}
-                onClick={() => switchMode("signin")}
-              >
-                Iniciar sesión
-              </button>
-              <button
-                className="auth-tab"
-                data-active={mode === "signup"}
-                type="button"
-                role="tab"
-                aria-selected={mode === "signup"}
-                onClick={() => switchMode("signup")}
-              >
-                Registrarse
-              </button>
-            </div>
+            <header className="hub-header membership-header">
+              <span className="hub-avatar">PO</span>
+              <div>
+                <p>Peña Oasis</p>
+                <h1>Hazte socio</h1>
+              </div>
+            </header>
 
-            <form className="auth-form" onSubmit={handleSubmit}>
-              {mode === "signup" && (
+            <div className="auth-card">
+              <div className="auth-tabs" role="tablist" aria-label="Acceso">
+                <button
+                  className="auth-tab"
+                  data-active={mode === "signin"}
+                  type="button"
+                  role="tab"
+                  aria-selected={mode === "signin"}
+                  onClick={() => switchMode("signin")}
+                >
+                  Iniciar sesión
+                </button>
+                <button
+                  className="auth-tab"
+                  data-active={mode === "signup"}
+                  type="button"
+                  role="tab"
+                  aria-selected={mode === "signup"}
+                  onClick={() => switchMode("signup")}
+                >
+                  Registrarse
+                </button>
+              </div>
+
+              <form className="auth-form" onSubmit={handleSubmit}>
+                {mode === "signup" && (
+                  <label className="form-field">
+                    <span>Nombre</span>
+                    <span className="input-shell">
+                      <FiUser aria-hidden="true" />
+                      <input
+                        autoComplete="name"
+                        value={fullName}
+                        onChange={(event) => setFullName(event.target.value)}
+                        placeholder="Tu nombre"
+                        required
+                        type="text"
+                      />
+                    </span>
+                  </label>
+                )}
+
                 <label className="form-field">
-                  <span>Nombre</span>
+                  <span>Correo electrónico</span>
                   <span className="input-shell">
-                    <FiUser aria-hidden="true" />
+                    <FiMail aria-hidden="true" />
                     <input
-                      autoComplete="name"
-                      value={fullName}
-                      onChange={(event) => setFullName(event.target.value)}
-                      placeholder="Tu nombre"
+                      autoComplete="email"
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      placeholder="tu@email.com"
                       required
-                      type="text"
+                      type="email"
                     />
                   </span>
                 </label>
-              )}
 
-              <label className="form-field">
-                <span>Correo electrónico</span>
-                <span className="input-shell">
-                  <FiMail aria-hidden="true" />
-                  <input
-                    autoComplete="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    placeholder="tu@email.com"
-                    required
-                    type="email"
-                  />
-                </span>
-              </label>
+                <label className="form-field">
+                  <span>Contraseña</span>
+                  <span className="input-shell">
+                    <FiLock aria-hidden="true" />
+                    <input
+                      autoComplete={
+                        mode === "signin" ? "current-password" : "new-password"
+                      }
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                      placeholder="Tu contraseña"
+                      required
+                      minLength={6}
+                      type={showPassword ? "text" : "password"}
+                    />
+                    <button
+                      className="icon-button"
+                      type="button"
+                      aria-label={
+                        showPassword
+                          ? "Ocultar contraseña"
+                          : "Mostrar contraseña"
+                      }
+                      onClick={() => setShowPassword((visible) => !visible)}
+                    >
+                      {showPassword ? <FiEye /> : <FiEyeOff />}
+                    </button>
+                  </span>
+                </label>
 
-              <label className="form-field">
-                <span>Contraseña</span>
-                <span className="input-shell">
-                  <FiLock aria-hidden="true" />
-                  <input
-                    autoComplete={
-                      mode === "signin" ? "current-password" : "new-password"
-                    }
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    placeholder="Tu contraseña"
-                    required
-                    minLength={6}
-                    type={showPassword ? "text" : "password"}
-                  />
+                {mode === "signin" && (
                   <button
-                    className="icon-button"
+                    className="forgot-button"
+                    disabled={isResetLoading}
                     type="button"
-                    aria-label={
-                      showPassword
-                        ? "Ocultar contraseña"
-                        : "Mostrar contraseña"
-                    }
-                    onClick={() => setShowPassword((visible) => !visible)}
+                    onClick={handleForgotPassword}
                   >
-                    {showPassword ? <FiEye /> : <FiEyeOff />}
+                    {isResetLoading ? "Enviando..." : "¿Olvidaste tu contraseña?"}
                   </button>
-                </span>
-              </label>
+                )}
 
-              {mode === "signin" && (
+                {mode === "signup" && (
+                  <div className="privacy-consent">
+                    <input
+                      aria-required="true"
+                      checked={privacyAccepted}
+                      id="privacy-consent"
+                      type="checkbox"
+                      onChange={(event) =>
+                        setPrivacyAccepted(event.target.checked)
+                      }
+                    />
+                    <label htmlFor="privacy-consent">
+                      He leído y acepto las{" "}
+                      <a href={PRIVACY_ROUTE_HASH}>
+                        condiciones
+                      </a>{" "}
+                      y la información básica de{" "}
+                      <a href={PRIVACY_ROUTE_HASH}>
+                        protección de datos
+                      </a>
+                      . Responsable: Peña Oasis. Finalidad: gestionar mi alta, la
+                      condición de peñista y las comunicaciones internas. Podré
+                      ejercer mis derechos a través del correo de contacto de la
+                      Peña.
+                    </label>
+                  </div>
+                )}
+
                 <button
-                  className="forgot-button"
-                  disabled={isResetLoading}
-                  type="button"
-                  onClick={handleForgotPassword}
+                  className="primary-button"
+                  disabled={isLoading || isSignupComplete}
+                  type="submit"
                 >
-                  {isResetLoading ? "Enviando..." : "¿Olvidaste tu contraseña?"}
+                  {isLoading ? "Conectando..." : submitLabel}
                 </button>
-              )}
 
-              {mode === "signup" && (
-                <div className="privacy-consent">
-                  <input
-                    aria-required="true"
-                    checked={privacyAccepted}
-                    id="privacy-consent"
-                    type="checkbox"
-                    onChange={(event) =>
-                      setPrivacyAccepted(event.target.checked)
-                    }
-                  />
-                  <label htmlFor="privacy-consent">
-                    He leído y acepto las{" "}
-                    <a href={PRIVACY_ROUTE_HASH}>
-                      condiciones
-                    </a>{" "}
-                    y la información básica de{" "}
-                    <a href={PRIVACY_ROUTE_HASH}>
-                      protección de datos
-                    </a>
-                    . Responsable: Peña Oasis. Finalidad: gestionar mi alta, la
-                    condición de peñista y las comunicaciones internas. Podré
-                    ejercer mis derechos a través del correo de contacto de la
-                    Peña.
-                  </label>
-                </div>
-              )}
-
-              <button
-                className="primary-button"
-                disabled={isLoading || isSignupComplete}
-                type="submit"
-              >
-                {isLoading ? "Conectando..." : submitLabel}
-              </button>
-
-              {message && (
-                <p className="auth-message" role="status">
-                  {message}
-                </p>
-              )}
-            </form>
+                {message && (
+                  <p className="auth-message" role="status">
+                    {message}
+                  </p>
+                )}
+              </form>
+            </div>
           </>
         )}
       </div>

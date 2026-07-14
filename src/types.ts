@@ -1,1 +1,1 @@
-export type TabId = "home" | "personal";
+export type TabId = "home" | "membership" | "events" | "shop";

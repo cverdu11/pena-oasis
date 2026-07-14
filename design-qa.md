@@ -1,32 +1,29 @@
-**Source visual truth**
-- Inicio: `C:\Users\CARLOS~1.VER\AppData\Local\Temp\codex-clipboard-781f3c6e-9a07-4237-a30b-df52256ab56b.png`
-- Área Personal: `C:\Users\CARLOS~1.VER\AppData\Local\Temp\codex-clipboard-acb70a2c-8967-4a1a-81d2-7a4e832e8da8.png`
+# Design QA
 
-**Implementation evidence**
-- Local URL: `http://127.0.0.1:5173/`
-- Inicio screenshot: `C:\Users\carlos.verdu\OneDrive - BESTSELLER\Oasis\design-screenshots\inicio-430x932-v2.png`
-- Área Personal screenshot: `C:\Users\carlos.verdu\OneDrive - BESTSELLER\Oasis\design-screenshots\area-personal-430x932-final.png`
-- Viewport: `430x932`, mobile emulation, Chrome via Playwright fallback because Browser plugin tools were not exposed in this thread.
-- State: Inicio selected; Área Personal login selected.
+- Visual reference: Withings mobile UI references supplied in the task.
+- Implementation URL: `http://127.0.0.1:8098/#eventos`.
+- Viewport: 390 x 844.
+- State: Eventos selected, with the travel and home-preview attendance polls.
 
 **Findings**
-- No actionable P0/P1/P2 findings remain.
 
-**Fidelity surfaces checked**
-- Fonts and typography: Montserrat matches the bold, geometric character of the reference; tabs, labels, buttons, and nav text use explicit weights and sizes.
-- Spacing and layout rhythm: hero image crop, auth sheet top, rounded sheet corners, form rhythm, and bottom navigation placement align with the supplied mobile references after tightening controls and nav height.
-- Colors and tokens: blue background imagery is source-based; CTA, active tab, and active nav use the same deep Málaga/Oasis blue family; form surfaces and borders remain white/light gray as in the mock.
-- Image quality and asset fidelity: supplied PNGs are used directly as source assets, with no CSS-drawn replacement for the crest/background. The app overlays real code-native UI only where the login controls should be functional.
-- Copy and content: visible Spanish UI copy matches the requested tabs and login/registration flow; accents were preserved for user-facing text.
+- No actionable P0, P1, or P2 findings remain.
 
-**Patches made during QA**
-- Replaced Vite with Webpack to avoid local group-policy blocking of `esbuild.exe` inside OneDrive.
-- Imported the supplied images as Webpack assets so production builds include them reliably.
-- Made Supabase lazy-loaded so the initial app bundle stays lighter until auth is used.
-- Reduced auth control heights, spacing, and bottom nav height so social buttons and the register prompt remain visible above the nav.
-- Changed the bottom nav background to solid white to hide the nav embedded in the original screenshots.
+**Surfaces checked**
 
-**Follow-up polish**
-- P3: Convert source PNGs to optimized WebP/JPEG when local image tooling is available or during a later asset pass.
+- Header: the personal initials remain at the top and the Eventos hierarchy is clear on a narrow mobile viewport.
+- Event cards: the 19 August Madrid trip and the 24 August 19:30 home preview render without clipped text or nested decorative cards.
+- Poll behavior: `Asistiré` increments the displayed count, `No asistiré` restores it, and private participation persists with the response.
+- Bottom navigation: Inicio, Hazte socio, Eventos, and Tienda remain visible; Eventos is the only active destination.
+- Scrolling: both poll controls remain reachable above the fixed navigation at 390 x 844.
+- Visual effects: no glow, drop shadow, text shadow, or decorative gradient is used in the event poll UI.
+- Sensitive flows: registration, member onboarding, agreement signing, and the Google Drive upload function were not modified by the event implementation.
 
-**final result: passed**
+**Verification**
+
+- Production build: passed.
+- TypeScript/Webpack compilation: passed.
+- Whitespace validation with `git diff --check`: passed.
+- Interactive mobile browser check: passed for both event cards, all response states, private mode, and active navigation.
+
+final result: passed

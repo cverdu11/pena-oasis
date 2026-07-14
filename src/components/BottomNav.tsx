@@ -1,4 +1,9 @@
-import { HiOutlineHome, HiOutlineUser } from "react-icons/hi2";
+import {
+  HiOutlineCalendarDays,
+  HiOutlineHome,
+  HiOutlineShoppingBag,
+  HiOutlineUserPlus,
+} from "react-icons/hi2";
 import type { TabId } from "../types";
 
 type BottomNavProps = {
@@ -8,7 +13,9 @@ type BottomNavProps = {
 
 const navItems = [
   { id: "home", label: "Inicio", Icon: HiOutlineHome },
-  { id: "personal", label: "Área Personal", Icon: HiOutlineUser },
+  { id: "membership", label: "Hazte socio", Icon: HiOutlineUserPlus },
+  { id: "events", label: "Eventos", Icon: HiOutlineCalendarDays },
+  { id: "shop", label: "Tienda", Icon: HiOutlineShoppingBag },
 ] as const;
 
 export function BottomNav({ activeTab, onChange }: BottomNavProps) {
@@ -27,7 +34,6 @@ export function BottomNav({ activeTab, onChange }: BottomNavProps) {
           <span>{label}</span>
         </button>
       ))}
-      <span className="nav-divider" aria-hidden="true" />
     </nav>
   );
 }

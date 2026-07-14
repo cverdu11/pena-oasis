@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
 import { AuthScreen } from "./components/AuthScreen";
 import { BottomNav } from "./components/BottomNav";
+import { EventsScreen } from "./components/EventsScreen";
 import { HomeScreen } from "./components/HomeScreen";
 import { LegalScreen } from "./components/LegalScreen";
+import { ShopScreen } from "./components/ShopScreen";
 import {
+  EVENTS_ROUTE_HASH,
   HOME_ROUTE_HASH,
   PERSONAL_ROUTE_HASH,
   PRIVACY_ROUTE_HASH,
+  SHOP_ROUTE_HASH,
   SIGNUP_ROUTE_HASH,
 } from "./constants";
 import type { TabId } from "./types";
@@ -33,20 +37,28 @@ function readInitialRoute(): AppRoute {
     return "home";
   }
 
+  if (window.location.hash === EVENTS_ROUTE_HASH) {
+    return "events";
+  }
+
+  if (window.location.hash === SHOP_ROUTE_HASH) {
+    return "shop";
+  }
+
   if (
     window.location.hash === PERSONAL_ROUTE_HASH ||
     window.location.hash === SIGNUP_ROUTE_HASH ||
     isPasswordRecoveryRoute() ||
     isSignupConfirmationRoute()
   ) {
-    return "personal";
+    return "membership";
   }
 
   if (window.location.hash.startsWith(PRIVACY_ROUTE_HASH)) {
     return "privacy";
   }
 
-  return "personal";
+  return "membership";
 }
 
 export default function App() {
@@ -63,12 +75,19 @@ export default function App() {
 
   function handleTabChange(tab: TabId) {
     setActiveRoute(tab);
+    const nextHash =
+      tab === "home"
+        ? HOME_ROUTE_HASH
+        : tab === "membership"
+          ? SIGNUP_ROUTE_HASH
+          : tab === "events"
+            ? EVENTS_ROUTE_HASH
+            : SHOP_ROUTE_HASH;
+
     window.history.replaceState(
       null,
       "",
-      tab === "personal"
-        ? `${window.location.pathname}${PERSONAL_ROUTE_HASH}`
-        : `${window.location.pathname}${HOME_ROUTE_HASH}`,
+      `${window.location.pathname}${nextHash}`,
     );
   }
 
@@ -76,10 +95,18 @@ export default function App() {
     <main className="app-shell">
       <div className="phone-viewport">
         {activeRoute === "home" && <HomeScreen />}
-        {activeRoute === "personal" && <AuthScreen />}
+        {activeRoute === "membership" && <AuthScreen />}
+        {activeRoute === "events" && <EventsScreen />}
+        {activeRoute === "shop" && <ShopScreen />}
         {activeRoute === "privacy" && <LegalScreen />}
         <BottomNav
-          activeTab={activeRoute === "home" ? "home" : "personal"}
+          activeTab={
+            activeRoute === "events" || activeRoute === "shop"
+              ? activeRoute
+              : activeRoute === "home"
+                ? "home"
+                : "membership"
+          }
           onChange={handleTabChange}
         />
       </div>
