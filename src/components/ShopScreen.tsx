@@ -1,4 +1,6 @@
 import { HiOutlineEnvelope } from "react-icons/hi2";
+import scarfImage from "../../public/images/shop/bufanda-oasis-concepto.webp";
+import shirtImage from "../../public/images/shop/camiseta-oasis-boceto.webp";
 import { CONTACT_EMAIL } from "../constants";
 import type { MemberIdentity } from "../hooks/useMemberIdentity";
 import { AppHeader } from "./AppHeader";
@@ -10,7 +12,7 @@ const products = [
       "Camiseta cruda con escudo de la Peña en el frontal y mapa de La Rosaleda en la espalda.",
     status: "Diseño en desarrollo",
     availability: "Precio por confirmar",
-    image: "/images/shop/camiseta-oasis-boceto.webp",
+    image: shirtImage,
     imageAlt:
       "Boceto frontal y trasero de la camiseta Casa del Malaguismo",
   },
@@ -20,7 +22,7 @@ const products = [
       "Bufanda de punto en azul y blanco para acompañar a la Peña en casa y fuera.",
     status: "Diseño por confirmar",
     availability: "Precio por confirmar",
-    image: "/images/shop/bufanda-oasis-concepto.webp",
+    image: scarfImage,
     imageAlt: "Propuesta visual de una bufanda azul y blanca de la Peña",
   },
 ];
