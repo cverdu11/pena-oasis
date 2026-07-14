@@ -2,23 +2,33 @@ import {
   HiOutlineCalendarDays,
   HiOutlineHome,
   HiOutlineShoppingBag,
+  HiOutlineUserCircle,
   HiOutlineUserPlus,
 } from "react-icons/hi2";
 import type { TabId } from "../types";
 
 type BottomNavProps = {
   activeTab: TabId;
+  isAuthenticated: boolean;
   onChange: (tab: TabId) => void;
 };
 
-const navItems = [
-  { id: "home", label: "Inicio", Icon: HiOutlineHome },
-  { id: "membership", label: "Hazte socio", Icon: HiOutlineUserPlus },
-  { id: "events", label: "Eventos", Icon: HiOutlineCalendarDays },
-  { id: "shop", label: "Tienda", Icon: HiOutlineShoppingBag },
-] as const;
+export function BottomNav({
+  activeTab,
+  isAuthenticated,
+  onChange,
+}: BottomNavProps) {
+  const navItems = [
+    { id: "home", label: "Inicio", Icon: HiOutlineHome },
+    {
+      id: "membership",
+      label: isAuthenticated ? "Área personal" : "Hazte socio",
+      Icon: isAuthenticated ? HiOutlineUserCircle : HiOutlineUserPlus,
+    },
+    { id: "events", label: "Eventos", Icon: HiOutlineCalendarDays },
+    { id: "shop", label: "Tienda", Icon: HiOutlineShoppingBag },
+  ] as const;
 
-export function BottomNav({ activeTab, onChange }: BottomNavProps) {
   return (
     <nav className="bottom-nav" aria-label="Navegación principal">
       {navItems.map(({ id, label, Icon }) => (

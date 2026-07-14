@@ -24,6 +24,7 @@ import {
 import { getSupabaseClient, isSupabaseConfigured } from "../lib/supabase";
 import type { DataAgreementMember } from "../lib/dataAgreementPdf";
 import { DataAgreementCard } from "./DataAgreementCard";
+import { AppHeader } from "./AppHeader";
 
 type AuthMode = "signin" | "signup";
 type Profile = {
@@ -924,59 +925,64 @@ export function AuthScreen() {
       <div className="personal-backdrop" aria-hidden="true" />
 
       {!isSessionLoading && user && !isPasswordRecovery && (
-        <div className="personal-topbar">
-          <span className="personal-avatar">{personalInitials}</span>
-          <div className="personal-topbar-copy">
-            <span>Área personal</span>
-            <strong>{welcomeName}</strong>
-          </div>
-          <div className="personal-actions" aria-label="Acciones personales">
-            <button
-              className="personal-action-button"
-              type="button"
-              aria-label="Editar datos personales"
-              onClick={openProfileEditor}
-            >
-              <FiEdit3 aria-hidden="true" />
-            </button>
-            <div className="member-menu-wrap">
+        <AppHeader
+          actions={
+            <div className="personal-actions" aria-label="Acciones personales">
               <button
-                className="member-menu-button"
+                className="personal-action-button"
                 type="button"
-                aria-label="Abrir ajustes personales"
-                aria-expanded={isMemberMenuOpen}
-                onClick={() => setIsMemberMenuOpen((current) => !current)}
+                aria-label="Editar datos personales"
+                onClick={openProfileEditor}
               >
-                <FiSettings aria-hidden="true" />
+                <FiEdit3 aria-hidden="true" />
               </button>
+              <div className="member-menu-wrap">
+                <button
+                  className="member-menu-button"
+                  type="button"
+                  aria-label="Abrir ajustes personales"
+                  aria-expanded={isMemberMenuOpen}
+                  onClick={() => setIsMemberMenuOpen((current) => !current)}
+                >
+                  <FiSettings aria-hidden="true" />
+                </button>
 
-              {isMemberMenuOpen && (
-                <div className="member-menu" role="menu">
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={openProfileEditor}
-                  >
-                    <FiEdit3 aria-hidden="true" />
-                    <span>Editar datos personales</span>
-                  </button>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={openPasswordEditor}
-                  >
-                    <FiKey aria-hidden="true" />
-                    <span>Cambiar contraseña</span>
-                  </button>
-                  <button type="button" role="menuitem" onClick={handleSignOut}>
-                    <FiLogOut aria-hidden="true" />
-                    <span>Cerrar sesión</span>
-                  </button>
-                </div>
-              )}
+                {isMemberMenuOpen && (
+                  <div className="member-menu" role="menu">
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={openProfileEditor}
+                    >
+                      <FiEdit3 aria-hidden="true" />
+                      <span>Editar datos personales</span>
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={openPasswordEditor}
+                    >
+                      <FiKey aria-hidden="true" />
+                      <span>Cambiar contraseña</span>
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={handleSignOut}
+                    >
+                      <FiLogOut aria-hidden="true" />
+                      <span>Cerrar sesión</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </div>
+          }
+          eyebrow="Área personal"
+          initials={personalInitials}
+          position="fixed"
+          title={welcomeName}
+        />
       )}
 
       <div
@@ -1397,13 +1403,11 @@ export function AuthScreen() {
 
         {!isSessionLoading && !user && !isPasswordRecovery && (
           <>
-            <header className="hub-header membership-header">
-              <span className="hub-avatar">PO</span>
-              <div>
-                <p>Peña Oasis</p>
-                <h1>Hazte socio</h1>
-              </div>
-            </header>
+            <AppHeader
+              eyebrow="Peña Oasis"
+              initials="PO"
+              title="Hazte socio"
+            />
 
             <div className="auth-card">
               <div className="auth-tabs" role="tablist" aria-label="Acceso">

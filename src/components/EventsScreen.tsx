@@ -9,6 +9,8 @@ import {
 } from "../lib/eventAttendance";
 import type { EventAttendanceResponse } from "../lib/eventAttendance";
 import { getSupabaseClient } from "../lib/supabase";
+import type { MemberIdentity } from "../hooks/useMemberIdentity";
+import { AppHeader } from "./AppHeader";
 
 const eventPolls: EventPoll[] = [
   {
@@ -52,7 +54,11 @@ function createEmptyCounts() {
   >;
 }
 
-export function EventsScreen() {
+type EventsScreenProps = {
+  identity: MemberIdentity;
+};
+
+export function EventsScreen({ identity }: EventsScreenProps) {
   const [attendeeCounts, setAttendeeCounts] = useState(createEmptyCounts);
   const [responses, setResponses] = useState(createEmptyResponses);
   const [userId, setUserId] = useState<string | null>(null);
@@ -208,13 +214,11 @@ export function EventsScreen() {
     <section className="screen hub-screen" aria-label="Eventos">
       <div className="hub-backdrop" aria-hidden="true" />
       <div className="hub-sheet events-sheet">
-        <header className="hub-header">
-          <span className="hub-avatar">PO</span>
-          <div>
-            <p>Peña Oasis</p>
-            <h1>Eventos</h1>
-          </div>
-        </header>
+        <AppHeader
+          eyebrow="Peña Oasis"
+          initials={identity.initials}
+          title="Eventos"
+        />
 
         <div className="event-poll-list">
           {eventPolls.map((event) => (

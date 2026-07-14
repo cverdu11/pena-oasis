@@ -1,4 +1,6 @@
 import { HiOutlineShoppingBag, HiOutlineSparkles } from "react-icons/hi2";
+import type { MemberIdentity } from "../hooks/useMemberIdentity";
+import { AppHeader } from "./AppHeader";
 
 const products = [
   {
@@ -13,18 +15,20 @@ const products = [
   },
 ];
 
-export function ShopScreen() {
+type ShopScreenProps = {
+  identity: MemberIdentity;
+};
+
+export function ShopScreen({ identity }: ShopScreenProps) {
   return (
     <section className="screen hub-screen" aria-label="Tienda">
       <div className="hub-backdrop" aria-hidden="true" />
       <div className="hub-sheet">
-        <header className="hub-header">
-          <span className="hub-avatar">PO</span>
-          <div>
-            <p>Peña Oasis</p>
-            <h1>Tienda</h1>
-          </div>
-        </header>
+        <AppHeader
+          eyebrow="Peña Oasis"
+          initials={identity.initials}
+          title="Tienda"
+        />
 
         <section className="hub-hero-card">
           <HiOutlineShoppingBag aria-hidden="true" />

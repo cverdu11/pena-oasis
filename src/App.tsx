@@ -5,6 +5,7 @@ import { EventsScreen } from "./components/EventsScreen";
 import { HomeScreen } from "./components/HomeScreen";
 import { LegalScreen } from "./components/LegalScreen";
 import { ShopScreen } from "./components/ShopScreen";
+import { useMemberIdentity } from "./hooks/useMemberIdentity";
 import {
   EVENTS_ROUTE_HASH,
   HOME_ROUTE_HASH,
@@ -63,6 +64,7 @@ function readInitialRoute(): AppRoute {
 
 export default function App() {
   const [activeRoute, setActiveRoute] = useState<AppRoute>(readInitialRoute);
+  const memberIdentity = useMemberIdentity(activeRoute);
 
   useEffect(() => {
     function syncFromHash() {
@@ -79,7 +81,9 @@ export default function App() {
       tab === "home"
         ? HOME_ROUTE_HASH
         : tab === "membership"
-          ? SIGNUP_ROUTE_HASH
+          ? memberIdentity.isAuthenticated
+            ? PERSONAL_ROUTE_HASH
+            : SIGNUP_ROUTE_HASH
           : tab === "events"
             ? EVENTS_ROUTE_HASH
             : SHOP_ROUTE_HASH;
@@ -96,8 +100,10 @@ export default function App() {
       <div className="phone-viewport">
         {activeRoute === "home" && <HomeScreen />}
         {activeRoute === "membership" && <AuthScreen />}
-        {activeRoute === "events" && <EventsScreen />}
-        {activeRoute === "shop" && <ShopScreen />}
+        {activeRoute === "events" && (
+          <EventsScreen identity={memberIdentity} />
+        )}
+        {activeRoute === "shop" && <ShopScreen identity={memberIdentity} />}
         {activeRoute === "privacy" && <LegalScreen />}
         <BottomNav
           activeTab={
@@ -107,6 +113,7 @@ export default function App() {
                 ? "home"
                 : "membership"
           }
+          isAuthenticated={memberIdentity.isAuthenticated}
           onChange={handleTabChange}
         />
       </div>

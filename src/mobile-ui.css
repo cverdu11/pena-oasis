@@ -50,20 +50,33 @@ body {
   padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 18px);
 }
 
-.hub-header,
-.personal-topbar {
-  min-height: 54px;
-}
-
-.hub-header {
+.app-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
   gap: 12px;
+  min-height: 54px;
   margin-bottom: 30px;
 }
 
-.hub-avatar,
-.personal-avatar {
+.app-header[data-has-actions="true"] {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.app-header--fixed {
+  position: absolute;
+  top: calc(20px + env(safe-area-inset-top));
+  right: 18px;
+  left: 18px;
+  z-index: 6;
+  margin-bottom: 0;
+}
+
+.app-header-avatar {
+  display: grid;
   width: 52px;
   height: 52px;
+  place-items: center;
   border: 1px solid rgba(255, 255, 255, 0.58);
   border-radius: 50%;
   color: #ffffff;
@@ -72,8 +85,13 @@ body {
   font-weight: 750;
 }
 
-.hub-header p,
-.personal-topbar-copy span {
+.app-header-copy {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.app-header-eyebrow {
   margin: 0 0 3px;
   color: #768399;
   font-size: 10px;
@@ -83,11 +101,16 @@ body {
   text-transform: uppercase;
 }
 
-.hub-header h1 {
+.app-header-title {
+  min-width: 0;
+  overflow: hidden;
+  margin: 0;
   color: var(--oasis-ink);
-  font-size: 28px;
-  font-weight: 760;
-  line-height: 1.06;
+  font-size: 20px;
+  font-weight: 750;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .hub-hero-card {
@@ -721,20 +744,6 @@ body {
   line-height: 1.45;
 }
 
-.personal-topbar {
-  top: calc(20px + env(safe-area-inset-top));
-  right: 18px;
-  left: 18px;
-  gap: 11px;
-}
-
-.personal-topbar-copy strong {
-  color: var(--oasis-ink);
-  font-size: 20px;
-  font-weight: 750;
-  line-height: 1.1;
-}
-
 .personal-actions {
   gap: 8px;
 }
@@ -1174,7 +1183,7 @@ body {
     inset: calc(14px + env(safe-area-inset-top)) 14px 0;
   }
 
-  .hub-header {
+  .app-header--inline {
     margin-bottom: 22px;
   }
 
@@ -1182,14 +1191,13 @@ body {
     inset: calc(82px + env(safe-area-inset-top)) 14px 0;
   }
 
-  .personal-topbar {
+  .app-header--fixed {
     top: calc(14px + env(safe-area-inset-top));
     right: 14px;
     left: 14px;
   }
 
-  .hub-avatar,
-  .personal-avatar {
+  .app-header-avatar {
     width: 46px;
     height: 46px;
   }
