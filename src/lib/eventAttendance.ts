@@ -12,6 +12,11 @@ export type SavedEventAttendanceResponse = {
   isPrivate: boolean;
 };
 
+export type EventAttendee = {
+  displayName: string;
+  isPrivate: boolean;
+};
+
 type EventAttendanceCountRow = {
   event_id: string;
   attendee_count: number | string;
@@ -20,6 +25,11 @@ type EventAttendanceCountRow = {
 type EventAttendanceResponseRow = {
   event_id: string;
   attending: boolean;
+  is_private: boolean;
+};
+
+type EventAttendeeRow = {
+  display_name: string;
   is_private: boolean;
 };
 
@@ -54,6 +64,24 @@ export async function fetchEventAttendanceCounts(
   }
 
   return counts;
+}
+
+export async function fetchEventAttendees(
+  client: SupabaseClient,
+  eventId: string,
+) {
+  const { data, error } = await client.rpc("get_event_attendees", {
+    requested_event_id: eventId,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return ((data ?? []) as EventAttendeeRow[]).map((row) => ({
+    displayName: row.display_name,
+    isPrivate: row.is_private,
+  })) satisfies EventAttendee[];
 }
 
 export async function fetchUserEventResponses(

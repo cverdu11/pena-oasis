@@ -1,14 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import {
   HiOutlineArchiveBox,
   HiOutlineCheckCircle,
   HiOutlineClock,
+  HiOutlineEye,
   HiOutlineEyeSlash,
   HiOutlineMapPin,
+  HiOutlineUser,
   HiOutlineUserGroup,
   HiOutlineXCircle,
 } from "react-icons/hi2";
-import type { EventAttendanceResponse } from "../lib/eventAttendance";
+import type {
+  EventAttendee,
+  EventAttendanceResponse,
+} from "../lib/eventAttendance";
 
 export type EventPoll = {
   id: string;
@@ -34,6 +39,7 @@ type EventPollCardProps = {
   isSaving: boolean;
   systemMessage: string;
   isPast: boolean;
+  onLoadAttendees: () => Promise<EventAttendee[]>;
   onSave: (response: EventAttendanceResponse) => Promise<boolean>;
 };
 
@@ -46,14 +52,50 @@ export function EventPollCard({
   isSaving,
   systemMessage,
   isPast,
+  onLoadAttendees,
   onSave,
 }: EventPollCardProps) {
+  const attendeeListId = useId();
   const [privacyDraft, setPrivacyDraft] = useState(response.isPrivate);
   const [statusMessage, setStatusMessage] = useState("");
+  const [isAttendeeListOpen, setIsAttendeeListOpen] = useState(false);
+  const [isAttendeeListLoading, setIsAttendeeListLoading] = useState(false);
+  const [attendeeListError, setAttendeeListError] = useState("");
+  const [attendees, setAttendees] = useState<EventAttendee[]>([]);
 
   useEffect(() => {
     setPrivacyDraft(response.isPrivate);
   }, [response.isPrivate]);
+
+  useEffect(() => {
+    if (attendeeCount === 0) {
+      setIsAttendeeListOpen(false);
+      setAttendees([]);
+    }
+  }, [attendeeCount]);
+
+  async function loadAttendees() {
+    setIsAttendeeListLoading(true);
+    setAttendeeListError("");
+
+    try {
+      setAttendees(await onLoadAttendees());
+    } catch {
+      setAttendeeListError("No hemos podido cargar la lista de asistentes.");
+    } finally {
+      setIsAttendeeListLoading(false);
+    }
+  }
+
+  function handleAttendeeListToggle() {
+    if (isAttendeeListOpen) {
+      setIsAttendeeListOpen(false);
+      return;
+    }
+
+    setIsAttendeeListOpen(true);
+    void loadAttendees();
+  }
 
   function requireAuthenticatedUser() {
     if (isAuthenticated) {
@@ -83,6 +125,10 @@ export function EventPollCard({
           : "Respuesta guardada."
         : "No hemos podido guardar la respuesta. Inténtalo de nuevo.",
     );
+
+    if (saved && isAttendeeListOpen) {
+      void loadAttendees();
+    }
   }
 
   async function handlePrivacyChange(isPrivate: boolean) {
@@ -115,6 +161,10 @@ export function EventPollCard({
           : "Participación visible activada."
         : "No hemos podido guardar la privacidad. Inténtalo de nuevo.",
     );
+
+    if (saved && isAttendeeListOpen) {
+      void loadAttendees();
+    }
   }
 
   return (
@@ -142,26 +192,74 @@ export function EventPollCard({
         <p>{event.detail}</p>
       </div>
 
-      <div className="event-attendee-count" aria-live="polite">
-        <span>
-          <HiOutlineUserGroup aria-hidden="true" />
-        </span>
-        <p>
-          {attendeeCount === null ? (
-            "Cargando asistentes..."
-          ) : (
-            <>
-              <strong>{attendeeCount}</strong>{" "}
-              {attendeeCount === 1
-                ? isPast
-                  ? "persona asistió a este evento"
-                  : "persona asistirá a este evento"
-                : isPast
-                  ? "personas asistieron a este evento"
-                  : "personas asistirán a este evento"}
-            </>
+      <div className="event-attendance-panel">
+        <div className="event-attendee-count" aria-live="polite">
+          <span>
+            <HiOutlineUserGroup aria-hidden="true" />
+          </span>
+          <p>
+            {attendeeCount === null ? (
+              "Cargando asistentes..."
+            ) : (
+              <>
+                <strong>{attendeeCount}</strong>{" "}
+                {attendeeCount === 1
+                  ? isPast
+                    ? "persona asistió a este evento"
+                    : "persona asistirá a este evento"
+                  : isPast
+                    ? "personas asistieron a este evento"
+                    : "personas asistirán a este evento"}
+              </>
+            )}
+          </p>
+          {isAuthenticated && attendeeCount !== null && attendeeCount > 0 && (
+            <button
+              aria-controls={attendeeListId}
+              aria-expanded={isAttendeeListOpen}
+              aria-label={
+                isAttendeeListOpen
+                  ? "Ocultar lista de asistentes"
+                  : "Ver lista de asistentes"
+              }
+              className="event-attendee-list-button"
+              title={
+                isAttendeeListOpen
+                  ? "Ocultar lista de asistentes"
+                  : "Ver lista de asistentes"
+              }
+              type="button"
+              onClick={handleAttendeeListToggle}
+            >
+              <HiOutlineEye aria-hidden="true" />
+            </button>
           )}
-        </p>
+        </div>
+
+        {isAttendeeListOpen && (
+          <div className="event-attendee-list" id={attendeeListId}>
+            {isAttendeeListLoading ? (
+              <p role="status">Cargando lista...</p>
+            ) : attendeeListError ? (
+              <p role="alert">{attendeeListError}</p>
+            ) : attendees.length > 0 ? (
+              <ul>
+                {attendees.map((attendee, index) => (
+                  <li key={`${attendee.displayName}-${index}`}>
+                    {attendee.isPrivate ? (
+                      <HiOutlineEyeSlash aria-hidden="true" />
+                    ) : (
+                      <HiOutlineUser aria-hidden="true" />
+                    )}
+                    <span>{attendee.displayName}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No hay asistentes confirmados.</p>
+            )}
+          </div>
+        )}
       </div>
 
       {isPast ? (

@@ -4,6 +4,7 @@ import type { EventPoll } from "./EventPollCard";
 import {
   EMPTY_EVENT_RESPONSE,
   fetchEventAttendanceCounts,
+  fetchEventAttendees,
   fetchUserEventResponses,
   saveUserEventResponse,
 } from "../lib/eventAttendance";
@@ -238,6 +239,16 @@ export function EventsScreen({
     }
   }
 
+  async function handleLoadAttendees(eventId: string) {
+    const client = await getSupabaseClient();
+
+    if (!client) {
+      throw new Error("Supabase no está disponible.");
+    }
+
+    return fetchEventAttendees(client, eventId);
+  }
+
   const now = Date.now();
   const upcomingEvents = eventPolls.filter(
     (event) => new Date(event.endsAt).getTime() >= now,
@@ -282,6 +293,7 @@ export function EventsScreen({
               key={event.id}
               response={responses[event.id] ?? EMPTY_EVENT_RESPONSE}
               systemMessage={systemMessage}
+              onLoadAttendees={() => handleLoadAttendees(event.id)}
               onSave={(response) => handleSaveResponse(event.id, response)}
             />
           ))}
@@ -301,6 +313,7 @@ export function EventsScreen({
                     key={event.id}
                     response={responses[event.id] ?? EMPTY_EVENT_RESPONSE}
                     systemMessage={systemMessage}
+                    onLoadAttendees={() => handleLoadAttendees(event.id)}
                     onSave={(response) =>
                       handleSaveResponse(event.id, response)
                     }
