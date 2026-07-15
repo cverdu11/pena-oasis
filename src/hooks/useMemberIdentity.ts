@@ -13,9 +13,14 @@ export type MemberIdentity = {
   isAuthenticated: boolean;
 };
 
-const guestIdentity: MemberIdentity = {
+type MemberIdentityState = MemberIdentity & {
+  userId: string | null;
+};
+
+const guestIdentity: MemberIdentityState = {
   initials: "PO",
   isAuthenticated: false,
+  userId: null,
 };
 
 function getUserName(user: User) {
@@ -47,11 +52,13 @@ function createIdentity(user: User, profile?: IdentityProfile | null) {
   return {
     initials: getInitials(fullName),
     isAuthenticated: true,
-  } satisfies MemberIdentity;
+    userId: user.id,
+  } satisfies MemberIdentityState;
 }
 
 export function useMemberIdentity(refreshKey: string) {
-  const [identity, setIdentity] = useState<MemberIdentity>(guestIdentity);
+  const [identity, setIdentity] =
+    useState<MemberIdentityState>(guestIdentity);
 
   useEffect(() => {
     let isActive = true;
@@ -72,7 +79,11 @@ export function useMemberIdentity(refreshKey: string) {
       }
 
       if (isActive) {
-        setIdentity(createIdentity(user));
+        setIdentity((currentIdentity) =>
+          currentIdentity.userId === user.id
+            ? currentIdentity
+            : createIdentity(user),
+        );
       }
 
       const { data } = await client

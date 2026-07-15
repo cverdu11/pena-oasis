@@ -329,6 +329,7 @@ function readInitialMessage() {
 }
 
 type AuthScreenProps = {
+  identityInitials: string;
   isAccountMenuOpen: boolean;
   onAvatarClick: () => void;
   onRequestedActionHandled: () => void;
@@ -336,6 +337,7 @@ type AuthScreenProps = {
 };
 
 export function AuthScreen({
+  identityInitials,
   isAccountMenuOpen,
   onAvatarClick,
   onRequestedActionHandled,
@@ -403,7 +405,12 @@ export function AuthScreen({
     driveUrl: profile?.data_agreement_drive_url,
   };
   const hasStoredDataAgreement = Boolean(storedAgreement.signedAt);
-  const personalInitials = getInitials(profile?.full_name ?? welcomeName);
+  const profileNameForInitials =
+    profile?.full_name?.trim() ||
+    [profile?.first_name, profile?.last_name].filter(Boolean).join(" ").trim();
+  const personalInitials = profileNameForInitials
+    ? getInitials(profileNameForInitials)
+    : identityInitials;
   const penaMemberNumber = formatPenaMemberNumber(
     profile?.pena_member_number,
   );

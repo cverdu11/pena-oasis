@@ -142,6 +142,7 @@ export default function App() {
         )}
         {activeRoute === "membership" && (
           <AuthScreen
+            identityInitials={memberIdentity.initials}
             isAccountMenuOpen={isAccountMenuOpen}
             onAvatarClick={() => setIsAccountMenuOpen((current) => !current)}
             onRequestedActionHandled={() => setPersonalAreaAction(null)}
