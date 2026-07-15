@@ -616,7 +616,7 @@ button.app-header-avatar:focus-visible {
   gap: 7px;
   min-height: 44px;
   color: var(--oasis-blue);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   text-decoration: none;
 }

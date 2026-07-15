@@ -27,8 +27,8 @@ export function NewsArticleScreen({ onBack }: NewsArticleScreenProps) {
           <p>{FEATURED_NEWS.category}</p>
           <h2>{FEATURED_NEWS.title}</h2>
           <span>
-            Oasis es una de las cinco nuevas agrupaciones que pasan a formar
-            parte de la Federación.
+            La Peña Oasis es una de las cinco nuevas agrupaciones que pasan a
+            formar parte de la Federación.
           </span>
           <small>
             {FEATURED_NEWS.author} · {FEATURED_NEWS.publishedAt} ·{" "}
