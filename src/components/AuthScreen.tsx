@@ -411,6 +411,8 @@ export function AuthScreen({
   const personalInitials = profileNameForInitials
     ? getInitials(profileNameForInitials)
     : identityInitials;
+  const canRenderPersonalHeader =
+    !isProfileLoading || identityInitials.trim().length > 1;
   const penaMemberNumber = formatPenaMemberNumber(
     profile?.pena_member_number,
   );
@@ -438,7 +440,9 @@ export function AuthScreen({
       let handledSignupConfirmation = false;
 
       const subscription = client.auth.onAuthStateChange((event, session) => {
-        setUser(session?.user ?? null);
+        const sessionUser = session?.user ?? null;
+        setIsProfileLoading(Boolean(sessionUser));
+        setUser(sessionUser);
 
         if (event === "PASSWORD_RECOVERY") {
           setMode("signin");
@@ -492,7 +496,9 @@ export function AuthScreen({
       const { data } = await client.auth.getSession();
 
       if (isMounted) {
-        setUser(data.session?.user ?? null);
+        const sessionUser = data.session?.user ?? null;
+        setIsProfileLoading(Boolean(sessionUser));
+        setUser(sessionUser);
         if (data.session?.user && isPasswordRecoveryRoute()) {
           setMode("signin");
           setIsPasswordRecovery(true);
@@ -535,12 +541,16 @@ export function AuthScreen({
         setConfirmAccountPassword("");
         setAccountPasswordMessage("");
         setIsProfileSchemaReady(true);
+        setIsProfileLoading(false);
         return;
       }
 
       const client = await getSupabaseClient();
 
       if (!client) {
+        if (isMounted) {
+          setIsProfileLoading(false);
+        }
         return;
       }
 
@@ -960,7 +970,10 @@ export function AuthScreen({
     >
       <div className="personal-backdrop" aria-hidden="true" />
 
-      {!isSessionLoading && user && !isPasswordRecovery && (
+      {!isSessionLoading &&
+        user &&
+        !isPasswordRecovery &&
+        canRenderPersonalHeader && (
         <AppHeader
           avatarLabel="Abrir menú de cuenta"
           actions={
