@@ -4,6 +4,8 @@ export const PERSONAL_ROUTE_HASH = "#area-personal";
 export const SIGNUP_ROUTE_HASH = "#area-personal-registro";
 export const EVENTS_ROUTE_HASH = "#eventos";
 export const SHOP_ROUTE_HASH = "#tienda";
+export const NEWS_ARTICLE_ROUTE_HASH =
+  "#noticias/pena-oasis-federacion-penas-malaguistas";
 export const PRIVACY_ROUTE_HASH = "#privacidad";
 export const DATA_PROTECTION_LAW_URL =
   "https://www.boe.es/buscar/act.php?id=BOE-A-2018-16673";

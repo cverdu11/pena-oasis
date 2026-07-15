@@ -6,12 +6,14 @@ import { BottomNav } from "./components/BottomNav";
 import { EventsScreen } from "./components/EventsScreen";
 import { HomeScreen } from "./components/HomeScreen";
 import { LegalScreen } from "./components/LegalScreen";
+import { NewsArticleScreen } from "./components/NewsArticleScreen";
 import { ShopScreen } from "./components/ShopScreen";
 import { useMemberIdentity } from "./hooks/useMemberIdentity";
 import { getSupabaseClient } from "./lib/supabase";
 import {
   EVENTS_ROUTE_HASH,
   HOME_ROUTE_HASH,
+  NEWS_ARTICLE_ROUTE_HASH,
   PERSONAL_ROUTE_HASH,
   PRIVACY_ROUTE_HASH,
   SHOP_ROUTE_HASH,
@@ -19,7 +21,7 @@ import {
 } from "./constants";
 import type { PersonalAreaAction, TabId } from "./types";
 
-type AppRoute = TabId | "privacy";
+type AppRoute = TabId | "news-article" | "privacy";
 
 function isPasswordRecoveryRoute() {
   const searchParams = new URLSearchParams(window.location.search);
@@ -37,6 +39,10 @@ function isSignupConfirmationRoute() {
 }
 
 function readInitialRoute(): AppRoute {
+  if (window.location.hash === NEWS_ARTICLE_ROUTE_HASH) {
+    return "news-article";
+  }
+
   if (window.location.hash === HOME_ROUTE_HASH) {
     return "home";
   }
@@ -79,7 +85,11 @@ export default function App() {
     }
 
     window.addEventListener("hashchange", syncFromHash);
-    return () => window.removeEventListener("hashchange", syncFromHash);
+    window.addEventListener("popstate", syncFromHash);
+    return () => {
+      window.removeEventListener("hashchange", syncFromHash);
+      window.removeEventListener("popstate", syncFromHash);
+    };
   }, []);
 
   function handleTabChange(tab: TabId) {
@@ -116,6 +126,16 @@ export default function App() {
     );
   }
 
+  function openLatestNews() {
+    setIsAccountMenuOpen(false);
+    setActiveRoute("news-article");
+    window.history.pushState(
+      null,
+      "",
+      `${window.location.pathname}${NEWS_ARTICLE_ROUTE_HASH}`,
+    );
+  }
+
   async function handleAccountMenuAction(action: AccountMenuAction) {
     setIsAccountMenuOpen(false);
 
@@ -138,7 +158,11 @@ export default function App() {
             isAccountMenuOpen={isAccountMenuOpen}
             onAvatarClick={() => setIsAccountMenuOpen((current) => !current)}
             onNavigate={handleTabChange}
+            onOpenLatestNews={openLatestNews}
           />
+        )}
+        {activeRoute === "news-article" && (
+          <NewsArticleScreen onBack={() => handleTabChange("home")} />
         )}
         {activeRoute === "membership" && (
           <AuthScreen
@@ -175,7 +199,7 @@ export default function App() {
           activeTab={
             activeRoute === "events" || activeRoute === "shop"
               ? activeRoute
-              : activeRoute === "home"
+              : activeRoute === "home" || activeRoute === "news-article"
                 ? "home"
                 : "membership"
           }
