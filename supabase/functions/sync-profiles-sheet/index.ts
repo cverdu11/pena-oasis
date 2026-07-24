@@ -14,6 +14,7 @@ type AppsScriptSyncResponse = {
   rowCount?: number;
   insertedRows?: number;
   updatedRows?: number;
+  deduplicatedRows?: number;
   updatedAt?: string;
   error?: string;
 };
@@ -224,6 +225,7 @@ Deno.serve(async (request) => {
       sheetName: sheet.sheetName ?? null,
       insertedRows: sheet.insertedRows ?? null,
       updatedRows: sheet.updatedRows ?? null,
+      deduplicatedRows: sheet.deduplicatedRows ?? null,
       updatedAt: sheet.updatedAt ?? null,
     });
   } catch (error) {

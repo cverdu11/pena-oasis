@@ -104,7 +104,7 @@ dni
 member_number
 ```
 
-La sincronizacion es en una sola direccion: Supabase `profiles` -> Google Sheet. No escribe nada en Supabase. Tampoco borra ni limpia la pestana `SOCIOS`: actualiza filas existentes en `P:R` por `member_number` cuando ya existen y anade filas nuevas en esas columnas. Si `P1:R1` ya tiene encabezados distintos, falla con error para evitar tocar columnas que no sean la exportacion.
+La sincronizacion es en una sola direccion: Supabase `profiles` -> Google Sheet. No escribe nada en Supabase. Identifica las filas existentes de `P:R` por DNI, de modo que un cambio de `member_number` actualiza al mismo socio en lugar de crear otra fila. Si encuentra duplicados con el mismo DNI, conserva la primera fila y limpia solo las celdas duplicadas de `P:R`. Si `P1:R1` ya tiene encabezados distintos, falla con error para evitar tocar columnas que no sean la exportacion.
 
 Configura tambien estos secretos en Supabase Edge Functions:
 

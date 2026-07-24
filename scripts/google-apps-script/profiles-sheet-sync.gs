@@ -59,6 +59,7 @@ function doPost(e) {
         rowCount: syncResult.rowCount,
         insertedRows: syncResult.insertedRows,
         updatedRows: syncResult.updatedRows,
+        deduplicatedRows: syncResult.deduplicatedRows,
         updatedAt: new Date().toISOString(),
       });
     } finally {
@@ -79,13 +80,23 @@ function upsertProfileRows(sheet, rows, startColumn) {
       ? sheet.getRange(2, startColumn, existingLastRow - 1, 3).getValues()
       : [];
   const rowByKey = {};
+  const duplicateRows = [];
 
   existingValues.forEach(function (values, index) {
     const key = getProfileRowKey(values);
 
-    if (key && !rowByKey[key]) {
-      rowByKey[key] = index + 2;
+    if (!key) {
+      return;
     }
+
+    if (rowByKey[key]) {
+      if (isDniProfileRowKey(key)) {
+        duplicateRows.push(index + 2);
+      }
+      return;
+    }
+
+    rowByKey[key] = index + 2;
   });
 
   let insertedRows = 0;
@@ -115,12 +126,17 @@ function upsertProfileRows(sheet, rows, startColumn) {
     nextRow += 1;
   });
 
+  duplicateRows.forEach(function (rowNumber) {
+    sheet.getRange(rowNumber, startColumn, 1, 3).clearContent();
+  });
+
   sheet.autoResizeColumns(startColumn, 3);
 
   return {
     rowCount: Math.max(getNextProfileWriteRow(sheet, startColumn) - 2, 0),
     insertedRows: insertedRows,
     updatedRows: updatedRows,
+    deduplicatedRows: duplicateRows.length,
   };
 }
 
@@ -140,11 +156,35 @@ function getNextProfileWriteRow(sheet, startColumn) {
 }
 
 function getProfileRowKey(row) {
-  const memberNumber = toSheetText(row && row[2]);
-  const dni = toSheetText(row && row[1]);
-  const fullName = toSheetText(row && row[0]);
+  const dni = normalizeDni(row && row[1]);
+  const fullName = normalizeKeyText(row && row[0]);
+  const memberNumber = normalizeKeyText(row && row[2]);
 
-  return memberNumber || dni || fullName;
+  if (dni) {
+    return "dni:" + dni;
+  }
+
+  if (fullName) {
+    return "name:" + fullName;
+  }
+
+  return memberNumber ? "member:" + memberNumber : "";
+}
+
+function isDniProfileRowKey(key) {
+  return String(key).indexOf("dni:") === 0;
+}
+
+function normalizeDni(value) {
+  return toSheetText(value)
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "");
+}
+
+function normalizeKeyText(value) {
+  return toSheetText(value)
+    .toLowerCase()
+    .replace(/\s+/g, " ");
 }
 
 function profileRowToSheetValues(row) {
