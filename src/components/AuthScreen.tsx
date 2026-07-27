@@ -62,6 +62,8 @@ const EMAIL_RATE_LIMIT_MESSAGE =
   "Ahora mismo no podemos enviar más correos automáticos. Inténtalo de nuevo en unos minutos.";
 const PASSWORD_RESET_DELIVERY_ERROR_MESSAGE =
   "No hemos podido enviar el correo de recuperación. Inténtalo de nuevo en unos minutos o contacta con la Peña.";
+const PASSWORD_RECOVERY_LINK_ERROR_MESSAGE =
+  "Este enlace de recuperación ha caducado o ya se ha utilizado. Solicita uno nuevo desde «¿Olvidaste tu contraseña?».";
 const SIGNUP_EMAIL_STORAGE_KEY = "pena-oasis-signup-email";
 const SIGNUP_CONFIRMED_MESSAGE = "Cuenta confirmada. Ya puedes iniciar sesión.";
 const SIGNUP_CONFIRMING_MESSAGE = "Confirmando cuenta...";
@@ -119,8 +121,27 @@ function getFriendlyAuthErrorMessage(error: AuthError, action: AuthAction) {
     return "Este correo ya está registrado. Prueba a iniciar sesión o recupera la contraseña.";
   }
 
+  if (
+    action === "password-update" &&
+    (code === "same_password" ||
+      message.includes("different from the old password"))
+  ) {
+    return "La nueva contraseña debe ser diferente de la anterior.";
+  }
+
   if (code === "weak_password" || message.includes("password should")) {
     return "La contraseña debe tener al menos 6 caracteres.";
+  }
+
+  if (
+    action === "password-update" &&
+    (code === "session_not_found" ||
+      code === "otp_expired" ||
+      code === "flow_state_not_found" ||
+      message.includes("auth session missing") ||
+      message.includes("invalid or has expired"))
+  ) {
+    return PASSWORD_RECOVERY_LINK_ERROR_MESSAGE;
   }
 
   if (code === "signup_disabled") {
@@ -296,8 +317,25 @@ function isPasswordRecoveryRoute() {
   );
 }
 
+function hasPasswordRecoveryToken() {
+  const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+
+  return (
+    hashParams.get("type") === "recovery" &&
+    Boolean(hashParams.get("access_token"))
+  );
+}
+
 function getPasswordRecoveryRedirectUrl() {
   return `${window.location.origin}${window.location.pathname}?recovery=1`;
+}
+
+function clearPasswordRecoveryRoute() {
+  window.history.replaceState(
+    null,
+    "",
+    `${window.location.pathname}${PERSONAL_ROUTE_HASH}`,
+  );
 }
 
 function getSignupConfirmationRedirectUrl(emailAddress: string) {
@@ -367,8 +405,13 @@ export function AuthScreen({
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [message, setMessage] = useState(readInitialMessage);
   const [isSignupComplete, setIsSignupComplete] = useState(false);
+  const [initialPasswordRecovery] = useState(() => ({
+    callbackError: getAuthCallbackError(),
+    hasToken: hasPasswordRecoveryToken(),
+    isRoute: isPasswordRecoveryRoute(),
+  }));
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(
-    isPasswordRecoveryRoute,
+    initialPasswordRecovery.isRoute,
   );
   const [isLoading, setIsLoading] = useState(false);
   const [isResetLoading, setIsResetLoading] = useState(false);
@@ -452,6 +495,7 @@ export function AuthScreen({
       }
 
       let handledSignupConfirmation = false;
+      let receivedPasswordRecoveryEvent = false;
 
       const subscription = client.auth.onAuthStateChange((event, session) => {
         const sessionUser = session?.user ?? null;
@@ -459,14 +503,11 @@ export function AuthScreen({
         setUser(sessionUser);
 
         if (event === "PASSWORD_RECOVERY") {
+          receivedPasswordRecoveryEvent = true;
           setMode("signin");
           setIsPasswordRecovery(true);
           setMessage("Introduce una nueva contraseña para terminar.");
-          window.history.replaceState(
-            null,
-            "",
-            `${window.location.pathname}${PERSONAL_ROUTE_HASH}`,
-          );
+          clearPasswordRecoveryRoute();
           return;
         }
 
@@ -513,16 +554,24 @@ export function AuthScreen({
         const sessionUser = data.session?.user ?? null;
         setIsProfileLoading(Boolean(sessionUser));
         setUser(sessionUser);
-        if (data.session?.user && isPasswordRecoveryRoute()) {
+
+        if (initialPasswordRecovery.isRoute) {
+          const hasValidRecoverySession =
+            Boolean(sessionUser) &&
+            !initialPasswordRecovery.callbackError &&
+            (initialPasswordRecovery.hasToken ||
+              receivedPasswordRecoveryEvent);
+
           setMode("signin");
-          setIsPasswordRecovery(true);
-          setMessage("Introduce una nueva contraseña para terminar.");
-          window.history.replaceState(
-            null,
-            "",
-            `${window.location.pathname}${PERSONAL_ROUTE_HASH}`,
+          setIsPasswordRecovery(hasValidRecoverySession);
+          setMessage(
+            hasValidRecoverySession
+              ? "Introduce una nueva contraseña para terminar."
+              : PASSWORD_RECOVERY_LINK_ERROR_MESSAGE,
           );
+          clearPasswordRecoveryRoute();
         }
+
         if (handledSignupConfirmation) {
           setMode("signin");
           setIsPasswordRecovery(false);
@@ -759,27 +808,53 @@ export function AuthScreen({
     }
 
     setIsResetLoading(true);
-    const { error } = await client.auth.updateUser({ password: newPassword });
+    try {
+      const {
+        data: { session },
+        error: sessionError,
+      } = await client.auth.getSession();
 
-    if (error) {
+      if (sessionError || !session) {
+        setIsPasswordRecovery(false);
+        setNewPassword("");
+        setConfirmPassword("");
+        setMessage(PASSWORD_RECOVERY_LINK_ERROR_MESSAGE);
+        clearPasswordRecoveryRoute();
+        return;
+      }
+
+      const { error } = await client.auth.updateUser({ password: newPassword });
+
+      if (error) {
+        const friendlyMessage = getFriendlyAuthErrorMessage(
+          error,
+          "password-update",
+        );
+
+        if (friendlyMessage === PASSWORD_RECOVERY_LINK_ERROR_MESSAGE) {
+          setIsPasswordRecovery(false);
+          setNewPassword("");
+          setConfirmPassword("");
+          clearPasswordRecoveryRoute();
+        }
+
+        setMessage(friendlyMessage);
+        return;
+      }
+
+      await client.auth.signOut();
+      setIsPasswordRecovery(false);
+      setUser(null);
+      setNewPassword("");
+      setConfirmPassword("");
+      setPassword("");
+      setMessage("Contraseña actualizada. Ya puedes iniciar sesión.");
+      clearPasswordRecoveryRoute();
+    } catch {
+      setMessage("No hemos podido actualizar la contraseña. Inténtalo de nuevo.");
+    } finally {
       setIsResetLoading(false);
-      setMessage(getFriendlyAuthErrorMessage(error, "password-update"));
-      return;
     }
-
-    await client.auth.signOut();
-    setIsResetLoading(false);
-    setIsPasswordRecovery(false);
-    setUser(null);
-    setNewPassword("");
-    setConfirmPassword("");
-    setPassword("");
-    setMessage("Contraseña actualizada. Ya puedes iniciar sesión.");
-    window.history.replaceState(
-      null,
-      "",
-      `${window.location.pathname}${PERSONAL_ROUTE_HASH}`,
-    );
   }
 
   async function handleProfileSubmit(event: FormEvent<HTMLFormElement>) {
