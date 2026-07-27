@@ -146,7 +146,7 @@ button.app-header-avatar:focus-visible {
 .home-sheet {
   --home-section-label-size: 12px;
   --home-content-title-size: 15px;
-  padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 28px);
+  padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom));
 }
 
 .home-sheet .app-header {
@@ -435,6 +435,64 @@ button.app-header-avatar:focus-visible {
 .home-membership-cta > button svg:last-child {
   width: 18px;
   height: 18px;
+}
+
+.contact-footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1.75fr) 1px minmax(92px, 0.75fr);
+  align-items: center;
+  width: 100%;
+  min-height: 64px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: linear-gradient(
+    105deg,
+    var(--oasis-blue-dark) 0%,
+    var(--oasis-blue) 100%
+  );
+  padding: 0 14px;
+}
+
+.contact-footer a {
+  display: flex;
+  min-width: 0;
+  min-height: 64px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 10px;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 620;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.contact-footer a:first-child {
+  justify-content: flex-start;
+}
+
+.contact-footer a:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.contact-footer a:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: -4px;
+}
+
+.contact-footer a svg {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  stroke-width: 1.8;
+}
+
+.contact-footer-divider {
+  width: 1px;
+  height: 30px;
+  background: rgba(255, 255, 255, 0.34);
 }
 
 .home-event-preview:hover,
@@ -2303,6 +2361,27 @@ button.app-header-avatar:focus-visible {
     min-height: 50px;
     padding: 0 12px;
     font-size: 14px;
+  }
+
+  .contact-footer {
+    grid-template-columns: minmax(0, 1.8fr) 1px minmax(82px, 0.7fr);
+    min-height: 60px;
+    padding: 0 10px;
+  }
+
+  .contact-footer a {
+    min-height: 60px;
+    gap: 6px;
+    font-size: 9.5px;
+  }
+
+  .contact-footer a svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .contact-footer-divider {
+    height: 28px;
   }
 
   .hub-sheet,

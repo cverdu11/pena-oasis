@@ -12,6 +12,7 @@ import { FEATURED_NEWS } from "../lib/news";
 import type { EventPoll } from "./EventPollCard";
 import type { TabId } from "../types";
 import { AppHeader } from "./AppHeader";
+import { ContactFooter } from "./ContactFooter";
 
 type HomeScreenProps = {
   identity: MemberIdentity;
@@ -158,6 +159,8 @@ export function HomeScreen({
             </button>
           </section>
         )}
+
+        <ContactFooter />
       </div>
     </section>
   );

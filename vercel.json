@@ -1,3 +1,21 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/" }]
+  "rewrites": [
+    {
+      "source": "/mimapa-1506938a3e3c62874432ba7d",
+      "destination": "https://mi-mapa-weld.vercel.app/"
+    },
+    {
+      "source": "/mimapa-1506938a3e3c62874432ba7d/:path*",
+      "destination": "https://mi-mapa-weld.vercel.app/:path*"
+    },
+    {
+      "source": "/_next/:path*",
+      "destination": "https://mi-mapa-weld.vercel.app/_next/:path*"
+    },
+    {
+      "source": "/flags/:path*",
+      "destination": "https://mi-mapa-weld.vercel.app/flags/:path*"
+    },
+    { "source": "/(.*)", "destination": "/" }
+  ]
 }
