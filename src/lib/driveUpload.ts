@@ -3,7 +3,7 @@ import type { DataAgreementMember } from "./dataAgreementPdf";
 
 const configuredDataAgreementFunctionName =
   process.env.VITE_DATA_AGREEMENT_FUNCTION_NAME?.trim();
-const defaultDataAgreementFunctionNames = ["upload-data-agreement", "swift-worker"];
+const defaultDataAgreementFunctionNames = ["swift-worker", "upload-data-agreement"];
 const dataAgreementFunctionNames = configuredDataAgreementFunctionName
   ? [
       configuredDataAgreementFunctionName,
@@ -25,6 +25,17 @@ export type DataAgreementUploadResult = {
   fileName: string;
   webViewLink: string | null;
 };
+
+function isUnavailableFunctionError(error: unknown, response?: Response) {
+  const message = error instanceof Error ? error.message.toLowerCase() : "";
+
+  return (
+    response?.status === 404 ||
+    message.includes("failed to send") ||
+    message.includes("function not found") ||
+    message.includes("requested function was not found")
+  );
+}
 
 async function readFunctionErrorMessage(
   error: unknown,
@@ -81,7 +92,7 @@ export async function uploadDataAgreementToDrive(
 
       if (
         dataAgreementFunctionNames.length > 1 &&
-        error.message.toLowerCase().includes("failed to send")
+        isUnavailableFunctionError(error, response)
       ) {
         continue;
       }
