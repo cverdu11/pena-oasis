@@ -60,6 +60,8 @@ const EXTENDED_PROFILE_SELECT =
 const BASIC_PROFILE_SELECT = "email, full_name";
 const EMAIL_RATE_LIMIT_MESSAGE =
   "Ahora mismo no podemos enviar más correos automáticos. Inténtalo de nuevo en unos minutos.";
+const PASSWORD_RESET_DELIVERY_ERROR_MESSAGE =
+  "No hemos podido enviar el correo de recuperación. Inténtalo de nuevo en unos minutos o contacta con la Peña.";
 const SIGNUP_EMAIL_STORAGE_KEY = "pena-oasis-signup-email";
 const SIGNUP_CONFIRMED_MESSAGE = "Cuenta confirmada. Ya puedes iniciar sesión.";
 const SIGNUP_CONFIRMING_MESSAGE = "Confirmando cuenta...";
@@ -76,7 +78,9 @@ type AuthAction = AuthMode | "password-reset" | "password-update";
 
 function getFriendlyAuthErrorMessage(error: AuthError, action: AuthAction) {
   const code = error.code?.toLowerCase() ?? "";
-  const message = error.message.toLowerCase();
+  const rawMessage =
+    typeof error.message === "string" ? error.message.trim() : "";
+  const message = rawMessage.toLowerCase();
   const isEmailRateLimit =
     code === "over_email_send_rate_limit" ||
     message.includes("email rate limit");
@@ -127,7 +131,17 @@ function getFriendlyAuthErrorMessage(error: AuthError, action: AuthAction) {
     return "El envío de correos no está activo en Supabase. Revisa la configuración de Auth.";
   }
 
-  return error.message || "No hemos podido completar la operación. Inténtalo de nuevo.";
+  if (
+    action === "password-reset" &&
+    (code === "unexpected_failure" ||
+      message === "{}" ||
+      message.includes("error sending recovery email") ||
+      message.includes("smtp"))
+  ) {
+    return PASSWORD_RESET_DELIVERY_ERROR_MESSAGE;
+  }
+
+  return rawMessage || "No hemos podido completar la operación. Inténtalo de nuevo.";
 }
 
 function getFirstName(value?: string | null) {
@@ -703,19 +717,24 @@ export function AuthScreen({
     }
 
     setIsResetLoading(true);
-    const { error } = await client.auth.resetPasswordForEmail(emailAddress, {
-      redirectTo: getPasswordRecoveryRedirectUrl(),
-    });
-    setIsResetLoading(false);
+    try {
+      const { error } = await client.auth.resetPasswordForEmail(emailAddress, {
+        redirectTo: getPasswordRecoveryRedirectUrl(),
+      });
 
-    if (error) {
-      setMessage(getFriendlyAuthErrorMessage(error, "password-reset"));
-      return;
+      if (error) {
+        setMessage(getFriendlyAuthErrorMessage(error, "password-reset"));
+        return;
+      }
+
+      setMessage(
+        "Te hemos enviado un correo para crear una nueva contraseña. Revisa tu bandeja de entrada.",
+      );
+    } catch {
+      setMessage(PASSWORD_RESET_DELIVERY_ERROR_MESSAGE);
+    } finally {
+      setIsResetLoading(false);
     }
-
-    setMessage(
-      "Te hemos enviado un correo para crear una nueva contraseña. Revisa tu bandeja de entrada.",
-    );
   }
 
   async function handlePasswordUpdate(event: FormEvent<HTMLFormElement>) {
