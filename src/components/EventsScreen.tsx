@@ -23,10 +23,10 @@ const fallbackEventPolls: EventPoll[] = [
     day: "19",
     month: "AGO",
     date: "Miércoles, 19 de agosto",
-    time: "Horario de salida por confirmar",
+    time: "21:00",
     location: "Madrid",
     detail: "Desplazamiento para el partido fuera de casa.",
-    startsAt: "2026-08-19T12:00:00+02:00",
+    startsAt: "2026-08-19T21:00:00+02:00",
     endsAt: "2026-08-19T23:59:59+02:00",
   },
   {
