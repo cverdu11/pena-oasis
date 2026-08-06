@@ -286,7 +286,7 @@ export function EventsScreen({
             <EventPollCard
               attendeeCount={attendeeCounts[event.id] ?? null}
               event={event}
-              isAuthenticated={Boolean(userId)}
+                isAuthenticated={identity.isAuthenticated}
               isLoading={isLoading}
               isPast={false}
               isSaving={savingEventId === event.id}
@@ -306,7 +306,7 @@ export function EventsScreen({
                   <EventPollCard
                     attendeeCount={attendeeCounts[event.id] ?? null}
                     event={event}
-                    isAuthenticated={Boolean(userId)}
+                      isAuthenticated={identity.isAuthenticated}
                     isLoading={isLoading}
                     isPast
                     isSaving={false}

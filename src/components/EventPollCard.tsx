@@ -6,6 +6,7 @@ import {
   HiOutlineEye,
   HiOutlineEyeSlash,
   HiOutlineMapPin,
+  HiOutlineTicket,
   HiOutlineUser,
   HiOutlineUserGroup,
   HiOutlineXCircle,
@@ -56,6 +57,7 @@ export function EventPollCard({
   onSave,
 }: EventPollCardProps) {
   const attendeeListId = useId();
+  const canRequestTicket = event.kind === "travel";
   const [privacyDraft, setPrivacyDraft] = useState(response.isPrivate);
   const [statusMessage, setStatusMessage] = useState("");
   const [isAttendeeListOpen, setIsAttendeeListOpen] = useState(false);
@@ -280,8 +282,24 @@ export function EventPollCard({
                 onClick={() => void handleAnswer("attending")}
               >
                 <HiOutlineCheckCircle aria-hidden="true" />
-                <span>Asistiré</span>
+                <span>
+                  {canRequestTicket
+                    ? "Sí, asistiré (dispongo de entrada)"
+                    : "Sí, asistiré"}
+                </span>
               </button>
+              {canRequestTicket && (
+                <button
+                  aria-pressed={response.answer === "ticket-requested"}
+                  data-selected={response.answer === "ticket-requested"}
+                  disabled={isLoading || isSaving}
+                  type="button"
+                  onClick={() => void handleAnswer("ticket-requested")}
+                >
+                  <HiOutlineTicket aria-hidden="true" />
+                  <span>Sí, me gustaría asistir (solicito entrada)</span>
+                </button>
+              )}
               <button
                 aria-pressed={response.answer === "not-attending"}
                 data-selected={response.answer === "not-attending"}
@@ -290,7 +308,7 @@ export function EventPollCard({
                 onClick={() => void handleAnswer("not-attending")}
               >
                 <HiOutlineXCircle aria-hidden="true" />
-                <span>No asistiré</span>
+                <span>{canRequestTicket ? "No asistiré" : "No, no asistiré"}</span>
               </button>
             </div>
           </fieldset>
