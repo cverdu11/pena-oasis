@@ -57,6 +57,7 @@ export function EventPollCard({
   onSave,
 }: EventPollCardProps) {
   const attendeeListId = useId();
+  const canRequestTicket = event.kind === "travel";
   const [privacyDraft, setPrivacyDraft] = useState(response.isPrivate);
   const [statusMessage, setStatusMessage] = useState("");
   const [isAttendeeListOpen, setIsAttendeeListOpen] = useState(false);
@@ -286,19 +287,25 @@ export function EventPollCard({
                 onClick={() => void handleAnswer("attending")}
               >
                 <HiOutlineCheckCircle aria-hidden="true" />
-                <span>Sí, asistiré (dispongo de entrada)</span>
+                <span>
+                  {canRequestTicket
+                    ? "Sí, asistiré (dispongo de entrada)"
+                    : "Sí, asistiré"}
+                </span>
               </button>
-              <button
-                aria-pressed={response.answer === "requesting-ticket"}
-                data-answer="requesting-ticket"
-                data-selected={response.answer === "requesting-ticket"}
-                disabled={isLoading || isSaving}
-                type="button"
-                onClick={() => void handleAnswer("requesting-ticket")}
-              >
-                <HiOutlineTicket aria-hidden="true" />
-                <span>Sí, me gustaría asistir (solicito entrada de la Peña)</span>
-              </button>
+              {canRequestTicket && (
+                <button
+                  aria-pressed={response.answer === "requesting-ticket"}
+                  data-answer="requesting-ticket"
+                  data-selected={response.answer === "requesting-ticket"}
+                  disabled={isLoading || isSaving}
+                  type="button"
+                  onClick={() => void handleAnswer("requesting-ticket")}
+                >
+                  <HiOutlineTicket aria-hidden="true" />
+                  <span>Sí, me gustaría asistir (solicito entrada)</span>
+                </button>
+              )}
               <button
                 aria-pressed={response.answer === "not-attending"}
                 data-answer="not-attending"
@@ -308,7 +315,7 @@ export function EventPollCard({
                 onClick={() => void handleAnswer("not-attending")}
               >
                 <HiOutlineXCircle aria-hidden="true" />
-                <span>No asistiré</span>
+                <span>{canRequestTicket ? "No asistiré" : "No, no asistiré"}</span>
               </button>
             </div>
           </fieldset>
