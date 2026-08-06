@@ -17,11 +17,5 @@
       "destination": "https://mi-mapa-weld.vercel.app/flags/:path*"
     },
     { "source": "/(.*)", "destination": "/" }
-  ],
-  "headers": [
-    {
-      "source": "/",
-      "headers": [{ "key": "Cache-Control", "value": "no-store" }]
-    }
   ]
 }
