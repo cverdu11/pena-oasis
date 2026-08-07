@@ -1,6 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-export type AttendanceAnswer = "attending" | "not-attending" | null;
+export type AttendanceAnswer =
+  | "attending"
+  | "ticket-requested"
+  | "not-attending"
+  | null;
 
 export type EventAttendanceResponse = {
   answer: AttendanceAnswer;
@@ -25,6 +29,7 @@ type EventAttendanceCountRow = {
 type EventAttendanceResponseRow = {
   event_id: string;
   attending: boolean;
+  ticket_requested: boolean;
   is_private: boolean;
 };
 
@@ -96,7 +101,7 @@ export async function fetchUserEventResponses(
   const responses: Record<string, EventAttendanceResponse> = {};
   const { data, error } = await client
     .from(EVENT_ATTENDANCE_TABLE)
-    .select("event_id, attending, is_private")
+    .select("event_id, attending, ticket_requested, is_private")
     .eq("user_id", userId)
     .in("event_id", eventIds);
 
@@ -106,7 +111,11 @@ export async function fetchUserEventResponses(
 
   for (const row of (data ?? []) as EventAttendanceResponseRow[]) {
     responses[row.event_id] = {
-      answer: row.attending ? "attending" : "not-attending",
+      answer: row.ticket_requested
+        ? "ticket-requested"
+        : row.attending
+          ? "attending"
+          : "not-attending",
       isPrivate: row.is_private,
     };
   }
@@ -124,7 +133,8 @@ export async function saveUserEventResponse(
     {
       event_id: eventId,
       user_id: userId,
-      attending: response.answer === "attending",
+      attending: response.answer !== "not-attending",
+      ticket_requested: response.answer === "ticket-requested",
       is_private: response.isPrivate,
     },
     { onConflict: "event_id,user_id" },

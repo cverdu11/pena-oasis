@@ -6,6 +6,7 @@ import {
   HiOutlineEye,
   HiOutlineEyeSlash,
   HiOutlineMapPin,
+  HiOutlineTicket,
   HiOutlineUser,
   HiOutlineUserGroup,
   HiOutlineXCircle,
@@ -122,6 +123,8 @@ export function EventPollCard({
           ? privacyDraft
             ? "Asistencia confirmada de forma privada."
             : "Asistencia confirmada."
+          : answer === "ticket-requested"
+            ? "Solicitud de entrada registrada."
           : "Respuesta guardada."
         : "No hemos podido guardar la respuesta. Inténtalo de nuevo.",
     );
@@ -280,8 +283,24 @@ export function EventPollCard({
                 onClick={() => void handleAnswer("attending")}
               >
                 <HiOutlineCheckCircle aria-hidden="true" />
-                <span>Asistiré</span>
+                <span>
+                  {event.kind === "travel"
+                    ? "Sí, asistiré (dispongo de entrada)"
+                    : "Asistiré"}
+                </span>
               </button>
+              {event.kind === "travel" && (
+                <button
+                  aria-pressed={response.answer === "ticket-requested"}
+                  data-selected={response.answer === "ticket-requested"}
+                  disabled={isLoading || isSaving}
+                  type="button"
+                  onClick={() => void handleAnswer("ticket-requested")}
+                >
+                  <HiOutlineTicket aria-hidden="true" />
+                  <span>Sí, me gustaría asistir (solicito entrada)</span>
+                </button>
+              )}
               <button
                 aria-pressed={response.answer === "not-attending"}
                 data-selected={response.answer === "not-attending"}

@@ -1189,6 +1189,10 @@ button.app-header-avatar:focus-visible {
   gap: 8px;
 }
 
+.event-poll-card[data-kind="travel"] .event-vote-options {
+  grid-template-columns: 1fr;
+}
+
 .event-vote-options button {
   display: grid;
   grid-template-columns: auto auto;
@@ -1204,6 +1208,13 @@ button.app-header-avatar:focus-visible {
   background: #ffffff;
   font-size: 12px;
   font-weight: 650;
+}
+
+.event-poll-card[data-kind="travel"] .event-vote-options button {
+  grid-template-columns: auto minmax(0, 1fr);
+  justify-content: start;
+  padding: 10px 14px;
+  text-align: left;
 }
 
 .event-vote-options button svg {
