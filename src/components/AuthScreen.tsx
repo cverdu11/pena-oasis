@@ -4,7 +4,7 @@ import {
   FiAward,
   FiChevronRight,
   FiCheckCircle,
-  FiEdit3,
+  FiCreditCard,
   FiEye,
   FiEyeOff,
   FiFileText,
@@ -22,7 +22,8 @@ import type { DataAgreementMember } from "../lib/dataAgreementPdf";
 import type { PersonalAreaAction } from "../types";
 import { DataAgreementCard } from "./DataAgreementCard";
 import { AppHeader } from "./AppHeader";
-import { formatPenaMemberNumber, MemberCard } from "./MemberCard";
+import { MemberCard } from "./MemberCard";
+import { MemberShirtReservations } from "./MemberShirtReservations";
 
 type AuthMode = "signin" | "signup";
 type Profile = {
@@ -53,6 +54,35 @@ type AgreementStoredRecord = {
   driveFileId: string;
   driveUrl: string | null;
   member: DataAgreementMember;
+};
+
+const DEMO_USER = {
+  id: "local-personal-preview",
+  aud: "authenticated",
+  role: "authenticated",
+  email: "carlos@ejemplo.com",
+  email_confirmed_at: "2026-07-01T10:00:00.000Z",
+  created_at: "2026-07-01T10:00:00.000Z",
+  updated_at: "2026-07-29T18:00:00.000Z",
+  app_metadata: {},
+  user_metadata: { full_name: "Carlos Verdu" },
+} as User;
+
+const DEMO_PROFILE: Profile = {
+  email: DEMO_USER.email ?? null,
+  full_name: "Carlos Verdu",
+  first_name: "Carlos",
+  last_name: "Verdu",
+  dni: "00000000T",
+  member_number: "23297",
+  pena_member_number: 1,
+  privacy_accepted_at: "2026-07-01T10:00:00.000Z",
+  terms_accepted_at: "2026-07-01T10:00:00.000Z",
+  data_agreement_signed_at: "2026-07-01T10:00:00.000Z",
+  data_agreement_file_name: "acuerdo-datos-carlos-verdu.pdf",
+  data_agreement_drive_file_id: "local-preview",
+  data_agreement_drive_url: null,
+  data_agreement_status: "stored",
 };
 
 const EXTENDED_PROFILE_SELECT =
@@ -173,6 +203,18 @@ function getFirstName(value?: string | null) {
   }
 
   return trimmed.split(/\s+/)[0];
+}
+
+function formatProfileDate(value?: string | null) {
+  if (!value) {
+    return "Firmado";
+  }
+
+  return `Firmado el ${new Intl.DateTimeFormat("es-ES", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(new Date(value))}`;
 }
 
 function getInitials(value?: string | null) {
@@ -381,6 +423,7 @@ function readInitialMessage() {
 }
 
 type AuthScreenProps = {
+  demoMode?: boolean;
   identityInitials: string;
   isAccountMenuOpen: boolean;
   onAvatarClick: () => void;
@@ -389,6 +432,7 @@ type AuthScreenProps = {
 };
 
 export function AuthScreen({
+  demoMode = false,
   identityInitials,
   isAccountMenuOpen,
   onAvatarClick,
@@ -415,18 +459,26 @@ export function AuthScreen({
   );
   const [isLoading, setIsLoading] = useState(false);
   const [isResetLoading, setIsResetLoading] = useState(false);
-  const [isSessionLoading, setIsSessionLoading] = useState(true);
+  const [isSessionLoading, setIsSessionLoading] = useState(!demoMode);
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const [isProfileSaving, setIsProfileSaving] = useState(false);
   const [isProfileSchemaReady, setIsProfileSchemaReady] = useState(true);
-  const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [memberForm, setMemberForm] = useState<MemberForm>({
-    firstName: "",
-    lastName: "",
-    dni: "",
-    memberNumber: "",
-  });
+  const [user, setUser] = useState<User | null>(() =>
+    demoMode ? DEMO_USER : null,
+  );
+  const [profile, setProfile] = useState<Profile | null>(() =>
+    demoMode ? DEMO_PROFILE : null,
+  );
+  const [memberForm, setMemberForm] = useState<MemberForm>(() =>
+    demoMode
+      ? buildMemberForm(DEMO_PROFILE, DEMO_USER)
+      : {
+          firstName: "",
+          lastName: "",
+          dni: "",
+          memberNumber: "",
+        },
+  );
   const [profileMessage, setProfileMessage] = useState("");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isChangingAccountPassword, setIsChangingAccountPassword] =
@@ -470,11 +522,11 @@ export function AuthScreen({
     : identityInitials;
   const canRenderPersonalHeader =
     !isProfileLoading || identityInitials.trim().length > 1;
-  const penaMemberNumber = formatPenaMemberNumber(
-    profile?.pena_member_number,
-  );
-
   useEffect(() => {
+    if (demoMode) {
+      return;
+    }
+
     let isMounted = true;
     let unsubscribe: (() => void) | undefined;
 
@@ -588,9 +640,13 @@ export function AuthScreen({
       isMounted = false;
       unsubscribe?.();
     };
-  }, []);
+  }, [demoMode]);
 
   useEffect(() => {
+    if (demoMode) {
+      return;
+    }
+
     let isMounted = true;
 
     async function loadProfile() {
@@ -653,7 +709,7 @@ export function AuthScreen({
     return () => {
       isMounted = false;
     };
-  }, [user]);
+  }, [demoMode, user]);
 
   useEffect(() => {
     if (!requestedAction || isSessionLoading) {
@@ -670,11 +726,7 @@ export function AuthScreen({
       return;
     }
 
-    if (requestedAction === "edit-profile") {
-      openProfileEditor();
-    } else {
-      openPasswordEditor();
-    }
+    openPasswordEditor();
 
     onRequestedActionHandled();
   }, [
@@ -885,6 +937,25 @@ export function AuthScreen({
       return;
     }
 
+    if (demoMode) {
+      const nextProfile: Profile = {
+        ...DEMO_PROFILE,
+        ...profile,
+        first_name: firstName,
+        last_name: lastName,
+        full_name: fullNameForProfile,
+        dni,
+        member_number: memberNumber,
+      };
+
+      setProfile(nextProfile);
+      setMemberForm(buildMemberForm(nextProfile, user));
+      setIsEditingProfile(false);
+      setIsChangingAccountPassword(false);
+      setProfileMessage("Datos guardados correctamente.");
+      return;
+    }
+
     const client = await getSupabaseClient();
 
     if (!client) {
@@ -953,6 +1024,14 @@ export function AuthScreen({
       return;
     }
 
+    if (demoMode) {
+      setAccountPassword("");
+      setConfirmAccountPassword("");
+      setIsChangingAccountPassword(false);
+      setAccountPasswordMessage("Contraseña actualizada correctamente.");
+      return;
+    }
+
     const client = await getSupabaseClient();
 
     if (!client) {
@@ -990,6 +1069,16 @@ export function AuthScreen({
     setIsEditingProfile(false);
     setProfileMessage("");
     setIsChangingAccountPassword(true);
+  }
+
+  function scrollToMemberCard() {
+    const memberCard = document.getElementById("carnet-digital");
+
+    memberCard?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+    window.setTimeout(() => memberCard?.focus({ preventScroll: true }), 450);
   }
 
   async function handleAgreementStored(record: AgreementStoredRecord) {
@@ -1070,18 +1159,6 @@ export function AuthScreen({
         canRenderPersonalHeader && (
         <AppHeader
           avatarLabel="Abrir menú de cuenta"
-          actions={
-            <div className="personal-actions" aria-label="Acciones personales">
-              <button
-                className="personal-action-button"
-                type="button"
-                aria-label="Editar datos personales"
-                onClick={openProfileEditor}
-              >
-                <FiEdit3 aria-hidden="true" />
-              </button>
-            </div>
-          }
           eyebrow="Área personal"
           initials={personalInitials}
           isAvatarMenuOpen={isAccountMenuOpen}
@@ -1265,7 +1342,8 @@ export function AuthScreen({
 
                     <label className="form-field">
                       <span>
-                        Nº de socio <span className="required-mark">*</span>
+                        Nº socio/abonado Málaga CF{" "}
+                        <span className="required-mark">*</span>
                       </span>
                       <span className="input-shell">
                         <FiUser aria-hidden="true" />
@@ -1290,11 +1368,21 @@ export function AuthScreen({
                   {hasCompleteMemberProfile &&
                     isEditingProfile &&
                     hasStoredDataAgreement && (
-                      <DataAgreementCard
-                        member={agreementMember}
-                        storedAgreement={storedAgreement}
-                        onStored={handleAgreementStored}
-                      />
+                      <div
+                        className="member-form-agreement-summary"
+                        aria-label="Acuerdo de datos personales firmado"
+                      >
+                        <span className="private-card-icon">
+                          <FiFileText aria-hidden="true" />
+                        </span>
+                        <span>
+                          <strong>Acuerdo de datos personales</strong>
+                          <small>
+                            {formatProfileDate(storedAgreement.signedAt)}
+                          </small>
+                        </span>
+                        <FiCheckCircle aria-hidden="true" />
+                      </div>
                     )}
 
                   {!isProfileSchemaReady && (
@@ -1304,33 +1392,42 @@ export function AuthScreen({
                     </p>
                   )}
 
-                  <button
-                    className="primary-button"
-                    disabled={isProfileSaving}
-                    type="submit"
-                  >
-                    {isProfileSaving ? "Guardando..." : "Guardar datos"}
-                  </button>
-
-                  {hasCompleteMemberProfile && isEditingProfile && (
-                    <button
-                      className="secondary-button"
-                      type="button"
-                      onClick={() => {
-                        setMemberForm(buildMemberForm(profile, user));
-                        setIsEditingProfile(false);
-                        setProfileMessage("");
-                      }}
-                    >
-                      Cancelar
-                    </button>
-                  )}
-
                   {profileMessage && (
                     <p className="auth-message" role="status">
                       {profileMessage}
                     </p>
                   )}
+
+                  <div
+                    className="member-form-actions"
+                    data-single={
+                      hasCompleteMemberProfile && isEditingProfile
+                        ? "false"
+                        : "true"
+                    }
+                  >
+                    {hasCompleteMemberProfile && isEditingProfile && (
+                      <button
+                        className="secondary-button"
+                        type="button"
+                        onClick={() => {
+                          setMemberForm(buildMemberForm(profile, user));
+                          setIsEditingProfile(false);
+                          setProfileMessage("");
+                        }}
+                      >
+                        Cancelar
+                      </button>
+                    )}
+
+                    <button
+                      className="primary-button"
+                      disabled={isProfileSaving}
+                      type="submit"
+                    >
+                      {isProfileSaving ? "Guardando..." : "Guardar cambios"}
+                    </button>
+                  </div>
                 </form>
                 )}
 
@@ -1439,45 +1536,56 @@ export function AuthScreen({
 
                 {shouldShowPrivateContent && (
                   <>
-                    <div className="private-summary-grid" aria-label="Resumen personal">
-                      <article className="private-mini-card" data-tone="member">
-                        <span className="private-card-icon">
-                          <FiAward aria-hidden="true" />
-                        </span>
-                        <strong>Estado de socio</strong>
-                        <span>
-                          Activo · Nº {penaMemberNumber ?? "Pendiente"}
-                        </span>
-                      </article>
-
-                      <article className="private-mini-card" data-tone="agreement">
-                        <span className="private-card-icon">
-                          <FiFileText aria-hidden="true" />
-                        </span>
-                        <strong>Acuerdo</strong>
-                        <span>
-                          {hasStoredDataAgreement ? "Firmado" : "Pendiente de firma"}
-                        </span>
-                      </article>
-                    </div>
-
-                    <button
-                      className="private-focus-card"
-                      type="button"
-                      onClick={openProfileEditor}
+                    <section
+                      className="personal-overview"
+                      aria-label="Resumen de la cuenta"
                     >
-                      <span className="private-card-icon private-focus-icon">
-                        <FiUser aria-hidden="true" />
-                      </span>
-                      <span className="private-focus-main">
-                        <strong>Datos personales</strong>
-                        <span className="private-focus-status">
+                      <div className="personal-overview-statuses">
+                        <div className="personal-overview-status">
+                          <span className="private-card-icon">
+                            <FiAward aria-hidden="true" />
+                          </span>
+                          <span>
+                            <small>Socio Oasis</small>
+                            <strong>Activo</strong>
+                          </span>
                           <FiCheckCircle aria-hidden="true" />
-                          Perfil completo
-                        </span>
-                      </span>
-                      <FiChevronRight aria-hidden="true" />
-                    </button>
+                        </div>
+
+                        <div className="personal-overview-status">
+                          <span className="private-card-icon">
+                            <FiFileText aria-hidden="true" />
+                          </span>
+                          <span>
+                            <small>Acuerdo</small>
+                            <strong>
+                              {hasStoredDataAgreement
+                                ? "Firmado"
+                                : "Pendiente de firma"}
+                            </strong>
+                          </span>
+                          <FiCheckCircle
+                            aria-hidden="true"
+                            data-active={hasStoredDataAgreement}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="personal-overview-actions">
+                        <button type="button" onClick={openProfileEditor}>
+                          <FiUser aria-hidden="true" />
+                          <span>Datos personales</span>
+                          <FiChevronRight aria-hidden="true" />
+                        </button>
+                        <button type="button" onClick={scrollToMemberCard}>
+                          <FiCreditCard aria-hidden="true" />
+                          <span>Ver carnet</span>
+                          <FiChevronRight aria-hidden="true" />
+                        </button>
+                      </div>
+                    </section>
+
+                    <MemberShirtReservations demoMode={demoMode} />
 
                     {!hasStoredDataAgreement && (
                       <DataAgreementCard
@@ -1487,11 +1595,32 @@ export function AuthScreen({
                       />
                     )}
 
-                    <MemberCard
-                      firstName={memberForm.firstName}
-                      lastName={memberForm.lastName}
-                      memberNumber={profile?.pena_member_number ?? null}
-                    />
+                    <section
+                      className="member-card-section"
+                      id="carnet-digital"
+                      tabIndex={-1}
+                      aria-labelledby="member-card-section-title"
+                    >
+                      <header>
+                        <div>
+                          <FiCreditCard aria-hidden="true" />
+                          <span>
+                            <h2 id="member-card-section-title">
+                              Carnet digital
+                            </h2>
+                            <p>
+                              Tu identificación de socio, siempre disponible.
+                            </p>
+                          </span>
+                        </div>
+                        <small>Uso personal</small>
+                      </header>
+                      <MemberCard
+                        firstName={memberForm.firstName}
+                        lastName={memberForm.lastName}
+                        memberNumber={profile?.pena_member_number ?? null}
+                      />
+                    </section>
                   </>
                 )}
               </>

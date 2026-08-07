@@ -79,7 +79,7 @@ export function MemberCard({
         <div className="member-card-person">
           <span>Peñista</span>
           <h2>{fullName}</h2>
-          <p>Nº {formattedMemberNumber ?? "Pendiente"}</p>
+          <p>Nº peñista {formattedMemberNumber ?? "Pendiente"}</p>
         </div>
         <div className="member-card-qr">
           {qrCodeUrl && formattedMemberNumber ? (

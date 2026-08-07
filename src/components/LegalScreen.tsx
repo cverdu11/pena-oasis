@@ -38,8 +38,9 @@ export function LegalScreen() {
           <p>
             Podemos tratar los datos que facilitas al registrarte o actualizar
             tu área personal: nombre, apellidos, correo electrónico, DNI, número
-            de socio, fecha de aceptación de condiciones y datos técnicos
-            necesarios para iniciar sesión.
+            de socio, fecha de aceptación de condiciones, datos técnicos
+            necesarios para iniciar sesión y, cuando reserves una camiseta, los
+            colores, tallas y cantidades de tu pedido.
           </p>
         </section>
 
@@ -47,8 +48,9 @@ export function LegalScreen() {
           <h2>Finalidad</h2>
           <p>
             Usamos tus datos para gestionar tu alta, identificarte como peñista,
-            mantener tu área personal, responder consultas y enviarte
-            comunicaciones internas relacionadas con la Peña Oasis.
+            mantener tu área personal, gestionar y permitirte modificar tus
+            reservas, responder consultas y enviarte comunicaciones relacionadas
+            con la Peña Oasis.
           </p>
         </section>
 

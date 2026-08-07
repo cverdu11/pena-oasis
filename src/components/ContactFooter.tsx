@@ -9,7 +9,7 @@ export function ContactFooter() {
         href={`mailto:${CONTACT_EMAIL}`}
       >
         <FiMail aria-hidden="true" />
-        <span>{CONTACT_EMAIL}</span>
+        <span>Email</span>
       </a>
 
       <span className="contact-footer-divider" aria-hidden="true" />

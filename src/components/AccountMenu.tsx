@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react";
 import {
-  FiEdit3,
   FiKey,
   FiLogIn,
   FiLogOut,
@@ -11,7 +10,6 @@ import {
 export type AccountMenuAction =
   | "signin"
   | "signup"
-  | "edit-profile"
   | "change-password"
   | "signout";
 
@@ -26,19 +24,56 @@ export function AccountMenu({
   onAction,
   onClose,
 }: AccountMenuProps) {
+  const dialogRef = useRef<HTMLElement>(null);
   const firstActionRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
+    const previouslyFocusedElement =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
     firstActionRef.current?.focus();
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         onClose();
+        return;
+      }
+
+      if (event.key !== "Tab" || !dialogRef.current) {
+        return;
+      }
+
+      const focusableElements = Array.from(
+        dialogRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      );
+      const firstFocusableElement = focusableElements[0];
+      const lastFocusableElement =
+        focusableElements[focusableElements.length - 1];
+
+      if (!firstFocusableElement || !lastFocusableElement) {
+        return;
+      }
+
+      if (event.shiftKey && document.activeElement === firstFocusableElement) {
+        event.preventDefault();
+        lastFocusableElement.focus();
+      } else if (
+        !event.shiftKey &&
+        document.activeElement === lastFocusableElement
+      ) {
+        event.preventDefault();
+        firstFocusableElement.focus();
       }
     }
 
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      previouslyFocusedElement?.focus();
+    };
   }, [onClose]);
 
   return (
@@ -50,9 +85,11 @@ export function AccountMenu({
         onClick={onClose}
       />
       <section
+        ref={dialogRef}
         className="account-menu-popover"
         id="account-menu"
         role="dialog"
+        aria-modal="true"
         aria-label={isAuthenticated ? "Área personal" : "Acceso de socios"}
       >
         <header className="account-menu-header">
@@ -72,13 +109,6 @@ export function AccountMenu({
             <>
               <button
                 ref={firstActionRef}
-                type="button"
-                onClick={() => onAction("edit-profile")}
-              >
-                <FiEdit3 aria-hidden="true" />
-                <span>Editar datos personales</span>
-              </button>
-              <button
                 type="button"
                 onClick={() => onAction("change-password")}
               >

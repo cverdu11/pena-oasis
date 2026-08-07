@@ -439,7 +439,7 @@ button.app-header-avatar:focus-visible {
 
 .contact-footer {
   display: grid;
-  grid-template-columns: minmax(0, 1.75fr) 1px minmax(92px, 0.75fr);
+  grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
   align-items: center;
   width: 100%;
   min-height: 64px;
@@ -467,10 +467,6 @@ button.app-header-avatar:focus-visible {
   line-height: 1;
   text-decoration: none;
   white-space: nowrap;
-}
-
-.contact-footer a:first-child {
-  justify-content: flex-start;
 }
 
 .contact-footer a:hover {
@@ -1486,6 +1482,1326 @@ button.app-header-avatar:focus-visible {
   outline-offset: 2px;
 }
 
+.product-media--shirt {
+  position: relative;
+  background: #eceae6;
+}
+
+.product-media--blue {
+  background: #e7e0d7;
+}
+
+.product-media--shirt img {
+  transition: opacity 160ms ease;
+}
+
+.product-color-switch {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  gap: 2px;
+  border: 1px solid rgba(12, 34, 67, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 3px;
+  box-shadow: 0 5px 16px rgba(12, 34, 67, 0.08);
+  backdrop-filter: blur(8px);
+}
+
+.product-color-switch button {
+  min-height: 28px;
+  border: 0;
+  border-radius: 999px;
+  color: #67778d;
+  background: transparent;
+  padding: 0 9px;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.product-color-switch button[aria-pressed="true"] {
+  color: #ffffff;
+  background: var(--oasis-blue-dark);
+  box-shadow: 0 2px 7px rgba(6, 69, 143, 0.22);
+}
+
+.product-color-switch button:focus-visible {
+  outline: 2px solid rgba(7, 85, 183, 0.34);
+  outline-offset: 2px;
+}
+
+.product-fit-badge {
+  position: absolute;
+  top: 51px;
+  right: 15px;
+  border: 1px solid rgba(12, 34, 67, 0.08);
+  border-radius: 999px;
+  color: #6c7b90;
+  background: rgba(255, 255, 255, 0.84);
+  padding: 3px 8px;
+  box-shadow: 0 3px 10px rgba(12, 34, 67, 0.05);
+  font-size: 8px;
+  font-weight: 620;
+  line-height: 1.2;
+  backdrop-filter: blur(8px);
+}
+
+.product-fit-badge strong {
+  color: #42546c;
+  font-weight: 740;
+}
+
+.shirt-price-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 3px;
+  border-top: 1px solid var(--oasis-soft-line);
+  border-bottom: 1px solid var(--oasis-soft-line);
+}
+
+.shirt-price-strip > span {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  min-height: 45px;
+  align-items: center;
+  gap: 7px;
+  color: #708097;
+  font-size: 10px;
+  font-weight: 620;
+}
+
+.shirt-price-strip > span + span {
+  border-left: 1px solid var(--oasis-soft-line);
+  padding-left: 14px;
+}
+
+.shirt-price-strip strong {
+  color: var(--oasis-blue-dark);
+  font-size: 17px;
+  font-weight: 760;
+  letter-spacing: -0.02em;
+}
+
+.shirt-reservation-toggle {
+  display: flex;
+  width: 100%;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 13px;
+  color: #ffffff;
+  background: linear-gradient(
+    105deg,
+    var(--oasis-blue-dark),
+    var(--oasis-blue)
+  );
+  padding: 0 16px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 720;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(6, 79, 164, 0.18);
+}
+
+.shirt-reservation-toggle svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 160ms ease;
+}
+
+.shirt-reservation-toggle svg.is-open {
+  transform: rotate(180deg);
+}
+
+.shirt-reservation-toggle:focus-visible,
+.shirt-reservation-submit:focus-visible,
+.shirt-reservation-success button:focus-visible,
+.shirt-add-item:focus-visible,
+.shirt-order-item-heading button:focus-visible,
+.shirt-quantity-row button:focus-visible {
+  outline: 3px solid rgba(7, 85, 183, 0.25);
+  outline-offset: 2px;
+}
+
+.shirt-reservation-panel {
+  border-top: 1px solid var(--oasis-soft-line);
+  background: #f7f9fc;
+  padding: 16px;
+}
+
+.shirt-reservation-form {
+  display: grid;
+  gap: 16px;
+}
+
+.shirt-form-heading {
+  display: grid;
+  gap: 3px;
+}
+
+.shirt-form-heading > span {
+  color: var(--oasis-ink);
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.shirt-form-heading p {
+  margin: 0;
+  color: var(--oasis-muted);
+  font-size: 10.5px;
+  font-weight: 520;
+  line-height: 1.4;
+}
+
+.shirt-session-price {
+  display: flex;
+  min-height: 52px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid #c8d8eb;
+  border-radius: 14px;
+  color: var(--oasis-ink);
+  background: #eaf2fd;
+  padding: 9px 13px;
+}
+
+.shirt-session-price > span {
+  display: grid;
+  gap: 2px;
+  font-size: 10.5px;
+  font-weight: 720;
+}
+
+.shirt-session-price small {
+  color: #73839a;
+  font-size: 9px;
+  font-weight: 570;
+}
+
+.shirt-session-price > strong {
+  flex: 0 0 auto;
+  color: var(--oasis-blue-dark);
+  font-size: 18px;
+  font-weight: 770;
+  letter-spacing: -0.02em;
+}
+
+.shirt-reservation-form fieldset {
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.shirt-reservation-form legend {
+  margin-bottom: 7px;
+  color: #53647a;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.shirt-option-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.shirt-option-grid label,
+.shirt-size-grid label {
+  position: relative;
+  display: block;
+  cursor: pointer;
+}
+
+.shirt-option-grid input,
+.shirt-size-grid input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.shirt-option-grid label > span {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px solid #cdd9e8;
+  border-radius: 12px;
+  color: #5f6f84;
+  background: #ffffff;
+  padding: 0 12px;
+  font-size: 10.5px;
+  font-weight: 660;
+  transition:
+    border-color 140ms ease,
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.shirt-option-grid label > input:checked + span,
+.shirt-size-grid label > input:checked + span {
+  border-color: var(--oasis-blue);
+  color: var(--oasis-blue-dark);
+  background: #eaf2ff;
+  box-shadow: inset 0 0 0 1px var(--oasis-blue);
+}
+
+.shirt-option-grid label > input:focus-visible + span,
+.shirt-size-grid label > input:focus-visible + span {
+  outline: 3px solid rgba(7, 85, 183, 0.2);
+  outline-offset: 2px;
+}
+
+.shirt-option-grid strong {
+  color: var(--oasis-blue-dark);
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.shirt-option-grid--color label > span {
+  min-height: 48px;
+  justify-content: flex-start;
+  gap: 7px;
+  padding: 0 9px;
+}
+
+.shirt-option-grid--color {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.shirt-color-swatch {
+  display: block;
+  width: 17px;
+  height: 17px;
+  flex: 0 0 17px;
+  border: 1px solid #c8d2df;
+  border-radius: 50%;
+}
+
+.shirt-color-swatch--white {
+  background: #ffffff;
+}
+
+.shirt-color-swatch--off-white {
+  background: #f4f0e9;
+}
+
+.shirt-color-swatch--blue {
+  border-color: #0755b7;
+  background: #0862c7;
+}
+
+.shirt-color-option-copy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+  line-height: 1;
+}
+
+.shirt-color-option-copy strong {
+  overflow: hidden;
+  color: inherit;
+  font-size: 9.5px;
+  font-weight: 700;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shirt-color-option-copy small {
+  color: #8290a3;
+  font-size: 8px;
+  font-weight: 620;
+  line-height: 1.1;
+}
+
+.shirt-option-grid label > input:checked + span .shirt-color-option-copy small {
+  color: #58749a;
+}
+
+.shirt-size-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.shirt-size-grid label > span {
+  display: grid;
+  min-height: 42px;
+  place-items: center;
+  border: 1px solid #cdd9e8;
+  border-radius: 11px;
+  color: #5f6f84;
+  background: #ffffff;
+  font-size: 10.5px;
+  font-weight: 710;
+  transition:
+    border-color 140ms ease,
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.shirt-order-list {
+  display: grid;
+  gap: 11px;
+}
+
+.shirt-order-item {
+  display: grid;
+  gap: 13px;
+  border: 1px solid #d3deeb;
+  border-radius: 15px;
+  background: #ffffff;
+  padding: 13px;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.shirt-order-item.is-active {
+  border-color: #9bb9df;
+  box-shadow: 0 0 0 2px rgba(7, 85, 183, 0.07);
+}
+
+.shirt-order-item-heading {
+  display: flex;
+  min-height: 26px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--oasis-soft-line);
+  padding-bottom: 10px;
+}
+
+.shirt-order-item-heading > span {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.shirt-order-item-heading strong {
+  color: var(--oasis-ink);
+  font-size: 12px;
+  font-weight: 740;
+}
+
+.shirt-order-item-heading small {
+  color: #8794a6;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.shirt-order-item-heading button {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  place-items: center;
+  border: 0;
+  border-radius: 9px;
+  color: #8b5d61;
+  background: #f8eef0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.shirt-order-item-heading button svg {
+  width: 15px;
+  height: 15px;
+}
+
+.shirt-order-item .shirt-option-grid label > span {
+  min-height: 41px;
+}
+
+.shirt-order-item .shirt-size-grid label > span {
+  min-height: 39px;
+}
+
+.shirt-quantity-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.shirt-quantity-row > span {
+  color: #53647a;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.shirt-quantity-row > div {
+  display: grid;
+  grid-template-columns: 36px 38px 36px;
+  min-height: 36px;
+  overflow: hidden;
+  border: 1px solid #cdd9e8;
+  border-radius: 11px;
+  background: #ffffff;
+}
+
+.shirt-quantity-row button,
+.shirt-quantity-row output {
+  display: grid;
+  min-width: 0;
+  place-items: center;
+  border: 0;
+  color: var(--oasis-blue-dark);
+  background: transparent;
+  padding: 0;
+  font: inherit;
+}
+
+.shirt-quantity-row button {
+  cursor: pointer;
+}
+
+.shirt-quantity-row button:disabled {
+  color: #b9c2ce;
+  cursor: not-allowed;
+}
+
+.shirt-quantity-row button svg {
+  width: 14px;
+  height: 14px;
+}
+
+.shirt-quantity-row output {
+  border-right: 1px solid #dce4ee;
+  border-left: 1px solid #dce4ee;
+  color: var(--oasis-ink);
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.shirt-add-item {
+  display: flex;
+  width: 100%;
+  min-height: 43px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px dashed #9fb6d4;
+  border-radius: 12px;
+  color: var(--oasis-blue-dark);
+  background: #f3f7fd;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 10.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.shirt-add-item svg {
+  width: 15px;
+  height: 15px;
+}
+
+.shirt-add-item:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.shirt-order-summary {
+  display: flex;
+  min-height: 58px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid #c8d8eb;
+  border-radius: 14px;
+  background: #eaf2fd;
+  padding: 10px 13px;
+}
+
+.shirt-order-summary > span {
+  display: grid;
+  gap: 2px;
+}
+
+.shirt-order-summary > span strong {
+  color: var(--oasis-ink);
+  font-size: 11px;
+  font-weight: 730;
+}
+
+.shirt-order-summary small {
+  color: #73839a;
+  font-size: 9px;
+  font-weight: 590;
+}
+
+.shirt-order-summary > strong {
+  flex: 0 0 auto;
+  color: var(--oasis-blue-dark);
+  font-size: 18px;
+  font-weight: 770;
+  letter-spacing: -0.02em;
+}
+
+.shirt-contact-fields {
+  display: grid;
+  gap: 11px;
+}
+
+.shirt-contact-fields label {
+  display: grid;
+  gap: 6px;
+  color: #53647a;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.shirt-contact-fields input {
+  width: 100%;
+  min-height: 45px;
+  border: 1px solid #cdd9e8;
+  border-radius: 12px;
+  color: var(--oasis-ink);
+  background: #ffffff;
+  padding: 0 13px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 540;
+  outline: none;
+}
+
+.shirt-contact-fields input::placeholder {
+  color: #9aa7b7;
+}
+
+.shirt-contact-fields input:focus {
+  border-color: var(--oasis-blue);
+  box-shadow: 0 0 0 3px rgba(7, 85, 183, 0.12);
+}
+
+.shirt-privacy-check {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: start;
+  gap: 9px;
+  color: #6c7a8e;
+  font-size: 9.5px;
+  font-weight: 540;
+  line-height: 1.45;
+  cursor: pointer;
+}
+
+.shirt-privacy-check input {
+  width: 18px;
+  height: 18px;
+  margin: 1px 0 0;
+  accent-color: var(--oasis-blue);
+}
+
+.shirt-privacy-check a {
+  color: var(--oasis-blue-dark);
+  font-weight: 680;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.shirt-form-error {
+  margin: -5px 0 0;
+  color: #a23434;
+  font-size: 10px;
+  font-weight: 620;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.shirt-reservation-submit {
+  width: 100%;
+  min-height: 48px;
+  border: 0;
+  border-radius: 13px;
+  color: #ffffff;
+  background: var(--oasis-blue);
+  padding: 0 16px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 740;
+  cursor: pointer;
+}
+
+.shirt-reservation-submit:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.shirt-reservation-success {
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  padding: 12px 6px 8px;
+  text-align: center;
+}
+
+.shirt-reservation-success > svg {
+  width: 38px;
+  height: 38px;
+  color: var(--oasis-success);
+}
+
+.shirt-reservation-success h4,
+.shirt-reservation-success p {
+  margin: 0;
+}
+
+.shirt-reservation-success h4 {
+  color: var(--oasis-ink);
+  font-size: 16px;
+  font-weight: 750;
+}
+
+.shirt-reservation-success p {
+  max-width: 280px;
+  color: var(--oasis-muted);
+  font-size: 11px;
+  font-weight: 520;
+  line-height: 1.45;
+}
+
+.shirt-reservation-success > span {
+  margin-top: 2px;
+  border-radius: 999px;
+  color: var(--oasis-blue-dark);
+  background: #e7f0fe;
+  padding: 6px 10px;
+  font-size: 10px;
+  font-weight: 720;
+}
+
+.shirt-reservation-success-items {
+  display: grid;
+  width: min(100%, 280px);
+  gap: 0;
+  margin: 5px 0 0;
+  border: 1px solid #d5dfeb;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+
+.shirt-reservation-success-items li {
+  display: flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 11px;
+}
+
+.shirt-reservation-success-items li + li {
+  border-top: 1px solid var(--oasis-soft-line);
+}
+
+.shirt-reservation-success-items li span {
+  color: #596a80;
+  font-size: 10px;
+  font-weight: 620;
+}
+
+.shirt-reservation-success-items li strong {
+  color: var(--oasis-blue-dark);
+  font-size: 10.5px;
+  font-weight: 750;
+}
+
+.shirt-reservation-success-total {
+  color: var(--oasis-ink);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.shirt-reservation-success button {
+  min-height: 40px;
+  margin-top: 4px;
+  border: 1px solid #c8d7e9;
+  border-radius: 12px;
+  color: var(--oasis-blue-dark);
+  background: #ffffff;
+  padding: 0 14px;
+  font: inherit;
+  font-size: 10.5px;
+  font-weight: 690;
+  cursor: pointer;
+}
+
+.shirt-manage-reservation-link {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 3px;
+  border-radius: 12px;
+  color: #ffffff;
+  background: var(--oasis-blue);
+  padding: 0 15px;
+  font-size: 10.5px;
+  font-weight: 710;
+  text-decoration: none;
+}
+
+.shirt-private-link-note {
+  max-width: 250px;
+  color: #74839a;
+  font-size: 9px;
+  font-weight: 560;
+  line-height: 1.4;
+}
+
+.managed-shirt-editor {
+  display: grid;
+  gap: 12px;
+  border-top: 1px solid var(--oasis-soft-line);
+  padding-top: 13px;
+}
+
+.managed-shirt-editor fieldset {
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.managed-shirt-editor legend {
+  margin-bottom: 7px;
+  color: #53647a;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.managed-shirt-message {
+  margin: 0;
+  color: #9f3636;
+  font-size: 10px;
+  font-weight: 620;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.managed-shirt-message.is-success {
+  color: #17764f;
+}
+
+.managed-shirt-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.managed-shirt-actions button {
+  min-height: 44px;
+  border-radius: 12px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 10.5px;
+  font-weight: 710;
+  cursor: pointer;
+}
+
+.managed-shirt-actions button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.managed-shirt-actions button:only-child {
+  grid-column: 1 / -1;
+}
+
+.managed-shirt-cancel {
+  border: 1px solid #cbd8e8;
+  color: #5d6e84;
+  background: #ffffff;
+}
+
+.managed-shirt-save {
+  border: 1px solid var(--oasis-blue);
+  color: #ffffff;
+  background: var(--oasis-blue);
+}
+
+.managed-shirt-danger {
+  display: grid;
+}
+
+.managed-shirt-delete-toggle {
+  display: flex;
+  width: 100%;
+  min-height: 41px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid #e6c4c7;
+  border-radius: 12px;
+  color: #9a3f46;
+  background: #fffafa;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.managed-shirt-delete-toggle svg {
+  width: 15px;
+  height: 15px;
+}
+
+.managed-shirt-delete-toggle:disabled,
+.managed-shirt-delete-confirm button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.managed-shirt-delete-confirm {
+  display: grid;
+  gap: 10px;
+  border: 1px solid #edc9cb;
+  border-radius: 13px;
+  background: #fff6f6;
+  padding: 12px;
+}
+
+.managed-shirt-delete-confirm p {
+  margin: 0;
+  color: #783c42;
+  font-size: 10px;
+  font-weight: 620;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.managed-shirt-delete-confirm > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.managed-shirt-delete-confirm button {
+  min-height: 40px;
+  border-radius: 11px;
+  padding: 0 10px;
+  font: inherit;
+  font-size: 9.5px;
+  font-weight: 710;
+  cursor: pointer;
+}
+
+.managed-shirt-delete-back {
+  border: 1px solid #d6dfe9;
+  color: #5d6e84;
+  background: #ffffff;
+}
+
+.managed-shirt-delete-confirm-button {
+  border: 1px solid #a83f48;
+  color: #ffffff;
+  background: #a83f48;
+}
+
+.member-reservations {
+  display: grid;
+  gap: 14px;
+  padding: 2px 0;
+}
+
+.member-reservations-heading {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  align-items: center;
+  gap: 11px;
+  padding: 0 3px;
+}
+
+.member-reservations-heading > span {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid #d7e4f5;
+  border-radius: 12px;
+  color: var(--oasis-blue);
+  background: var(--oasis-soft-blue);
+}
+
+.member-reservations-heading svg {
+  width: 20px;
+  height: 20px;
+}
+
+.member-reservations-heading h2,
+.member-reservations-heading p,
+.member-reservations-empty p {
+  margin: 0;
+}
+
+.member-reservations-heading h2 {
+  color: var(--oasis-ink);
+  font-size: 16px;
+  font-weight: 740;
+  line-height: 1.2;
+}
+
+.member-reservations-heading p {
+  margin-top: 3px;
+  color: var(--oasis-muted);
+  font-size: 10.5px;
+  font-weight: 560;
+  line-height: 1.4;
+}
+
+.member-reservations-state,
+.member-reservations-empty {
+  margin: 0;
+  border-radius: 14px;
+  color: #52647b;
+  background: #f5f8fc;
+  padding: 13px;
+  font-size: 10.5px;
+  font-weight: 590;
+  line-height: 1.45;
+}
+
+.member-reservations-state.is-error {
+  color: #963a3a;
+  background: #fff3f2;
+}
+
+.member-reservations-empty {
+  display: grid;
+  gap: 5px;
+}
+
+.member-reservations-empty strong {
+  color: var(--oasis-ink);
+  font-size: 12px;
+}
+
+.member-reservations-empty a {
+  width: fit-content;
+  margin-top: 3px;
+  color: var(--oasis-blue-dark);
+  font-weight: 710;
+  text-decoration: none;
+}
+
+.member-reservation-list {
+  display: grid;
+  gap: 10px;
+}
+
+.member-reservation-card {
+  display: grid;
+  gap: 11px;
+  overflow: hidden;
+  border: 1px solid var(--oasis-line);
+  border-radius: 18px;
+  background: #ffffff;
+  padding: 14px;
+  box-shadow: 0 8px 24px rgba(32, 54, 82, 0.05);
+}
+
+.member-reservation-card > header,
+.member-reservation-card > footer,
+.member-reservation-card li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.member-reservation-card > header > div {
+  display: grid;
+  gap: 2px;
+}
+
+.member-reservation-card > header span {
+  color: var(--oasis-ink);
+  font-size: 11.5px;
+  font-weight: 720;
+}
+
+.member-reservation-card > header small {
+  color: var(--oasis-muted);
+  font-size: 9px;
+  font-weight: 570;
+}
+
+.member-reservation-card > header > strong {
+  border-radius: 999px;
+  color: #945e0e;
+  background: #fff1cf;
+  padding: 5px 8px;
+  font-size: 8.5px;
+  font-weight: 740;
+}
+
+.member-reservation-card[data-status="confirmed"] > header > strong {
+  color: #0b5f8c;
+  background: #e4f3fc;
+}
+
+.member-reservation-card[data-status="fulfilled"] > header > strong {
+  color: #17704d;
+  background: #e4f7ed;
+}
+
+.member-reservation-card[data-status="cancelled"] > header > strong {
+  color: #8b3a3a;
+  background: #fae8e8;
+}
+
+.member-reservation-card > ul,
+.guest-reservation-locked ul {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  border-top: 1px solid var(--oasis-soft-line);
+  border-bottom: 1px solid var(--oasis-soft-line);
+  padding: 4px 0;
+  list-style: none;
+}
+
+.member-reservation-card li,
+.guest-reservation-locked li {
+  min-height: 30px;
+  color: #5d6c81;
+  font-size: 9.5px;
+  font-weight: 590;
+}
+
+.member-reservation-card li strong,
+.guest-reservation-locked li strong {
+  color: var(--oasis-ink);
+  font-weight: 740;
+}
+
+.member-reservation-card > footer {
+  color: var(--oasis-muted);
+  font-size: 10px;
+  font-weight: 610;
+}
+
+.member-reservation-card > footer strong {
+  color: var(--oasis-ink);
+  font-size: 14px;
+  font-weight: 770;
+}
+
+.member-reservation-edit {
+  display: inline-flex;
+  min-height: 39px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid #c8d8eb;
+  border-radius: 11px;
+  color: var(--oasis-blue-dark);
+  background: #ffffff;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 710;
+  cursor: pointer;
+}
+
+.member-reservation-edit svg {
+  width: 16px;
+  height: 16px;
+}
+
+.guest-reservation-sheet {
+  display: block;
+}
+
+.guest-reservation-header {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 14px;
+}
+
+.guest-reservation-header button {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 1px solid var(--oasis-line);
+  border-radius: 12px;
+  color: var(--oasis-blue-dark);
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.guest-reservation-header button svg {
+  width: 19px;
+  height: 19px;
+}
+
+.guest-reservation-header p,
+.guest-reservation-header h1,
+.guest-reservation-intro h2,
+.guest-reservation-intro p,
+.guest-reservation-state p,
+.guest-reservation-locked p {
+  margin: 0;
+}
+
+.guest-reservation-header p {
+  color: var(--oasis-blue);
+  font-size: 9px;
+  font-weight: 740;
+  letter-spacing: 0.12em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.guest-reservation-header h1 {
+  margin-top: 2px;
+  color: var(--oasis-ink);
+  font-size: 21px;
+  font-weight: 760;
+  line-height: 1.1;
+}
+
+.guest-private-notice {
+  display: grid;
+  grid-template-columns: 27px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 12px;
+  border: 1px solid #d4e2f3;
+  border-radius: 13px;
+  color: #315579;
+  background: #eef5fd;
+  padding: 10px 11px;
+  font-size: 9.5px;
+  font-weight: 620;
+  line-height: 1.35;
+}
+
+.guest-private-notice svg {
+  width: 18px;
+  height: 18px;
+}
+
+.guest-reservation-state {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  border: 1px solid var(--oasis-line);
+  border-radius: 16px;
+  color: #52647b;
+  background: #ffffff;
+  padding: 18px;
+  font-size: 10.5px;
+  font-weight: 590;
+  line-height: 1.45;
+}
+
+.guest-reservation-state.is-error {
+  border-color: #efd0d0;
+  color: #813f3f;
+  background: #fff7f6;
+}
+
+.guest-reservation-state strong {
+  color: inherit;
+  font-size: 13px;
+  font-weight: 740;
+}
+
+.guest-reservation-content {
+  display: grid;
+  gap: 14px;
+  border: 1px solid var(--oasis-line);
+  border-radius: 18px;
+  background: #ffffff;
+  padding: 15px;
+}
+
+.guest-reservation-content > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.guest-reservation-content > header span {
+  color: var(--oasis-muted);
+  font-size: 9px;
+  font-weight: 660;
+}
+
+.guest-reservation-content > header strong {
+  border-radius: 999px;
+  color: #945e0e;
+  background: #fff1cf;
+  padding: 5px 8px;
+  font-size: 8.5px;
+  font-weight: 740;
+}
+
+.guest-reservation-intro {
+  display: grid;
+  gap: 4px;
+}
+
+.guest-reservation-intro h2 {
+  color: var(--oasis-ink);
+  font-size: 17px;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.guest-reservation-intro p {
+  color: var(--oasis-muted);
+  font-size: 10px;
+  font-weight: 560;
+  line-height: 1.45;
+}
+
+.guest-reservation-locked {
+  display: grid;
+  gap: 11px;
+}
+
+.guest-reservation-locked > p {
+  color: var(--oasis-muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.guest-reservation-locked li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.guest-reservation-locked > strong {
+  color: var(--oasis-ink);
+  font-size: 16px;
+  text-align: right;
+}
+
 .event-empty-state {
   display: grid;
   gap: 4px;
@@ -1878,6 +3194,190 @@ button.app-header-avatar:focus-visible {
   color: #8090a5;
 }
 
+.personal-overview {
+  display: grid;
+  gap: 12px;
+  overflow: hidden;
+  border: 1px solid var(--oasis-line);
+  border-radius: 20px;
+  background: #ffffff;
+  padding: 14px;
+}
+
+.personal-overview-statuses {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.personal-overview-status {
+  position: relative;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  min-height: 66px;
+  border: 1px solid #e1e8f1;
+  border-radius: 14px;
+  background: #f8fbff;
+  padding: 9px 26px 9px 9px;
+}
+
+.personal-overview-status > span:nth-child(2) {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.personal-overview-status small {
+  color: var(--oasis-muted);
+  font-size: 8.5px;
+  font-weight: 680;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.personal-overview-status strong {
+  color: var(--oasis-ink);
+  font-size: 10.5px;
+  font-weight: 740;
+  line-height: 1.25;
+}
+
+.personal-overview-status > svg {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 14px;
+  height: 14px;
+  color: var(--oasis-success);
+}
+
+.personal-overview-status > svg[data-active="false"] {
+  color: #9ba8b8;
+}
+
+.personal-overview-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.personal-overview-actions button {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) 15px;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+  cursor: pointer;
+  border: 1px solid #cad9eb;
+  border-radius: 13px;
+  color: var(--oasis-blue-dark);
+  background: #ffffff;
+  padding: 0 10px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 710;
+}
+
+.personal-overview-actions button:hover,
+.personal-overview-actions button:focus-visible {
+  border-color: #9db9db;
+  background: var(--oasis-soft-blue);
+}
+
+.personal-overview-actions button:focus-visible {
+  outline: 2px solid rgba(7, 85, 183, 0.2);
+  outline-offset: 2px;
+}
+
+.personal-overview-actions button > svg:first-child {
+  width: 17px;
+  height: 17px;
+}
+
+.personal-overview-actions button > svg:last-child {
+  width: 14px;
+  height: 14px;
+  color: #8090a5;
+}
+
+.member-card-section {
+  display: grid;
+  gap: 10px;
+  scroll-margin-top: 12px;
+  border-radius: 20px;
+}
+
+.member-card-section:focus {
+  outline: none;
+}
+
+.member-card-section:focus-visible {
+  outline: 3px solid rgba(7, 85, 183, 0.18);
+  outline-offset: 4px;
+}
+
+.member-card-section > header,
+.member-card-section > header > div {
+  display: flex;
+  align-items: center;
+}
+
+.member-card-section > header {
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 3px;
+}
+
+.member-card-section > header > div {
+  gap: 9px;
+  min-width: 0;
+}
+
+.member-card-section > header svg {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 auto;
+  color: var(--oasis-blue);
+}
+
+.member-card-section > header span {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.member-card-section > header h2,
+.member-card-section > header p {
+  margin: 0;
+}
+
+.member-card-section > header h2 {
+  color: var(--oasis-ink);
+  font-size: 14px;
+  font-weight: 740;
+  line-height: 1.2;
+}
+
+.member-card-section > header p,
+.member-card-section > header > small {
+  color: var(--oasis-muted);
+  font-size: 9px;
+  font-weight: 560;
+  line-height: 1.35;
+}
+
+.member-card-section > header > small {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #e9f7f0;
+  color: #17704d;
+  padding: 5px 8px;
+  font-weight: 700;
+}
+
 .member-card {
   display: grid;
   gap: 18px;
@@ -2093,6 +3593,61 @@ button.app-header-avatar:focus-visible {
 
 .member-form-grid {
   gap: 12px;
+}
+
+.member-form-agreement-summary {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #cfe3d9;
+  border-radius: 14px;
+  background: #f3fbf7;
+  padding: 10px;
+}
+
+.member-form-agreement-summary > span:nth-child(2) {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.member-form-agreement-summary strong {
+  color: var(--oasis-ink);
+  font-size: 11px;
+  font-weight: 710;
+  line-height: 1.3;
+}
+
+.member-form-agreement-summary small {
+  color: #287452;
+  font-size: 9.5px;
+  font-weight: 610;
+  line-height: 1.3;
+}
+
+.member-form-agreement-summary > svg {
+  width: 18px;
+  height: 18px;
+  color: var(--oasis-success);
+}
+
+.member-form-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.member-form-actions[data-single="true"] {
+  grid-template-columns: 1fr;
+}
+
+.member-form-actions .primary-button,
+.member-form-actions .secondary-button {
+  min-height: 44px;
+  padding: 0 10px;
+  font-size: 11px;
 }
 
 .agreement-panel {
@@ -2364,7 +3919,7 @@ button.app-header-avatar:focus-visible {
   }
 
   .contact-footer {
-    grid-template-columns: minmax(0, 1.8fr) 1px minmax(82px, 0.7fr);
+    grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
     min-height: 60px;
     padding: 0 10px;
   }

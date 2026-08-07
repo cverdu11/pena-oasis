@@ -4,6 +4,7 @@ import type { AccountMenuAction } from "./components/AccountMenu";
 import { AuthScreen } from "./components/AuthScreen";
 import { BottomNav } from "./components/BottomNav";
 import { EventsScreen } from "./components/EventsScreen";
+import { GuestReservationScreen } from "./components/GuestReservationScreen";
 import { HomeScreen } from "./components/HomeScreen";
 import { LegalScreen } from "./components/LegalScreen";
 import { NewsArticleScreen } from "./components/NewsArticleScreen";
@@ -12,6 +13,7 @@ import { useMemberIdentity } from "./hooks/useMemberIdentity";
 import { getSupabaseClient } from "./lib/supabase";
 import {
   EVENTS_ROUTE_HASH,
+  GUEST_RESERVATION_ROUTE_HASH,
   HOME_ROUTE_HASH,
   NEWS_ARTICLE_ROUTE_HASH,
   PERSONAL_ROUTE_HASH,
@@ -21,7 +23,16 @@ import {
 } from "./constants";
 import type { PersonalAreaAction, TabId } from "./types";
 
-type AppRoute = TabId | "news-article" | "privacy";
+type AppRoute = TabId | "news-article" | "privacy" | "reservation";
+
+function isLocalPersonalPreview() {
+  const isLocalHost =
+    window.location.hostname === "127.0.0.1" ||
+    window.location.hostname === "localhost";
+  const searchParams = new URLSearchParams(window.location.search);
+
+  return isLocalHost && searchParams.get("demo") === "personal";
+}
 
 function isPasswordRecoveryRoute() {
   const searchParams = new URLSearchParams(window.location.search);
@@ -39,6 +50,10 @@ function isSignupConfirmationRoute() {
 }
 
 function readInitialRoute(): AppRoute {
+  if (isLocalPersonalPreview()) {
+    return "membership";
+  }
+
   if (window.location.hash === NEWS_ARTICLE_ROUTE_HASH) {
     return "news-article";
   }
@@ -53,6 +68,10 @@ function readInitialRoute(): AppRoute {
 
   if (window.location.hash === SHOP_ROUTE_HASH) {
     return "shop";
+  }
+
+  if (window.location.hash.startsWith(GUEST_RESERVATION_ROUTE_HASH)) {
+    return "reservation";
   }
 
   if (
@@ -72,11 +91,15 @@ function readInitialRoute(): AppRoute {
 }
 
 export default function App() {
+  const localPersonalPreview = isLocalPersonalPreview();
   const [activeRoute, setActiveRoute] = useState<AppRoute>(readInitialRoute);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [personalAreaAction, setPersonalAreaAction] =
     useState<PersonalAreaAction | null>(null);
-  const memberIdentity = useMemberIdentity(activeRoute);
+  const liveMemberIdentity = useMemberIdentity(activeRoute);
+  const memberIdentity = localPersonalPreview
+    ? { initials: "CV", isAuthenticated: true }
+    : liveMemberIdentity;
 
   useEffect(() => {
     function syncFromHash() {
@@ -110,7 +133,9 @@ export default function App() {
     window.history.replaceState(
       null,
       "",
-      `${window.location.pathname}${nextHash}`,
+      `${window.location.pathname}${
+        localPersonalPreview ? window.location.search : ""
+      }${nextHash}`,
     );
   }
 
@@ -122,7 +147,9 @@ export default function App() {
     window.history.replaceState(
       null,
       "",
-      `${window.location.pathname}${nextHash}`,
+      `${window.location.pathname}${
+        localPersonalPreview ? window.location.search : ""
+      }${nextHash}`,
     );
   }
 
@@ -140,6 +167,10 @@ export default function App() {
     setIsAccountMenuOpen(false);
 
     if (action === "signout") {
+      if (localPersonalPreview) {
+        return;
+      }
+
       setPersonalAreaAction(null);
       const client = await getSupabaseClient();
       await client?.auth.signOut();
@@ -166,6 +197,7 @@ export default function App() {
         )}
         {activeRoute === "membership" && (
           <AuthScreen
+            demoMode={localPersonalPreview}
             identityInitials={memberIdentity.initials}
             isAccountMenuOpen={isAccountMenuOpen}
             onAvatarClick={() => setIsAccountMenuOpen((current) => !current)}
@@ -187,6 +219,9 @@ export default function App() {
             onAvatarClick={() => setIsAccountMenuOpen((current) => !current)}
           />
         )}
+        {activeRoute === "reservation" && (
+          <GuestReservationScreen onBack={() => handleTabChange("shop")} />
+        )}
         {activeRoute === "privacy" && <LegalScreen />}
         {isAccountMenuOpen && (
           <AccountMenu
@@ -197,8 +232,12 @@ export default function App() {
         )}
         <BottomNav
           activeTab={
-            activeRoute === "events" || activeRoute === "shop"
-              ? activeRoute
+            activeRoute === "events" ||
+            activeRoute === "shop" ||
+            activeRoute === "reservation"
+              ? activeRoute === "reservation"
+                ? "shop"
+                : activeRoute
               : activeRoute === "home" || activeRoute === "news-article"
                 ? "home"
                 : "membership"

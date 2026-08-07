@@ -1,31 +1,19 @@
 import { HiOutlineEnvelope } from "react-icons/hi2";
 import scarfImage from "../../public/images/shop/bufanda-oasis-boceto.webp";
-import shirtImage from "../../public/images/shop/camiseta-oasis-boceto.webp";
 import { CONTACT_EMAIL } from "../constants";
 import type { MemberIdentity } from "../hooks/useMemberIdentity";
 import { AppHeader } from "./AppHeader";
+import { ShirtReservationCard } from "./ShirtReservationCard";
 
-const products = [
-  {
-    title: "Camiseta Casa del Malaguismo",
-    detail:
-      "Camiseta cruda con escudo de la Peña en el frontal y mapa de La Rosaleda en la espalda.",
-    status: "Diseño en desarrollo",
-    availability: "Precio por confirmar",
-    image: shirtImage,
-    imageAlt:
-      "Boceto frontal y trasero de la camiseta Casa del Malaguismo",
-  },
-  {
-    title: "Bufanda Peña Oasis",
-    detail:
-      "Boceto a doble cara en azul, blanco y dorado con el escudo y los lemas de la Peña.",
-    status: "Diseño en desarrollo",
-    availability: "Precio por confirmar",
-    image: scarfImage,
-    imageAlt: "Boceto de las dos caras de la bufanda Peña Oasis",
-  },
-];
+const scarfProduct = {
+  title: "Bufanda Peña Oasis",
+  detail:
+    "Boceto a doble cara en azul, blanco y dorado con el escudo y los lemas de la Peña.",
+  status: "Diseño en desarrollo",
+  availability: "Precio por confirmar",
+  image: scarfImage,
+  imageAlt: "Boceto de las dos caras de la bufanda Peña Oasis",
+};
 
 type ShopScreenProps = {
   identity: MemberIdentity;
@@ -57,35 +45,35 @@ export function ShopScreen({
 
         <div className="shop-heading">
           <h2>Colección Oasis</h2>
-          <span>2 productos</span>
+          <span>3 productos</span>
         </div>
 
         <div className="product-grid">
-          {products.map((product) => (
-            <article className="product-card" key={product.title}>
-              <div className="product-media">
-                <img src={product.image} alt={product.imageAlt} />
-              </div>
+          <ShirtReservationCard identity={identity} />
 
-              <div className="product-copy">
-                <span className="product-status">{product.status}</span>
-                <h3>{product.title}</h3>
-                <p>{product.detail}</p>
+          <article className="product-card">
+            <div className="product-media">
+              <img src={scarfProduct.image} alt={scarfProduct.imageAlt} />
+            </div>
 
-                <div className="product-action-row">
-                  <strong>{product.availability}</strong>
-                  <a
-                    href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
-                      `Consulta sobre ${product.title}`,
-                    )}`}
-                  >
-                    <HiOutlineEnvelope aria-hidden="true" />
-                    Consultar
-                  </a>
-                </div>
+            <div className="product-copy">
+              <span className="product-status">{scarfProduct.status}</span>
+              <h3>{scarfProduct.title}</h3>
+              <p>{scarfProduct.detail}</p>
+
+              <div className="product-action-row">
+                <strong>{scarfProduct.availability}</strong>
+                <a
+                  href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
+                    `Consulta sobre ${scarfProduct.title}`,
+                  )}`}
+                >
+                  <HiOutlineEnvelope aria-hidden="true" />
+                  Consultar
+                </a>
               </div>
-            </article>
-          ))}
+            </div>
+          </article>
         </div>
       </div>
     </section>
