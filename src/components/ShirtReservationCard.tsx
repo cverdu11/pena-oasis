@@ -206,7 +206,7 @@ export function ShirtReservationCard({
         <h3>Camiseta Casa del Malaguismo</h3>
         <p>
           Escudo de la Peña en el frontal y mapa de La Rosaleda en la espalda.
-          Blanca y azul con corte regular; off-white con corte relaxed.
+          Blanca y off-white con corte relaxed; azul con corte regular.
         </p>
 
         <div className="shirt-price-strip" aria-label="Precios">

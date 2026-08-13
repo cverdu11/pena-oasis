@@ -64,8 +64,8 @@ export const SHIRT_COLOR_OPTIONS: ReadonlyArray<{
   value: ShirtColor;
 }> = [
   {
-    fit: "regular",
-    fitLabel: "Regular",
+    fit: "relaxed",
+    fitLabel: "Relaxed",
     label: "Blanca",
     value: "white",
   },
