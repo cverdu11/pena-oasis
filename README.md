@@ -177,9 +177,12 @@ npm.cmd run preview
 ## Gestión privada de stock de camisetas
 
 Después de ejecutar todas las migraciones de `supabase/migrations/`, ejecuta también
-`supabase/migrations/20260813120000_add_shirt_stock_management.sql`. Esta migración
-crea las 15 variantes de inventario (120 camisetas), reconcilia las reservas ya
-entregadas y añade la gestión de stock mediante RPC protegidos.
+`supabase/migrations/20260813120000_add_shirt_stock_management.sql` y, después,
+`supabase/migrations/20260813130000_register_external_shirt_sale.sql`. La primera
+migración crea las 15 variantes de inventario (120 camisetas), reconcilia las
+reservas ya entregadas y añade la gestión de stock mediante RPC protegidos. La
+segunda permite registrar desde el panel las ventas hechas fuera de la web y las
+descuenta de forma atómica como ventas ya entregadas.
 
 Para dar acceso a la persona propietaria, abre su usuario en `Authentication > Users`
 del Dashboard de Supabase y establece **App Metadata** exactamente así:
@@ -197,4 +200,6 @@ El panel se abre de forma directa en `#gestion-stock`; no aparece en la navegaci
 pública. Solo una cuenta autenticada con ese claim puede cargar las existencias, los
 datos de contacto de todas las reservas y los controles de estado. Marcar una reserva
 como `fulfilled` descuenta sus variantes de forma atómica; pasarla de nuevo a
-`confirmed` o `cancelled` las repone.
+`confirmed` o `cancelled` las repone. En el mismo panel, la sección **Registrar venta
+externa** permite introducir el nombre o una nota, el tipo de cliente y una o varias
+combinaciones de color, talla y unidades.

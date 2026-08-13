@@ -1,4 +1,5 @@
 import {
+  type FormEvent,
   useCallback,
   useEffect,
   useMemo,
@@ -11,8 +12,16 @@ import {
   HiOutlineLockClosed,
 } from "react-icons/hi2";
 import {
+  MAX_SHIRT_LINE_ITEMS,
+  MAX_SHIRT_TOTAL_QUANTITY,
+  consolidateReservationItems,
+  registerExternalShirtSale,
   fetchShirtStockDashboard,
   getShirtColorLabel,
+  type ShirtColor,
+  type ShirtCustomerType,
+  type ShirtReservationItem,
+  type ShirtSize,
   type ShirtStockDashboard,
   type ShirtStockDashboardReservation,
   type ShirtStockRow,
@@ -31,6 +40,19 @@ type StockAdminScreenProps = {
 
 const stockColors = ["blue", "white", "off_white"] as const;
 const stockSizes = ["S", "M", "L", "XL", "2XL"] as const;
+
+type ExternalSaleDraftLine = ShirtReservationItem & {
+  id: number;
+};
+
+function createExternalSaleLine(id: number): ExternalSaleDraftLine {
+  return {
+    color: "blue",
+    id,
+    quantity: 1,
+    size: "M",
+  };
+}
 
 function getAllowedStatusTransitions(status: ShirtReservationStatus) {
   if (status === "pending") {
@@ -215,15 +237,27 @@ export function StockAdminScreen({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isMutationInProgress, setIsMutationInProgress] = useState(false);
+  const [isExternalSaleInProgress, setIsExternalSaleInProgress] = useState(false);
   const [updatingReservationId, setUpdatingReservationId] = useState<string | null>(
     null,
   );
+  const [externalSaleLabel, setExternalSaleLabel] = useState("");
+  const [externalSaleCustomerType, setExternalSaleCustomerType] =
+    useState<ShirtCustomerType>("non-member");
+  const [externalSaleItems, setExternalSaleItems] = useState<
+    ExternalSaleDraftLine[]
+  >([createExternalSaleLine(1)]);
+  const [externalSaleMessage, setExternalSaleMessage] = useState<{
+    kind: "error" | "success";
+    text: string;
+  } | null>(null);
   const loadRequestIdRef = useRef(0);
   const mutationLockRef = useRef(false);
   const mutationOperationIdRef = useRef(0);
   const authGenerationRef = useRef(0);
   const previousAuthStateRef = useRef(isAuthenticated);
   const isAuthenticatedRef = useRef(isAuthenticated);
+  const nextExternalSaleLineIdRef = useRef(2);
 
   if (previousAuthStateRef.current !== isAuthenticated) {
     previousAuthStateRef.current = isAuthenticated;
@@ -314,7 +348,9 @@ export function StockAdminScreen({
       mutationLockRef.current = false;
       setDashboard(null);
       setErrorMessage(null);
+      setExternalSaleMessage(null);
       setIsMutationInProgress(false);
+      setIsExternalSaleInProgress(false);
       setIsRefreshing(false);
       setState("signed-out");
       setUpdatingReservationId(null);
@@ -336,6 +372,152 @@ export function StockAdminScreen({
       ),
     [dashboard],
   );
+
+  const externalSaleTotalQuantity = useMemo(
+    () => externalSaleItems.reduce((total, item) => total + item.quantity, 0),
+    [externalSaleItems],
+  );
+  const externalSaleUnitPrice = externalSaleCustomerType === "member" ? 15 : 20;
+
+  function updateExternalSaleLine(
+    lineId: number,
+    changes: Partial<ShirtReservationItem>,
+  ) {
+    setExternalSaleItems((currentItems) =>
+      currentItems.map((item) =>
+        item.id === lineId ? { ...item, ...changes } : item,
+      ),
+    );
+  }
+
+  function addExternalSaleLine() {
+    if (externalSaleItems.length >= MAX_SHIRT_LINE_ITEMS) {
+      return;
+    }
+
+    const lineId = nextExternalSaleLineIdRef.current;
+    nextExternalSaleLineIdRef.current += 1;
+    setExternalSaleItems((currentItems) => [
+      ...currentItems,
+      createExternalSaleLine(lineId),
+    ]);
+  }
+
+  function removeExternalSaleLine(lineId: number) {
+    setExternalSaleItems((currentItems) =>
+      currentItems.length > 1
+        ? currentItems.filter((item) => item.id !== lineId)
+        : currentItems,
+    );
+  }
+
+  async function handleExternalSaleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (mutationLockRef.current || !isAuthenticatedRef.current) {
+      return;
+    }
+
+    const reservationItems = consolidateReservationItems(
+      externalSaleItems.map((item) => ({
+        color: item.color,
+        quantity: item.quantity,
+        size: item.size,
+      })),
+    );
+
+    if (
+      reservationItems.length === 0 ||
+      reservationItems.some(
+        (item) =>
+          !Number.isInteger(item.quantity) ||
+          item.quantity < 1 ||
+          item.quantity > 10,
+      )
+    ) {
+      setExternalSaleMessage({
+        kind: "error",
+        text: "Cada variante debe tener entre 1 y 10 unidades.",
+      });
+      return;
+    }
+
+    if (externalSaleTotalQuantity > MAX_SHIRT_TOTAL_QUANTITY) {
+      setExternalSaleMessage({
+        kind: "error",
+        text: "Una venta no puede superar las 20 camisetas.",
+      });
+      return;
+    }
+
+    const mutationOperationId = mutationOperationIdRef.current + 1;
+    const authGeneration = authGenerationRef.current;
+
+    mutationOperationIdRef.current = mutationOperationId;
+    mutationLockRef.current = true;
+    setIsMutationInProgress(true);
+    setIsExternalSaleInProgress(true);
+    loadRequestIdRef.current += 1;
+    setIsRefreshing(false);
+    setErrorMessage(null);
+    setExternalSaleMessage(null);
+
+    try {
+      const client = await getSupabaseClient();
+
+      if (!client) {
+        throw new Error("Supabase no está configurado.");
+      }
+
+      await registerExternalShirtSale(
+        client,
+        externalSaleLabel.trim() || "Venta externa",
+        externalSaleCustomerType,
+        reservationItems,
+      );
+
+      if (
+        !isAuthenticatedRef.current ||
+        authGeneration !== authGenerationRef.current ||
+        mutationOperationId !== mutationOperationIdRef.current
+      ) {
+        return;
+      }
+
+      setExternalSaleMessage({
+        kind: "success",
+        text: "Venta registrada y stock actualizado.",
+      });
+      setExternalSaleLabel("");
+      setExternalSaleItems([createExternalSaleLine(1)]);
+      nextExternalSaleLineIdRef.current = 2;
+      await loadDashboard();
+    } catch (error) {
+      if (
+        !isAuthenticatedRef.current ||
+        authGeneration !== authGenerationRef.current ||
+        mutationOperationId !== mutationOperationIdRef.current
+      ) {
+        return;
+      }
+
+      if (isPermissionError(error)) {
+        setDashboard(null);
+        setState("denied");
+      } else {
+        setExternalSaleMessage({
+          kind: "error",
+          text: getErrorMessage(error),
+        });
+      }
+    } finally {
+      if (mutationOperationId === mutationOperationIdRef.current) {
+        mutationLockRef.current = false;
+        setIsMutationInProgress(false);
+        setIsExternalSaleInProgress(false);
+      }
+    }
+  }
 
   async function handleStatusChange(
     reservation: ShirtStockDashboardReservation,
@@ -475,8 +657,156 @@ export function StockAdminScreen({
 
         {isAuthenticated && state === "ready" && dashboard && (
           <div className="stock-admin-content">
+            <section className="stock-section stock-external-sale-section">
+              <div className="stock-section-heading">
+                <div>
+                  <p>Venta manual</p>
+                  <h2>Registrar venta externa</h2>
+                </div>
+              </div>
+              <p className="stock-external-sale-help">
+                Registra aquí las ventas hechas fuera de la web. Se marcarán como
+                entregadas y descontarán el stock de forma atómica.
+              </p>
+              <form
+                className="stock-external-sale-form"
+                onSubmit={handleExternalSaleSubmit}
+              >
+                <div className="stock-external-sale-top-fields">
+                  <label>
+                    <span>Nombre o nota (opcional)</span>
+                    <input
+                      maxLength={100}
+                      onChange={(event) => setExternalSaleLabel(event.target.value)}
+                      placeholder="Venta externa"
+                      type="text"
+                      value={externalSaleLabel}
+                    />
+                  </label>
+                  <label>
+                    <span>Tipo de cliente</span>
+                    <select
+                      onChange={(event) =>
+                        setExternalSaleCustomerType(
+                          event.target.value as ShirtCustomerType,
+                        )
+                      }
+                      value={externalSaleCustomerType}
+                    >
+                      <option value="non-member">No socio · 20 € por camiseta</option>
+                      <option value="member">Socio · 15 € por camiseta</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div className="stock-external-sale-lines">
+                  {externalSaleItems.map((item, index) => (
+                    <div className="stock-external-sale-line" key={item.id}>
+                      <label>
+                        <span>Color {index + 1}</span>
+                        <select
+                          onChange={(event) =>
+                            updateExternalSaleLine(item.id, {
+                              color: event.target.value as ShirtColor,
+                            })
+                          }
+                          value={item.color}
+                        >
+                          {stockColors.map((color) => (
+                            <option key={color} value={color}>
+                              {getShirtColorLabel(color)}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label>
+                        <span>Talla</span>
+                        <select
+                          onChange={(event) =>
+                            updateExternalSaleLine(item.id, {
+                              size: event.target.value as ShirtSize,
+                            })
+                          }
+                          value={item.size}
+                        >
+                          {stockSizes.map((size) => (
+                            <option key={size} value={size}>
+                              {size}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label>
+                        <span>Unidades</span>
+                        <input
+                          max={10}
+                          min={1}
+                          onChange={(event) =>
+                            updateExternalSaleLine(item.id, {
+                              quantity: Number(event.target.value),
+                            })
+                          }
+                          type="number"
+                          value={Number.isNaN(item.quantity) ? "" : item.quantity}
+                        />
+                      </label>
+                      <button
+                        className="stock-external-sale-remove"
+                        disabled={isMutationInProgress || externalSaleItems.length === 1}
+                        onClick={() => removeExternalSaleLine(item.id)}
+                        type="button"
+                      >
+                        Quitar
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="stock-external-sale-actions">
+                  <button
+                    className="stock-external-sale-add"
+                    disabled={
+                      isMutationInProgress ||
+                      externalSaleItems.length >= MAX_SHIRT_LINE_ITEMS
+                    }
+                    onClick={addExternalSaleLine}
+                    type="button"
+                  >
+                    Añadir variante
+                  </button>
+                  <span>
+                    {externalSaleTotalQuantity} camisetas · {externalSaleTotalQuantity * externalSaleUnitPrice} €
+                  </span>
+                </div>
+
+                {externalSaleMessage && (
+                  <p
+                    className={`stock-external-sale-message stock-external-sale-message--${externalSaleMessage.kind}`}
+                    role={externalSaleMessage.kind === "error" ? "alert" : "status"}
+                  >
+                    {externalSaleMessage.text}
+                  </p>
+                )}
+
+                <button
+                  className="stock-external-sale-submit"
+                  disabled={
+                    isMutationInProgress ||
+                    externalSaleTotalQuantity < 1 ||
+                    externalSaleTotalQuantity > MAX_SHIRT_TOTAL_QUANTITY
+                  }
+                  type="submit"
+                >
+                  {isExternalSaleInProgress
+                    ? "Registrando venta…"
+                    : "Registrar venta y descontar stock"}
+                </button>
+              </form>
+            </section>
+
             <p className="stock-admin-note">
-              Solo al marcar una reserva como entregada se descuenta su stock.
+              Las reservas descuentan stock al marcarlas como entregadas; las
+              ventas externas lo descuentan al registrarlas.
             </p>
 
             {errorMessage && (

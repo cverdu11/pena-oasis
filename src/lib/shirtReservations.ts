@@ -568,6 +568,29 @@ export async function updateShirtReservationStatus(
   return nextVersion;
 }
 
+export async function registerExternalShirtSale(
+  client: SupabaseClient,
+  label: string,
+  customerType: ShirtCustomerType,
+  items: ShirtReservationItem[],
+): Promise<string> {
+  const { data, error } = await client.rpc("register_external_shirt_sale", {
+    reservation_customer_type_arg: customerType,
+    reservation_items_arg: items,
+    reservation_label_arg: label,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  if (typeof data !== "string" || !data.trim()) {
+    throw new Error("La venta externa no devolvió un identificador válido.");
+  }
+
+  return data;
+}
+
 export function getGuestReservationManagementHash(
   reservationId: string,
   managementToken: string,

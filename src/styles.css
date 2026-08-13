@@ -2126,3 +2126,165 @@ button {
   cursor: wait;
   opacity: 0.6;
 }
+
+.stock-external-sale-section {
+  border: 1px solid rgba(0, 64, 164, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  padding: 14px;
+}
+
+.stock-external-sale-help {
+  margin: 0;
+  color: #536171;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.stock-external-sale-form {
+  display: grid;
+  gap: 12px;
+}
+
+.stock-external-sale-top-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(190px, 0.85fr);
+  gap: 10px;
+}
+
+.stock-external-sale-form label {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  color: #536171;
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.stock-external-sale-form input,
+.stock-external-sale-form select {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid rgba(0, 64, 164, 0.16);
+  border-radius: 7px;
+  color: #273444;
+  background: #fff;
+  padding: 0 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.stock-external-sale-form input:focus-visible,
+.stock-external-sale-form select:focus-visible,
+.stock-external-sale-add:focus-visible,
+.stock-external-sale-remove:focus-visible,
+.stock-external-sale-submit:focus-visible {
+  outline: 2px solid rgba(0, 64, 164, 0.42);
+  outline-offset: 2px;
+}
+
+.stock-external-sale-lines {
+  display: grid;
+  gap: 8px;
+}
+
+.stock-external-sale-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(82px, 0.7fr) 92px auto;
+  gap: 8px;
+  align-items: end;
+  border-top: 1px solid var(--oasis-soft-line);
+  padding-top: 8px;
+}
+
+.stock-external-sale-remove,
+.stock-external-sale-add,
+.stock-external-sale-submit {
+  min-height: 40px;
+  cursor: pointer;
+  border-radius: 999px;
+  padding: 0 13px;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.stock-external-sale-remove,
+.stock-external-sale-add {
+  border: 1px solid rgba(0, 64, 164, 0.14);
+  color: #173b77;
+  background: #f7f9fd;
+}
+
+.stock-external-sale-remove:disabled,
+.stock-external-sale-add:disabled,
+.stock-external-sale-submit:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.stock-external-sale-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.stock-external-sale-actions > span {
+  color: #173b77;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.stock-external-sale-submit {
+  border: 0;
+  color: var(--oasis-white);
+  background: var(--oasis-blue-dark);
+}
+
+.stock-external-sale-submit:hover:not(:disabled),
+.stock-external-sale-add:hover:not(:disabled),
+.stock-external-sale-remove:hover:not(:disabled) {
+  filter: brightness(0.96);
+}
+
+.stock-external-sale-message {
+  margin: 0;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.4;
+}
+
+.stock-external-sale-message--success {
+  border-color: rgba(23, 97, 63, 0.18);
+  color: #17613f;
+  background: #e6f7ed;
+}
+
+.stock-external-sale-message--error {
+  border-color: rgba(185, 28, 28, 0.2);
+  color: #8b1e1e;
+  background: #fff7f7;
+}
+
+@media (max-width: 520px) {
+  .stock-external-sale-top-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .stock-external-sale-line {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .stock-external-sale-line > label:nth-child(3) {
+    grid-column: 1;
+  }
+
+  .stock-external-sale-remove {
+    grid-column: 2;
+  }
+}
