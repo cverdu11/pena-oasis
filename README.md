@@ -173,3 +173,28 @@ npm.cmd run dev
 npm.cmd run build
 npm.cmd run preview
 ```
+
+## Gestión privada de stock de camisetas
+
+Después de ejecutar todas las migraciones de `supabase/migrations/`, ejecuta también
+`supabase/migrations/20260813120000_add_shirt_stock_management.sql`. Esta migración
+crea las 15 variantes de inventario (120 camisetas), reconcilia las reservas ya
+entregadas y añade la gestión de stock mediante RPC protegidos.
+
+Para dar acceso a la persona propietaria, abre su usuario en `Authentication > Users`
+del Dashboard de Supabase y establece **App Metadata** exactamente así:
+
+```json
+{"shirt_stock_admin": true}
+```
+
+También puede hacerse desde una operación de servidor que use exclusivamente la
+service-role key. No guardes esa clave en la app ni uses `user_metadata` o una columna
+de perfiles para este permiso. Después, la propietaria debe cerrar sesión y volver a
+iniciarla (o refrescar su sesión) para recibir un JWT con el claim actualizado.
+
+El panel se abre de forma directa en `#gestion-stock`; no aparece en la navegación
+pública. Solo una cuenta autenticada con ese claim puede cargar las existencias, los
+datos de contacto de todas las reservas y los controles de estado. Marcar una reserva
+como `fulfilled` descuenta sus variantes de forma atómica; pasarla de nuevo a
+`confirmed` o `cancelled` las repone.

@@ -4028,3 +4028,26 @@ button.app-header-avatar:focus-visible {
     transition-duration: 0.01ms !important;
   }
 }
+
+@media (max-width: 360px) {
+  .stock-admin-sheet {
+    inset-right: 14px;
+    inset-left: 14px;
+  }
+
+  .stock-admin-header h1 {
+    font-size: 22px;
+  }
+
+  .stock-summary-grid article {
+    padding-inline: 7px;
+  }
+
+  .stock-summary-grid strong {
+    font-size: 23px;
+  }
+
+  .stock-reservation-meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

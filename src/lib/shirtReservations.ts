@@ -39,6 +39,25 @@ export type ManagedShirtReservation = {
   version: number;
 };
 
+export type ShirtStockRow = {
+  availableQuantity: number;
+  color: ShirtColor;
+  fulfilledQuantity: number;
+  initialQuantity: number;
+  size: ShirtSize;
+  updatedAt: string;
+};
+
+export type ShirtStockDashboardReservation = ManagedShirtReservation & {
+  email: string;
+  fullName: string;
+};
+
+export type ShirtStockDashboard = {
+  reservations: ShirtStockDashboardReservation[];
+  stock: ShirtStockRow[];
+};
+
 type MemberReservationRow = {
   created_at: string;
   customer_type: ShirtCustomerType;
@@ -66,19 +85,19 @@ export const SHIRT_COLOR_OPTIONS: ReadonlyArray<{
   {
     fit: "relaxed",
     fitLabel: "Relaxed",
-    label: "Blanca",
+    label: "White",
     value: "white",
   },
   {
     fit: "relaxed",
     fitLabel: "Relaxed",
-    label: "Off-white",
+    label: "Egret",
     value: "off_white",
   },
   {
     fit: "regular",
     fitLabel: "Regular",
-    label: "Azul",
+    label: "Surf the Wet",
     value: "blue",
   },
 ];
@@ -158,6 +177,187 @@ function assertManagedReservation(
   }
 
   return reservation as ManagedShirtReservation;
+}
+
+function isShirtColor(value: unknown): value is ShirtColor {
+  return value === "white" || value === "off_white" || value === "blue";
+}
+
+function isShirtSize(value: unknown): value is ShirtSize {
+  return (
+    value === "S" ||
+    value === "M" ||
+    value === "L" ||
+    value === "XL" ||
+    value === "2XL"
+  );
+}
+
+function isShirtReservationStatus(
+  value: unknown,
+): value is ShirtReservationStatus {
+  return (
+    value === "pending" ||
+    value === "confirmed" ||
+    value === "cancelled" ||
+    value === "fulfilled"
+  );
+}
+
+function isShirtCustomerType(value: unknown): value is ShirtCustomerType {
+  return value === "member" || value === "non-member";
+}
+
+function isNonNegativeInteger(value: unknown): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0;
+}
+
+function isPositiveInteger(value: unknown): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value > 0;
+}
+
+function parseDashboardItem(value: unknown): ShirtReservationItem | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const item = value as Partial<ShirtReservationItem>;
+  const { color, quantity, size } = item;
+
+  if (
+    !isShirtColor(color) ||
+    !isShirtSize(size) ||
+    !isPositiveInteger(quantity)
+  ) {
+    return null;
+  }
+
+  return {
+    color,
+    quantity,
+    size,
+  };
+}
+
+function parseShirtStockRow(value: unknown): ShirtStockRow | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const row = value as Partial<ShirtStockRow>;
+  const {
+    availableQuantity,
+    color,
+    fulfilledQuantity,
+    initialQuantity,
+    size,
+    updatedAt,
+  } = row;
+
+  if (
+    !isShirtColor(color) ||
+    !isShirtSize(size) ||
+    !isNonNegativeInteger(initialQuantity) ||
+    !isNonNegativeInteger(fulfilledQuantity) ||
+    !isNonNegativeInteger(availableQuantity) ||
+    availableQuantity !== initialQuantity - fulfilledQuantity ||
+    typeof updatedAt !== "string"
+  ) {
+    return null;
+  }
+
+  return {
+    availableQuantity,
+    color,
+    fulfilledQuantity,
+    initialQuantity,
+    size,
+    updatedAt,
+  };
+}
+
+function parseDashboardReservation(
+  value: unknown,
+): ShirtStockDashboardReservation | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const reservation = value as Partial<ShirtStockDashboardReservation>;
+  const {
+    createdAt,
+    customerType,
+    email,
+    fullName,
+    id,
+    status,
+    totalPriceEur,
+    totalQuantity,
+    updatedAt,
+    version,
+  } = reservation;
+  const items = Array.isArray(reservation.items)
+    ? reservation.items.map(parseDashboardItem)
+    : null;
+
+  if (
+    typeof id !== "string" ||
+    typeof fullName !== "string" ||
+    typeof email !== "string" ||
+    !isShirtCustomerType(customerType) ||
+    !isShirtReservationStatus(status) ||
+    !isPositiveInteger(totalQuantity) ||
+    !isNonNegativeInteger(totalPriceEur) ||
+    typeof createdAt !== "string" ||
+    typeof updatedAt !== "string" ||
+    !isPositiveInteger(version) ||
+    !items ||
+    items.some((item) => !item)
+  ) {
+    return null;
+  }
+
+  return {
+    createdAt,
+    customerType,
+    email,
+    fullName,
+    id,
+    items: items as ShirtReservationItem[],
+    status,
+    totalPriceEur,
+    totalQuantity,
+    updatedAt,
+    version,
+  };
+}
+
+function parseShirtStockDashboard(value: unknown): ShirtStockDashboard | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const dashboard = value as Partial<ShirtStockDashboard>;
+  const stock = Array.isArray(dashboard.stock)
+    ? dashboard.stock.map(parseShirtStockRow)
+    : null;
+  const reservations = Array.isArray(dashboard.reservations)
+    ? dashboard.reservations.map(parseDashboardReservation)
+    : null;
+
+  if (
+    !stock ||
+    !reservations ||
+    stock.some((row) => !row) ||
+    reservations.some((reservation) => !reservation)
+  ) {
+    return null;
+  }
+
+  return {
+    reservations: reservations as ShirtStockDashboardReservation[],
+    stock: stock as ShirtStockRow[],
+  };
 }
 
 export async function createShirtReservation(
@@ -318,6 +518,54 @@ export async function cancelGuestShirtReservation(
   }
 
   return Number(data);
+}
+
+export async function fetchShirtStockDashboard(
+  client: SupabaseClient,
+): Promise<ShirtStockDashboard> {
+  const { data, error } = await client.rpc("get_shirt_stock_dashboard");
+
+  if (error) {
+    throw error;
+  }
+
+  const dashboard = parseShirtStockDashboard(data);
+
+  if (!dashboard) {
+    throw new Error("El panel de stock devolvió datos no válidos.");
+  }
+
+  return dashboard;
+}
+
+export async function updateShirtReservationStatus(
+  client: SupabaseClient,
+  reservationId: string,
+  expectedVersion: number,
+  nextStatus: ShirtReservationStatus,
+) {
+  const { data, error } = await client.rpc(
+    "update_shirt_reservation_status",
+    {
+      expected_version_arg: expectedVersion,
+      next_status_arg: nextStatus,
+      reservation_id_arg: reservationId,
+    },
+  );
+
+  if (error) {
+    throw error;
+  }
+
+  const nextVersion = Number(data);
+
+  if (!Number.isInteger(nextVersion) || nextVersion < expectedVersion) {
+    throw new Error(
+      "La actualización de la reserva devolvió una versión no válida.",
+    );
+  }
+
+  return nextVersion;
 }
 
 export function getGuestReservationManagementHash(

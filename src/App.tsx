@@ -9,6 +9,7 @@ import { HomeScreen } from "./components/HomeScreen";
 import { LegalScreen } from "./components/LegalScreen";
 import { NewsArticleScreen } from "./components/NewsArticleScreen";
 import { ShopScreen } from "./components/ShopScreen";
+import { StockAdminScreen } from "./components/StockAdminScreen";
 import { useMemberIdentity } from "./hooks/useMemberIdentity";
 import { getSupabaseClient } from "./lib/supabase";
 import {
@@ -19,11 +20,17 @@ import {
   PERSONAL_ROUTE_HASH,
   PRIVACY_ROUTE_HASH,
   SHOP_ROUTE_HASH,
+  SHIRT_STOCK_ADMIN_ROUTE_HASH,
   SIGNUP_ROUTE_HASH,
 } from "./constants";
-import type { PersonalAreaAction, TabId } from "./types";
+import type { PersonalAreaAction, StockAdminRoute, TabId } from "./types";
 
-type AppRoute = TabId | "news-article" | "privacy" | "reservation";
+type AppRoute =
+  | TabId
+  | "news-article"
+  | "privacy"
+  | "reservation"
+  | StockAdminRoute;
 
 function isLocalPersonalPreview() {
   const isLocalHost =
@@ -70,6 +77,10 @@ function readInitialRoute(): AppRoute {
     return "shop";
   }
 
+  if (window.location.hash === SHIRT_STOCK_ADMIN_ROUTE_HASH) {
+    return "stock-admin";
+  }
+
   if (window.location.hash.startsWith(GUEST_RESERVATION_ROUTE_HASH)) {
     return "reservation";
   }
@@ -96,6 +107,8 @@ export default function App() {
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [personalAreaAction, setPersonalAreaAction] =
     useState<PersonalAreaAction | null>(null);
+  const [pendingReturnRoute, setPendingReturnRoute] =
+    useState<StockAdminRoute | null>(null);
   const liveMemberIdentity = useMemberIdentity(activeRoute);
   const memberIdentity = localPersonalPreview
     ? { initials: "CV", isAuthenticated: true }
@@ -105,6 +118,7 @@ export default function App() {
     function syncFromHash() {
       setActiveRoute(readInitialRoute());
       setIsAccountMenuOpen(false);
+      setPendingReturnRoute(null);
     }
 
     window.addEventListener("hashchange", syncFromHash);
@@ -115,9 +129,40 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    if (
+      !liveMemberIdentity.isAuthenticated ||
+      pendingReturnRoute !== "stock-admin"
+    ) {
+      return;
+    }
+
+    if (window.location.hash !== PERSONAL_ROUTE_HASH) {
+      setPendingReturnRoute(null);
+      return;
+    }
+
+    setPendingReturnRoute(null);
+    setIsAccountMenuOpen(false);
+    setPersonalAreaAction(null);
+    setActiveRoute("stock-admin");
+    window.history.replaceState(
+      null,
+      "",
+      `${window.location.pathname}${
+        localPersonalPreview ? window.location.search : ""
+      }${SHIRT_STOCK_ADMIN_ROUTE_HASH}`,
+    );
+  }, [
+    liveMemberIdentity.isAuthenticated,
+    localPersonalPreview,
+    pendingReturnRoute,
+  ]);
+
   function handleTabChange(tab: TabId) {
     setIsAccountMenuOpen(false);
     setPersonalAreaAction(null);
+    setPendingReturnRoute(null);
     setActiveRoute(tab);
     const nextHash =
       tab === "home"
@@ -139,9 +184,13 @@ export default function App() {
     );
   }
 
-  function openPersonalArea(action: PersonalAreaAction) {
+  function openPersonalArea(
+    action: PersonalAreaAction,
+    returnRoute: StockAdminRoute | null = null,
+  ) {
     const nextHash =
       action === "signup" ? SIGNUP_ROUTE_HASH : PERSONAL_ROUTE_HASH;
+    setPendingReturnRoute(returnRoute);
     setPersonalAreaAction(action);
     setActiveRoute("membership");
     window.history.replaceState(
@@ -155,6 +204,7 @@ export default function App() {
 
   function openLatestNews() {
     setIsAccountMenuOpen(false);
+    setPendingReturnRoute(null);
     setActiveRoute("news-article");
     window.history.pushState(
       null,
@@ -167,6 +217,8 @@ export default function App() {
     setIsAccountMenuOpen(false);
 
     if (action === "signout") {
+      setPendingReturnRoute(null);
+
       if (localPersonalPreview) {
         return;
       }
@@ -223,6 +275,13 @@ export default function App() {
           <GuestReservationScreen onBack={() => handleTabChange("shop")} />
         )}
         {activeRoute === "privacy" && <LegalScreen />}
+        {activeRoute === "stock-admin" && (
+          <StockAdminScreen
+            isAuthenticated={liveMemberIdentity.isAuthenticated}
+            onBack={() => handleTabChange("home")}
+            onSignIn={() => openPersonalArea("signin", "stock-admin")}
+          />
+        )}
         {isAccountMenuOpen && (
           <AccountMenu
             isAuthenticated={memberIdentity.isAuthenticated}
@@ -230,21 +289,23 @@ export default function App() {
             onClose={() => setIsAccountMenuOpen(false)}
           />
         )}
-        <BottomNav
-          activeTab={
-            activeRoute === "events" ||
-            activeRoute === "shop" ||
-            activeRoute === "reservation"
-              ? activeRoute === "reservation"
-                ? "shop"
-                : activeRoute
-              : activeRoute === "home" || activeRoute === "news-article"
-                ? "home"
-                : "membership"
-          }
-          isAuthenticated={memberIdentity.isAuthenticated}
-          onChange={handleTabChange}
-        />
+        {activeRoute !== "stock-admin" && (
+          <BottomNav
+            activeTab={
+              activeRoute === "events" ||
+              activeRoute === "shop" ||
+              activeRoute === "reservation"
+                ? activeRoute === "reservation"
+                  ? "shop"
+                  : activeRoute
+                : activeRoute === "home" || activeRoute === "news-article"
+                  ? "home"
+                  : "membership"
+            }
+            isAuthenticated={memberIdentity.isAuthenticated}
+            onChange={handleTabChange}
+          />
+        )}
       </div>
     </main>
   );
