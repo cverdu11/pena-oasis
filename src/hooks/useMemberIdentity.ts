@@ -11,6 +11,7 @@ type IdentityProfile = {
 export type MemberIdentity = {
   initials: string;
   isAuthenticated: boolean;
+  isStockAdmin: boolean;
 };
 
 type MemberIdentityState = MemberIdentity & {
@@ -20,6 +21,7 @@ type MemberIdentityState = MemberIdentity & {
 const guestIdentity: MemberIdentityState = {
   initials: "PO",
   isAuthenticated: false,
+  isStockAdmin: false,
   userId: null,
 };
 
@@ -52,6 +54,7 @@ function createIdentity(user: User, profile?: IdentityProfile | null) {
   return {
     initials: getInitials(fullName),
     isAuthenticated: true,
+    isStockAdmin: user.app_metadata?.shirt_stock_admin === true,
     userId: user.id,
   } satisfies MemberIdentityState;
 }

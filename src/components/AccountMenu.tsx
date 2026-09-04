@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import {
   FiKey,
+  FiPackage,
   FiLogIn,
   FiLogOut,
   FiUserPlus,
@@ -11,16 +12,19 @@ export type AccountMenuAction =
   | "signin"
   | "signup"
   | "change-password"
+  | "stock-admin"
   | "signout";
 
 type AccountMenuProps = {
   isAuthenticated: boolean;
+  isStockAdmin: boolean;
   onAction: (action: AccountMenuAction) => void;
   onClose: () => void;
 };
 
 export function AccountMenu({
   isAuthenticated,
+  isStockAdmin,
   onAction,
   onClose,
 }: AccountMenuProps) {
@@ -115,6 +119,12 @@ export function AccountMenu({
                 <FiKey aria-hidden="true" />
                 <span>Cambiar contraseña</span>
               </button>
+              {isStockAdmin && (
+                <button type="button" onClick={() => onAction("stock-admin")}>
+                  <FiPackage aria-hidden="true" />
+                  <span>Gestión de stock</span>
+                </button>
+              )}
               <button
                 className="account-menu-signout"
                 type="button"

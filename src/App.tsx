@@ -111,7 +111,7 @@ export default function App() {
     useState<StockAdminRoute | null>(null);
   const liveMemberIdentity = useMemberIdentity(activeRoute);
   const memberIdentity = localPersonalPreview
-    ? { initials: "CV", isAuthenticated: true }
+    ? { initials: "CV", isAuthenticated: true, isStockAdmin: false }
     : liveMemberIdentity;
 
   useEffect(() => {
@@ -216,6 +216,18 @@ export default function App() {
   async function handleAccountMenuAction(action: AccountMenuAction) {
     setIsAccountMenuOpen(false);
 
+    if (action === "stock-admin") {
+      setPendingReturnRoute(null);
+      setPersonalAreaAction(null);
+      setActiveRoute("stock-admin");
+      window.history.replaceState(
+        null,
+        "",
+        `${window.location.pathname}${SHIRT_STOCK_ADMIN_ROUTE_HASH}`,
+      );
+      return;
+    }
+
     if (action === "signout") {
       setPendingReturnRoute(null);
 
@@ -285,6 +297,7 @@ export default function App() {
         {isAccountMenuOpen && (
           <AccountMenu
             isAuthenticated={memberIdentity.isAuthenticated}
+            isStockAdmin={memberIdentity.isStockAdmin}
             onAction={(action) => void handleAccountMenuAction(action)}
             onClose={() => setIsAccountMenuOpen(false)}
           />

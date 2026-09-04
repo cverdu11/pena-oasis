@@ -19,6 +19,11 @@ import {
 } from "../constants";
 import { getSupabaseClient, isSupabaseConfigured } from "../lib/supabase";
 import type { DataAgreementMember } from "../lib/dataAgreementPdf";
+import {
+  getCanonicalFoundingSponsor,
+  INVALID_SPONSOR_MESSAGE,
+  MISSING_SPONSOR_MESSAGE,
+} from "../lib/foundingSponsors";
 import type { PersonalAreaAction } from "../types";
 import { DataAgreementCard } from "./DataAgreementCard";
 import { AppHeader } from "./AppHeader";
@@ -190,6 +195,10 @@ function getFriendlyAuthErrorMessage(error: AuthError, action: AuthAction) {
       message.includes("smtp"))
   ) {
     return PASSWORD_RESET_DELIVERY_ERROR_MESSAGE;
+  }
+
+  if (action === "signup" && message.includes("invalid founding sponsor")) {
+    return INVALID_SPONSOR_MESSAGE;
   }
 
   return rawMessage || "No hemos podido completar la operación. Inténtalo de nuevo.";
@@ -442,6 +451,7 @@ export function AuthScreen({
   const [mode, setMode] = useState<AuthMode>(readInitialAuthMode);
   const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState("");
+  const [sponsor, setSponsor] = useState("");
   const [email, setEmail] = useState(readInitialEmail);
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -746,6 +756,14 @@ export function AuthScreen({
       return;
     }
 
+    const canonicalSponsor =
+      mode === "signup" ? getCanonicalFoundingSponsor(sponsor) : null;
+
+    if (mode === "signup" && !canonicalSponsor) {
+      setMessage(INVALID_SPONSOR_MESSAGE);
+      return;
+    }
+
     if (mode === "signup" && !privacyAccepted) {
       setMessage(
         "Debes aceptar la información de protección de datos y condiciones.",
@@ -774,6 +792,7 @@ export function AuthScreen({
               emailRedirectTo: getSignupConfirmationRedirectUrl(emailAddress),
               data: {
                 full_name: fullName,
+                sponsor_name: canonicalSponsor,
                 privacy_accepted_at: acceptedAt,
                 privacy_notice_version: "lopd-basic-v1",
                 terms_accepted_at: acceptedAt,
@@ -1675,6 +1694,37 @@ export function AuthScreen({
                         onChange={(event) => setFullName(event.target.value)}
                         placeholder="Tu nombre"
                         required
+                        type="text"
+                      />
+                    </span>
+                  </label>
+                )}
+
+                {mode === "signup" && (
+                  <label className="form-field">
+                    <span>Padrino</span>
+                    <span className="input-shell">
+                      <FiAward aria-hidden="true" />
+                      <input
+                        autoComplete="off"
+                        value={sponsor}
+                        onChange={(event) => {
+                          setSponsor(event.target.value);
+
+                          if (
+                            message === INVALID_SPONSOR_MESSAGE ||
+                            message === MISSING_SPONSOR_MESSAGE
+                          ) {
+                            setMessage("");
+                          }
+                        }}
+                        onInvalid={(event) => {
+                          event.preventDefault();
+                          setMessage(MISSING_SPONSOR_MESSAGE);
+                        }}
+                        placeholder="Nombre completo del padrino"
+                        required
+                        spellCheck="false"
                         type="text"
                       />
                     </span>
