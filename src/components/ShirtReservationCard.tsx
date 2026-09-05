@@ -10,6 +10,7 @@ import whiteShirtImage from "../../public/images/shop/camiseta-oasis-blanca.jpg"
 import offWhiteShirtImage from "../../public/images/shop/camiseta-oasis-off-white.webp";
 import { PERSONAL_ROUTE_HASH } from "../constants";
 import type { MemberIdentity } from "../hooks/useMemberIdentity";
+import { useShirtStockAvailability } from "../hooks/useShirtStockAvailability";
 import {
   consolidateReservationItems,
   createShirtReservation,
@@ -57,6 +58,7 @@ export function ShirtReservationCard({
     useState<ShirtReservationAccess | null>(null);
   const [submissionStatus, setSubmissionStatus] =
     useState<SubmissionStatus>("idle");
+  const stockAvailability = useShirtStockAvailability();
 
   const customerType = identity.isAuthenticated ? "member" : "non-member";
   const unitPrice = customerType === "member" ? 15 : 20;
@@ -362,6 +364,7 @@ export function ShirtReservationCard({
                     onActivate={() => setActiveItemId(item.id)}
                     onChange={(changes) => updateItem(item.id, changes)}
                     onRemove={() => removeItem(item.id)}
+                    stockAvailability={stockAvailability}
                   />
                 ))}
               </div>

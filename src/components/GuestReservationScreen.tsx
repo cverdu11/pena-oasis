@@ -12,6 +12,7 @@ import {
   updateGuestShirtReservation,
 } from "../lib/shirtReservations";
 import { getSupabaseClient } from "../lib/supabase";
+import { useShirtStockAvailability } from "../hooks/useShirtStockAvailability";
 import { ShirtOrderEditor } from "./ShirtOrderEditor";
 
 type GuestReservationAccess = {
@@ -50,6 +51,7 @@ export function GuestReservationScreen({
   const [status, setStatus] = useState<
     "loading" | "ready" | "invalid" | "error"
   >(access ? "loading" : "invalid");
+  const stockAvailability = useShirtStockAvailability();
 
   useEffect(() => {
     function refreshAccess() {
@@ -252,6 +254,7 @@ export function GuestReservationScreen({
                   initialItems={reservation.items}
                   onDelete={deleteReservation}
                   onSave={saveReservation}
+                  stockAvailability={stockAvailability}
                   unitPrice={20}
                 />
               </>

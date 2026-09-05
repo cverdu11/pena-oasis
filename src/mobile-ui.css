@@ -1953,6 +1953,15 @@ button.app-header-avatar:focus-visible {
   font-weight: 700;
 }
 
+.shirt-quantity-row .shirt-stock-notice {
+  flex: 1 1 120px;
+  min-width: 0;
+  color: #c2353f;
+  font-size: 9px;
+  font-weight: 720;
+  line-height: 1.25;
+}
+
 .shirt-quantity-row > div {
   display: grid;
   grid-template-columns: 36px 38px 36px;

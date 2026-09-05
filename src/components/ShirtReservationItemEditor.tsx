@@ -5,9 +5,14 @@ import {
 } from "react-icons/hi2";
 import type {
   ShirtReservationItem,
+  ShirtStockAvailability,
   ShirtSize,
 } from "../lib/shirtReservations";
-import { SHIRT_COLOR_OPTIONS } from "../lib/shirtReservations";
+import {
+  getShirtAvailableQuantity,
+  getShirtStockNotice,
+  SHIRT_COLOR_OPTIONS,
+} from "../lib/shirtReservations";
 
 const sizes: ShirtSize[] = ["S", "M", "L", "XL", "2XL"];
 
@@ -24,6 +29,7 @@ type ShirtReservationItemEditorProps = {
   onActivate: () => void;
   onChange: (changes: Partial<ShirtReservationItem>) => void;
   onRemove: () => void;
+  stockAvailability: readonly ShirtStockAvailability[];
 };
 
 export function ShirtReservationItemEditor({
@@ -35,8 +41,12 @@ export function ShirtReservationItemEditor({
   onActivate,
   onChange,
   onRemove,
+  stockAvailability,
 }: ShirtReservationItemEditorProps) {
   const itemLabel = `Camiseta ${index + 1}`;
+  const stockNotice = getShirtStockNotice(
+    getShirtAvailableQuantity(stockAvailability, item.color, item.size),
+  );
 
   return (
     <section
@@ -111,6 +121,11 @@ export function ShirtReservationItemEditor({
 
       <div className="shirt-quantity-row">
         <span>Cantidad</span>
+        {stockNotice && (
+          <span className="shirt-stock-notice" role="status">
+            {stockNotice}
+          </span>
+        )}
         <div aria-label={`Cantidad de ${itemLabel.toLowerCase()}`}>
           <button
             aria-label={`Reducir cantidad de ${itemLabel.toLowerCase()}`}

@@ -16,6 +16,7 @@ import {
   MAX_SHIRT_TOTAL_QUANTITY,
   consolidateReservationItems,
   registerExternalShirtSale,
+  registerExternalShirtReturn,
   fetchShirtStockDashboard,
   getShirtColorLabel,
   type ShirtColor,
@@ -248,6 +249,14 @@ export function StockAdminScreen({
     ExternalSaleDraftLine[]
   >([createExternalSaleLine(1)]);
   const [externalSaleMessage, setExternalSaleMessage] = useState<{
+    kind: "error" | "success";
+    text: string;
+  } | null>(null);
+  const [externalReturnLabel, setExternalReturnLabel] = useState("");
+  const [externalReturnColor, setExternalReturnColor] = useState<ShirtColor>("blue");
+  const [externalReturnSize, setExternalReturnSize] = useState<ShirtSize>("M");
+  const [externalReturnQuantity, setExternalReturnQuantity] = useState(1);
+  const [externalReturnMessage, setExternalReturnMessage] = useState<{
     kind: "error" | "success";
     text: string;
   } | null>(null);
@@ -515,6 +524,87 @@ export function StockAdminScreen({
         mutationLockRef.current = false;
         setIsMutationInProgress(false);
         setIsExternalSaleInProgress(false);
+      }
+    }
+  }
+
+  async function handleExternalReturnSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (mutationLockRef.current || !isAuthenticatedRef.current) {
+      return;
+    }
+
+    const returnItem = {
+      color: externalReturnColor,
+      quantity: externalReturnQuantity,
+      size: externalReturnSize,
+    } satisfies ShirtReservationItem;
+
+    if (
+      !Number.isInteger(returnItem.quantity) ||
+      returnItem.quantity < 1 ||
+      returnItem.quantity > 10
+    ) {
+      setExternalReturnMessage({
+        kind: "error",
+        text: "La devolución debe contener entre 1 y 10 unidades.",
+      });
+      return;
+    }
+
+    const mutationOperationId = mutationOperationIdRef.current + 1;
+    const authGeneration = authGenerationRef.current;
+    mutationOperationIdRef.current = mutationOperationId;
+    mutationLockRef.current = true;
+    setIsMutationInProgress(true);
+    setExternalReturnMessage(null);
+    loadRequestIdRef.current += 1;
+
+    try {
+      const client = await getSupabaseClient();
+      if (!client) {
+        throw new Error("Supabase no está configurado.");
+      }
+
+      await registerExternalShirtReturn(
+        client,
+        externalReturnLabel.trim() || "Devolución",
+        [returnItem],
+      );
+
+      if (
+        !isAuthenticatedRef.current ||
+        authGeneration !== authGenerationRef.current ||
+        mutationOperationId !== mutationOperationIdRef.current
+      ) {
+        return;
+      }
+
+      setExternalReturnMessage({
+        kind: "success",
+        text: "Devolución registrada y stock repuesto.",
+      });
+      setExternalReturnLabel("");
+      setExternalReturnQuantity(1);
+      await loadDashboard();
+    } catch (error) {
+      if (
+        !isAuthenticatedRef.current ||
+        authGeneration !== authGenerationRef.current ||
+        mutationOperationId !== mutationOperationIdRef.current
+      ) {
+        return;
+      }
+
+      setExternalReturnMessage({
+        kind: "error",
+        text: getErrorMessage(error),
+      });
+    } finally {
+      if (mutationOperationId === mutationOperationIdRef.current) {
+        mutationLockRef.current = false;
+        setIsMutationInProgress(false);
       }
     }
   }
@@ -804,9 +894,99 @@ export function StockAdminScreen({
               </form>
             </section>
 
+            <section className="stock-section stock-external-sale-section">
+              <div className="stock-section-heading">
+                <div>
+                  <p>Venta manual</p>
+                  <h2>Registrar devolución</h2>
+                </div>
+              </div>
+              <p className="stock-external-sale-help">
+                Repone en el inventario una camiseta devuelta. La operación no
+                permite devolver más unidades de las contabilizadas como entregadas.
+              </p>
+              <form
+                className="stock-external-sale-form"
+                onSubmit={handleExternalReturnSubmit}
+              >
+                <div className="stock-external-sale-top-fields">
+                  <label>
+                    <span>Nombre o nota (opcional)</span>
+                    <input
+                      maxLength={100}
+                      onChange={(event) => setExternalReturnLabel(event.target.value)}
+                      placeholder="Devolución"
+                      type="text"
+                      value={externalReturnLabel}
+                    />
+                  </label>
+                  <label>
+                    <span>Color</span>
+                    <select
+                      onChange={(event) =>
+                        setExternalReturnColor(event.target.value as ShirtColor)
+                      }
+                      value={externalReturnColor}
+                    >
+                      {stockColors.map((color) => (
+                        <option key={color} value={color}>
+                          {getShirtColorLabel(color)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    <span>Talla</span>
+                    <select
+                      onChange={(event) =>
+                        setExternalReturnSize(event.target.value as ShirtSize)
+                      }
+                      value={externalReturnSize}
+                    >
+                      {stockSizes.map((size) => (
+                        <option key={size} value={size}>
+                          {size}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    <span>Unidades</span>
+                    <input
+                      max={10}
+                      min={1}
+                      onChange={(event) =>
+                        setExternalReturnQuantity(Number(event.target.value))
+                      }
+                      type="number"
+                      value={Number.isNaN(externalReturnQuantity) ? "" : externalReturnQuantity}
+                    />
+                  </label>
+                </div>
+
+                {externalReturnMessage && (
+                  <p
+                    className={`stock-external-sale-message stock-external-sale-message--${externalReturnMessage.kind}`}
+                    role={externalReturnMessage.kind === "error" ? "alert" : "status"}
+                  >
+                    {externalReturnMessage.text}
+                  </p>
+                )}
+
+                <button
+                  className="stock-external-sale-submit"
+                  disabled={isMutationInProgress}
+                  type="submit"
+                >
+                  Registrar devolución y reponer stock
+                </button>
+              </form>
+            </section>
+
             <p className="stock-admin-note">
               Las reservas descuentan stock al marcarlas como entregadas; las
-              ventas externas lo descuentan al registrarlas.
+              ventas externas lo descuentan al registrarlas y las devoluciones lo
+              reponen de forma atómica.
             </p>
 
             {errorMessage && (

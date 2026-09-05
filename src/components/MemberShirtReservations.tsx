@@ -12,6 +12,7 @@ import {
   updateMyShirtReservation,
 } from "../lib/shirtReservations";
 import { getSupabaseClient } from "../lib/supabase";
+import { useShirtStockAvailability } from "../hooks/useShirtStockAvailability";
 import { ShirtOrderEditor } from "./ShirtOrderEditor";
 
 const statusLabels: Record<ManagedShirtReservation["status"], string> = {
@@ -57,6 +58,7 @@ export function MemberShirtReservations({
   const [status, setStatus] = useState<
     "loading" | "ready" | "error"
   >(demoMode ? "ready" : "loading");
+  const stockAvailability = useShirtStockAvailability(!demoMode);
 
   useEffect(() => {
     if (demoMode) {
@@ -264,6 +266,7 @@ export function MemberShirtReservations({
                     onDeleted={() => setEditingReservationId(null)}
                     onSave={(items) => saveReservation(reservation, items)}
                     onSaved={() => setEditingReservationId(null)}
+                    stockAvailability={stockAvailability}
                     unitPrice={
                       reservation.customerType === "member" ? 15 : 20
                     }

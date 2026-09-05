@@ -8,6 +8,7 @@ import {
   MAX_SHIRT_LINE_ITEMS,
   MAX_SHIRT_TOTAL_QUANTITY,
   type ShirtReservationItem,
+  type ShirtStockAvailability,
 } from "../lib/shirtReservations";
 import {
   ShirtReservationItemEditor,
@@ -21,6 +22,7 @@ type ShirtOrderEditorProps = {
   onDeleted?: () => void;
   onSave: (items: ShirtReservationItem[]) => Promise<void>;
   onSaved?: () => void;
+  stockAvailability: readonly ShirtStockAvailability[];
   unitPrice: number;
 };
 
@@ -31,6 +33,7 @@ export function ShirtOrderEditor({
   onDeleted,
   onSave,
   onSaved,
+  stockAvailability,
   unitPrice,
 }: ShirtOrderEditorProps) {
   const [items, setItems] = useState<ShirtReservationDraftItem[]>(() =>
@@ -155,6 +158,7 @@ export function ShirtOrderEditor({
             onActivate={() => setActiveItemId(item.id)}
             onChange={(changes) => updateItem(item.id, changes)}
             onRemove={() => removeItem(item.id)}
+            stockAvailability={stockAvailability}
           />
         ))}
       </div>

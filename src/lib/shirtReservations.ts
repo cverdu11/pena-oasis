@@ -48,6 +48,12 @@ export type ShirtStockRow = {
   updatedAt: string;
 };
 
+export type ShirtStockAvailability = {
+  availableQuantity: number;
+  color: ShirtColor;
+  size: ShirtSize;
+};
+
 export type ShirtStockDashboardReservation = ManagedShirtReservation & {
   email: string;
   fullName: string;
@@ -72,6 +78,12 @@ type MemberReservationRow = {
   total_quantity: number;
   updated_at: string;
   version: number;
+};
+
+type ShirtStockAvailabilityRow = {
+  available_quantity: number;
+  color: ShirtColor;
+  size: ShirtSize;
 };
 
 export const MAX_SHIRT_LINE_ITEMS = 10;
@@ -276,6 +288,31 @@ function parseShirtStockRow(value: unknown): ShirtStockRow | null {
   };
 }
 
+function parseShirtStockAvailabilityRow(
+  value: unknown,
+): ShirtStockAvailability | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const row = value as Partial<ShirtStockAvailabilityRow>;
+  const { available_quantity, color, size } = row;
+
+  if (
+    !isShirtColor(color) ||
+    !isShirtSize(size) ||
+    !isNonNegativeInteger(available_quantity)
+  ) {
+    return null;
+  }
+
+  return {
+    availableQuantity: available_quantity,
+    color,
+    size,
+  };
+}
+
 function parseDashboardReservation(
   value: unknown,
 ): ShirtStockDashboardReservation | null {
@@ -413,6 +450,54 @@ export async function fetchMyShirtReservations(
   }
 
   return (data ?? []).map(mapMemberReservation);
+}
+
+export async function fetchShirtStockAvailability(
+  client: SupabaseClient,
+): Promise<ShirtStockAvailability[]> {
+  const { data, error } = await client
+    .from("shirt_stock")
+    .select("color, size, available_quantity")
+    .returns<ShirtStockAvailabilityRow[]>();
+
+  if (error) {
+    throw error;
+  }
+
+  const stock = (data ?? []).map(parseShirtStockAvailabilityRow);
+
+  if (stock.some((row) => !row)) {
+    throw new Error("La disponibilidad de stock devolvió datos no válidos.");
+  }
+
+  return stock as ShirtStockAvailability[];
+}
+
+export function getShirtAvailableQuantity(
+  stock: readonly ShirtStockAvailability[],
+  color: ShirtColor,
+  size: ShirtSize,
+) {
+  return stock.find((row) => row.color === color && row.size === size)
+    ?.availableQuantity;
+}
+
+export function getShirtStockNotice(
+  availableQuantity: number | undefined,
+) {
+  if (availableQuantity === undefined || availableQuantity > 3) {
+    return null;
+  }
+
+  if (availableQuantity <= 0) {
+    return "Sin stock disponible";
+  }
+
+  if (availableQuantity === 1) {
+    return "¡Ultima unidad en stock!";
+  }
+
+  return `Quedan solo ${availableQuantity} unidades en stock`;
 }
 
 export async function updateMyShirtReservation(
@@ -589,6 +674,21 @@ export async function registerExternalShirtSale(
   }
 
   return data;
+}
+
+export async function registerExternalShirtReturn(
+  client: SupabaseClient,
+  label: string,
+  items: ShirtReservationItem[],
+) {
+  const { error } = await client.rpc("register_external_shirt_return", {
+    return_items_arg: items,
+    return_label_arg: label,
+  });
+
+  if (error) {
+    throw error;
+  }
 }
 
 export function getGuestReservationManagementHash(
