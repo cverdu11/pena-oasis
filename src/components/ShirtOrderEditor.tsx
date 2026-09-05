@@ -5,6 +5,10 @@ import {
 } from "react-icons/hi2";
 import {
   consolidateReservationItems,
+  getShirtAvailableQuantity,
+  getShirtStockShortage,
+  getShirtStockShortageMessage,
+  getShirtVariantQuantity,
   MAX_SHIRT_LINE_ITEMS,
   MAX_SHIRT_TOTAL_QUANTITY,
   type ShirtReservationItem,
@@ -52,8 +56,28 @@ export function ShirtOrderEditor({
     0,
   );
   const totalPrice = totalQuantity * unitPrice;
+  const stockShortage = getShirtStockShortage(stockAvailability, items);
   const activeItem =
     items.find((item) => item.id === activeItemId) ?? items[0];
+
+  function canIncreaseItemQuantity(item: ShirtReservationDraftItem) {
+    const availableQuantity = getShirtAvailableQuantity(
+      stockAvailability,
+      item.color,
+      item.size,
+    );
+    const currentVariantQuantity = getShirtVariantQuantity(
+      items,
+      item.color,
+      item.size,
+    );
+
+    return (
+      totalQuantity < MAX_SHIRT_TOTAL_QUANTITY &&
+      (availableQuantity === undefined ||
+        currentVariantQuantity < availableQuantity)
+    );
+  }
 
   function updateItem(
     itemId: number,
@@ -148,7 +172,7 @@ export function ShirtOrderEditor({
         {items.map((item, index) => (
           <ShirtReservationItemEditor
             canIncreaseQuantity={
-              totalQuantity < MAX_SHIRT_TOTAL_QUANTITY
+              canIncreaseItemQuantity(item)
             }
             canRemove={items.length > 1}
             index={index}
@@ -187,6 +211,12 @@ export function ShirtOrderEditor({
         <strong>{totalPrice} €</strong>
       </div>
 
+      {stockShortage && (
+        <p className="managed-shirt-message" role="alert">
+          {getShirtStockShortageMessage(stockShortage)}
+        </p>
+      )}
+
       {message && (
         <p
           className={
@@ -213,7 +243,7 @@ export function ShirtOrderEditor({
         )}
         <button
           className="managed-shirt-save"
-          disabled={pendingAction !== null}
+          disabled={pendingAction !== null || stockShortage !== null}
           onClick={() => void handleSave()}
           type="button"
         >

@@ -17,7 +17,11 @@ import {
   getShirtColorLabel,
   getShirtFitLabel,
   getGuestReservationManagementHash,
+  getShirtAvailableQuantity,
+  getShirtStockShortage,
+  getShirtStockShortageMessage,
   getShirtVariantLabel,
+  getShirtVariantQuantity,
   MAX_SHIRT_LINE_ITEMS,
   MAX_SHIRT_TOTAL_QUANTITY,
   SHIRT_COLOR_OPTIONS,
@@ -54,6 +58,7 @@ export function ShirtReservationCard({
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [submissionError, setSubmissionError] = useState("");
   const [reservationAccess, setReservationAccess] =
     useState<ShirtReservationAccess | null>(null);
   const [submissionStatus, setSubmissionStatus] =
@@ -67,6 +72,7 @@ export function ShirtReservationCard({
     0,
   );
   const totalPrice = totalQuantity * unitPrice;
+  const stockShortage = getShirtStockShortage(stockAvailability, items);
   const submitQuantityLabel =
     totalQuantity === 1 ? "reserva" : `${totalQuantity} camisetas`;
   const consolidatedItems = consolidateReservationItems(items);
@@ -80,9 +86,30 @@ export function ShirtReservationCard({
   );
 
   function resetSubmissionStatus() {
+    setSubmissionError("");
+
     if (submissionStatus === "error") {
       setSubmissionStatus("idle");
     }
+  }
+
+  function canIncreaseItemQuantity(item: ShirtReservationDraftItem) {
+    const availableQuantity = getShirtAvailableQuantity(
+      stockAvailability,
+      item.color,
+      item.size,
+    );
+    const currentVariantQuantity = getShirtVariantQuantity(
+      items,
+      item.color,
+      item.size,
+    );
+
+    return (
+      totalQuantity < MAX_SHIRT_TOTAL_QUANTITY &&
+      (availableQuantity === undefined ||
+        currentVariantQuantity < availableQuantity)
+    );
   }
 
   function resetForm() {
@@ -93,6 +120,7 @@ export function ShirtReservationCard({
     setEmail("");
     setPrivacyAccepted(false);
     setReservationAccess(null);
+    setSubmissionError("");
     setSubmissionStatus("idle");
   }
 
@@ -143,7 +171,15 @@ export function ShirtReservationCard({
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (stockShortage) {
+      setSubmissionError(getShirtStockShortageMessage(stockShortage));
+      setSubmissionStatus("error");
+      return;
+    }
+
     setSubmissionStatus("saving");
+    setSubmissionError("");
 
     try {
       const client = await getSupabaseClient();
@@ -159,7 +195,20 @@ export function ShirtReservationCard({
       });
       setReservationAccess(savedReservationAccess);
       setSubmissionStatus("success");
-    } catch {
+    } catch (error) {
+      const errorMessage =
+        typeof error === "object" &&
+        error !== null &&
+        "message" in error &&
+        typeof error.message === "string"
+          ? error.message.toLowerCase()
+          : "";
+
+      setSubmissionError(
+        errorMessage.includes("stock") || errorMessage.includes("inventory")
+          ? "El stock ha cambiado. Reduce la cantidad o elige otra talla/color."
+          : "No hemos podido guardar la reserva. Inténtalo de nuevo.",
+      );
       setSubmissionStatus("error");
     }
   }
@@ -354,7 +403,7 @@ export function ShirtReservationCard({
                 {items.map((item, index) => (
                   <ShirtReservationItemEditor
                     canIncreaseQuantity={
-                      totalQuantity < MAX_SHIRT_TOTAL_QUANTITY
+                      canIncreaseItemQuantity(item)
                     }
                     canRemove={items.length > 1}
                     index={index}
@@ -454,13 +503,16 @@ export function ShirtReservationCard({
 
               {submissionStatus === "error" && (
                 <p className="shirt-form-error" role="alert">
-                  No hemos podido guardar la reserva. Inténtalo de nuevo.
+                  {submissionError ||
+                    "No hemos podido guardar la reserva. Inténtalo de nuevo."}
                 </p>
               )}
 
               <button
                 className="shirt-reservation-submit"
-                disabled={submissionStatus === "saving"}
+                disabled={
+                  submissionStatus === "saving" || stockShortage !== null
+                }
                 type="submit"
               >
                 {submissionStatus === "saving"

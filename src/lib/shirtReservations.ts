@@ -54,6 +54,13 @@ export type ShirtStockAvailability = {
   size: ShirtSize;
 };
 
+export type ShirtStockShortage = {
+  availableQuantity: number;
+  color: ShirtColor;
+  requestedQuantity: number;
+  size: ShirtSize;
+};
+
 export type ShirtStockDashboardReservation = ManagedShirtReservation & {
   email: string;
   fullName: string;
@@ -133,7 +140,7 @@ export function getShirtVariantLabel(color: ShirtColor) {
 }
 
 export function consolidateReservationItems(
-  items: ShirtReservationItem[],
+  items: readonly ShirtReservationItem[],
 ) {
   const variants = new Map<string, ShirtReservationItem>();
 
@@ -149,6 +156,59 @@ export function consolidateReservationItems(
   }
 
   return Array.from(variants.values());
+}
+
+export function getShirtVariantQuantity(
+  items: readonly ShirtReservationItem[],
+  color: ShirtColor,
+  size: ShirtSize,
+) {
+  return items.reduce(
+    (total, item) =>
+      item.color === color && item.size === size
+        ? total + item.quantity
+        : total,
+    0,
+  );
+}
+
+export function getShirtStockShortage(
+  stock: readonly ShirtStockAvailability[],
+  items: readonly ShirtReservationItem[],
+): ShirtStockShortage | null {
+  for (const item of consolidateReservationItems(items)) {
+    const availableQuantity = getShirtAvailableQuantity(
+      stock,
+      item.color,
+      item.size,
+    );
+
+    if (
+      availableQuantity !== undefined &&
+      item.quantity > availableQuantity
+    ) {
+      return {
+        availableQuantity,
+        color: item.color,
+        requestedQuantity: item.quantity,
+        size: item.size,
+      };
+    }
+  }
+
+  return null;
+}
+
+export function getShirtStockShortageMessage(
+  shortage: ShirtStockShortage,
+) {
+  const variantLabel = `${getShirtVariantLabel(shortage.color)} · ${shortage.size}`;
+
+  if (shortage.availableQuantity === 0) {
+    return `Sin stock disponible para ${variantLabel}.`;
+  }
+
+  return `Solo quedan ${shortage.availableQuantity} unidades de ${variantLabel}. Reduce la cantidad para continuar.`;
 }
 
 function mapMemberReservation(
