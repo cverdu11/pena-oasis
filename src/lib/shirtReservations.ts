@@ -104,19 +104,19 @@ export const SHIRT_COLOR_OPTIONS: ReadonlyArray<{
   {
     fit: "relaxed",
     fitLabel: "Relaxed",
-    label: "White",
+    label: "Blanco",
     value: "white",
   },
   {
     fit: "relaxed",
     fitLabel: "Relaxed",
-    label: "Egret",
+    label: "Beige",
     value: "off_white",
   },
   {
     fit: "regular",
     fitLabel: "Regular",
-    label: "Surf the Wet",
+    label: "Azul",
     value: "blue",
   },
 ];

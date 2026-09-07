@@ -1962,7 +1962,7 @@ button {
 
 .stock-matrix {
   width: 100%;
-  min-width: 510px;
+  min-width: 590px;
   border-collapse: collapse;
   color: #273444;
   font-size: 12px;
@@ -1987,6 +1987,17 @@ button {
 .stock-matrix th:first-child {
   min-width: 122px;
   text-align: left;
+}
+
+.stock-matrix th.stock-matrix-total,
+.stock-matrix td.stock-matrix-total {
+  min-width: 86px;
+  white-space: nowrap;
+}
+
+.stock-matrix td.stock-matrix-total {
+  color: var(--oasis-blue-dark);
+  font-weight: 900;
 }
 
 .stock-matrix tbody th {

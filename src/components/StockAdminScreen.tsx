@@ -391,6 +391,28 @@ export function StockAdminScreen({
     [dashboard],
   );
 
+  const stockTotalsByColor = useMemo(() => {
+    const colorTotals = new Map<
+      ShirtColor,
+      { available: number; initial: number }
+    >();
+
+    for (const color of stockColors) {
+      colorTotals.set(color, { available: 0, initial: 0 });
+    }
+
+    for (const row of dashboard?.stock ?? []) {
+      const total = colorTotals.get(row.color);
+
+      if (total) {
+        total.available += row.availableQuantity;
+        total.initial += row.initialQuantity;
+      }
+    }
+
+    return colorTotals;
+  }, [dashboard]);
+
   const reservationStatusCounts = useMemo(() => {
     const counts: Record<ShirtReservationStatus, number> = {
       cancelled: 0,
@@ -1059,6 +1081,9 @@ export function StockAdminScreen({
                   <thead>
                     <tr>
                       <th scope="col">Color</th>
+                      <th className="stock-matrix-total" scope="col">
+                        Total
+                      </th>
                       {stockSizes.map((size) => (
                         <th key={size} scope="col">
                           {size}
@@ -1067,22 +1092,35 @@ export function StockAdminScreen({
                     </tr>
                   </thead>
                   <tbody>
-                    {stockColors.map((color) => (
-                      <tr key={color}>
-                        <th scope="row">{getShirtColorLabel(color)}</th>
-                        {stockSizes.map((size) => {
-                          const row = getStockCell(dashboard.stock, color, size);
+                    {stockColors.map((color) => {
+                      const total = stockTotalsByColor.get(color);
 
-                          return (
-                            <td key={size}>
-                              {row
-                                ? `${row.availableQuantity} / ${row.initialQuantity}`
-                                : "—"}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    ))}
+                      return (
+                        <tr key={color}>
+                          <th scope="row">{getShirtColorLabel(color)}</th>
+                          <td className="stock-matrix-total">
+                            {total
+                              ? `${total.available} / ${total.initial}`
+                              : "—"}
+                          </td>
+                          {stockSizes.map((size) => {
+                            const row = getStockCell(
+                              dashboard.stock,
+                              color,
+                              size,
+                            );
+
+                            return (
+                              <td key={size}>
+                                {row
+                                  ? `${row.availableQuantity} / ${row.initialQuantity}`
+                                  : "—"}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
