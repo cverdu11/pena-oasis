@@ -32,6 +32,7 @@ import {
 import { getSupabaseClient } from "../lib/supabase";
 
 type DashboardState = "loading" | "ready" | "signed-out" | "denied" | "error";
+type ReservationFilter = ShirtReservationStatus | "all";
 
 type StockAdminScreenProps = {
   isAuthenticated: boolean;
@@ -41,6 +42,12 @@ type StockAdminScreenProps = {
 
 const stockColors = ["blue", "white", "off_white"] as const;
 const stockSizes = ["S", "M", "L", "XL", "2XL"] as const;
+const reservationStatuses: ShirtReservationStatus[] = [
+  "pending",
+  "confirmed",
+  "fulfilled",
+  "cancelled",
+];
 
 type ExternalSaleDraftLine = ShirtReservationItem & {
   id: number;
@@ -260,6 +267,8 @@ export function StockAdminScreen({
     kind: "error" | "success";
     text: string;
   } | null>(null);
+  const [reservationFilter, setReservationFilter] =
+    useState<ReservationFilter>("all");
   const loadRequestIdRef = useRef(0);
   const mutationLockRef = useRef(false);
   const mutationOperationIdRef = useRef(0);
@@ -381,6 +390,33 @@ export function StockAdminScreen({
       ),
     [dashboard],
   );
+
+  const reservationStatusCounts = useMemo(() => {
+    const counts: Record<ShirtReservationStatus, number> = {
+      cancelled: 0,
+      confirmed: 0,
+      fulfilled: 0,
+      pending: 0,
+    };
+
+    for (const reservation of dashboard?.reservations ?? []) {
+      counts[reservation.status] += 1;
+    }
+
+    return counts;
+  }, [dashboard]);
+
+  const filteredReservations = useMemo(() => {
+    const reservations = dashboard?.reservations ?? [];
+
+    if (reservationFilter === "all") {
+      return reservations;
+    }
+
+    return reservations.filter(
+      (reservation) => reservation.status === reservationFilter,
+    );
+  }, [dashboard, reservationFilter]);
 
   const externalSaleTotalQuantity = useMemo(
     () => externalSaleItems.reduce((total, item) => total + item.quantity, 0),
@@ -1053,17 +1089,46 @@ export function StockAdminScreen({
             </section>
 
             <section className="stock-section">
-              <div className="stock-section-heading">
+              <div className="stock-section-heading stock-reservation-heading">
                 <div>
                   <p>Todas las reservas</p>
-                  <h2>Reservas</h2>
+                  <h2 id="stock-reservations-title">Reservas</h2>
                 </div>
+                <label className="stock-reservation-filter">
+                  <span>Filtrar por estado</span>
+                  <select
+                    aria-label="Filtrar reservas por estado"
+                    onChange={(event) =>
+                      setReservationFilter(
+                        event.target.value as ReservationFilter,
+                      )
+                    }
+                    value={reservationFilter}
+                  >
+                    <option value="all">
+                      Todas ({dashboard.reservations.length})
+                    </option>
+                    {reservationStatuses.map((status) => (
+                      <option key={status} value={status}>
+                        {getStatusLabel(status)} ({reservationStatusCounts[status]})
+                      </option>
+                    ))}
+                  </select>
+                </label>
               </div>
-              <div className="stock-reservation-list">
-                {dashboard.reservations.length === 0 ? (
-                  <p className="stock-empty-state">Todavía no hay reservas.</p>
+              <div
+                aria-live="polite"
+                className="stock-reservation-list"
+                aria-labelledby="stock-reservations-title"
+              >
+                {filteredReservations.length === 0 ? (
+                  <p className="stock-empty-state">
+                    {reservationFilter === "all"
+                      ? "Todavía no hay reservas."
+                      : "No hay reservas con este estado."}
+                  </p>
                 ) : (
-                  dashboard.reservations.map((reservation) => (
+                  filteredReservations.map((reservation) => (
                     <ReservationCard
                       isMutationInProgress={isMutationInProgress}
                       isUpdating={updatingReservationId === reservation.id}
