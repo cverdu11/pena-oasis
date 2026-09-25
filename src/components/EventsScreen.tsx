@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { HiOutlineChevronDown } from "react-icons/hi2";
 import { EventPollCard } from "./EventPollCard";
 import type { EventPoll } from "./EventPollCard";
 import {
@@ -299,8 +300,19 @@ export function EventsScreen({
           ))}
 
           {pastEvents.length > 0 && (
-            <section className="past-events" aria-labelledby="past-events-title">
-              <h2 id="past-events-title">Eventos anteriores</h2>
+            <details className="past-events">
+              <summary className="past-events-toggle">
+                <span className="past-events-title" id="past-events-title" role="heading" aria-level={2}>
+                  Eventos anteriores
+                </span>
+                <span className="past-events-action">
+                  Ver todos los eventos
+                  <HiOutlineChevronDown
+                    aria-hidden="true"
+                    className="past-events-toggle-icon"
+                  />
+                </span>
+              </summary>
               <div className="past-event-list">
                 {pastEvents.map((event) => (
                   <EventPollCard
@@ -320,7 +332,7 @@ export function EventsScreen({
                   />
                 ))}
               </div>
-            </section>
+            </details>
           )}
         </div>
       </div>

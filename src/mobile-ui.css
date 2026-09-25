@@ -2849,12 +2849,54 @@ button.app-header-avatar:focus-visible {
   margin-top: 12px;
 }
 
-.past-events > h2 {
-  margin: 0 2px;
+.past-events-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0;
+  padding: 2px;
+  color: var(--oasis-ink);
+  cursor: pointer;
+  list-style: none;
+}
+
+.past-events-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.past-events-title {
   color: var(--oasis-ink);
   font-size: 18px;
   font-weight: 730;
   line-height: 1.2;
+}
+
+.past-events-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--oasis-blue);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: right;
+}
+
+.past-events-toggle-icon {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  transition: transform 180ms ease;
+}
+
+.past-events[open] .past-events-toggle-icon {
+  transform: rotate(180deg);
+}
+
+.past-events-toggle:focus-visible {
+  outline: 3px solid rgba(26, 95, 173, 0.28);
+  outline-offset: 4px;
 }
 
 .past-event-list {
